@@ -3,6 +3,38 @@ intellij-annotations-instrumenter-maven-plugin
 
 IntelliJ IDEA annotations instrumenter maven plugin
 
+Usage
+==============================================
+Just update your pom.xml with following: 
+```xml
+    <pluginRepositories>
+        <pluginRepository>
+            <id>repository.jetbrains.com</id>
+            <name>repository.jetbrains.com-all</name>
+            <url>http://repository.jetbrains.com/all</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.intellij</groupId>
+                <artifactId>notnull-instrumenter-maven-plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>instrument</goal>
+                            <goal>tests-instrument</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+```
 
 License Information
 ==============================================
