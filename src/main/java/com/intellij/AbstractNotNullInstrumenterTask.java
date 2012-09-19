@@ -52,14 +52,15 @@ public abstract class AbstractNotNullInstrumenterTask extends org.apache.maven.p
             throw new MojoExecutionException("Cannot convert classpath element into URL", e);
         }
         final InstrumentationClassFinder finder = new InstrumentationClassFinder(urls.toArray(new URL[urls.size()]));
-        instrumentDirectoryRecursive(new File(directory), finder);
+        int instrumented = instrumentDirectoryRecursive(new File(directory), finder);
+        getLog().info("Added @NotNull assertions to " + instrumented + " files");
     }
 
     private int instrumentDirectoryRecursive(@NotNull final File dir, @NotNull final InstrumentationClassFinder finder) throws MojoExecutionException {
         int instrumented = 0;
         final Collection<File> classes = collectClasses(dir);
         for (@NotNull final File file : classes) {
-            getLog().info("Adding @NotNull assertions to " + file.getPath());
+            getLog().debug("Adding @NotNull assertions to " + file.getPath());
             try {
                 instrumented += instrumentClass(file, finder) ? 1 : 0;
             } catch (IOException e) {
