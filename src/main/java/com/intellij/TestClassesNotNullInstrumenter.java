@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2012 JetBrains s.r.o.
+ * Copyright 2000-2013 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,15 +25,16 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 /**
  * @author Vladislav.Rassokhin
  */
+@SuppressWarnings("UnusedDeclaration")
 @Mojo(
         name = "tests-instrument",
         defaultPhase = LifecyclePhase.PROCESS_TEST_CLASSES,
         requiresOnline = false,
         requiresProject = true,
         requiresDependencyResolution = ResolutionScope.TEST)
-public class TestClassesNotNullInstrumenter extends com.intellij.AbstractNotNullInstrumenterTask {
+public class TestClassesNotNullInstrumenter extends AbstractNotNullInstrumenterTask {
 
-    public void execute() throws org.apache.maven.plugin.MojoExecutionException {
+    public void execute() throws MojoExecutionException {
         try {
             instrument(project.getBuild().getTestOutputDirectory(), project.getTestClasspathElements());
         } catch (DependencyResolutionRequiredException e) {

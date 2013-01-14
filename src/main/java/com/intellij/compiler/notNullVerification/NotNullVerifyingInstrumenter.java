@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2012 JetBrains s.r.o.
+ * Copyright 2000-2013 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,15 @@ import java.util.ArrayList;
 
 /**
  * @author ven
+ * @author Vladislav.Rassokhin
  * @noinspection HardCodedStringLiteral
  */
 public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcodes {
+  public static final String LJAVA_LANG_SYNTHETIC_ANNO = "Ljava/lang/Synthetic;";
   private boolean myIsModification = false;
   private String myClassName;
   public static final String NOT_NULL = "org/jetbrains/annotations/NotNull";
-  public static final String NOT_NULL_ANNO = "L"+ NOT_NULL + ";";
+  public static final String NOT_NULL_ANNO = "L" + NOT_NULL + ";";
   public static final String IAE_CLASS_NAME = "java/lang/IllegalArgumentException";
   public static final String ISE_CLASS_NAME = "java/lang/IllegalStateException";
   private static final String CONSTRUCTOR_NAME = "<init>";
@@ -54,26 +56,19 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
   public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
     final Type[] args = Type.getArgumentTypes(desc);
     final Type returnType = Type.getReturnType(desc);
-    MethodVisitor v = cv.visitMethod(access, name, desc, signature, exceptions);
+    final MethodVisitor v = cv.visitMethod(access, name, desc, signature, exceptions);
     return new MethodVisitor(Opcodes.ASM4, v) {
 
-      private final ArrayList myNotNullParams = new ArrayList();
+      private final ArrayList<Integer> myNotNullParams = new ArrayList<Integer>();
       private int mySyntheticCount = 0;
       private boolean myIsNotNull = false;
-      //private boolean myIsUnmodifiable = false;
-      //public Label myWrapLabel;
       private Label myStartGeneratedCodeLabel;
 
-      public AnnotationVisitor visitParameterAnnotation(
-        final int parameter,
-        final String anno,
-        final boolean visible) {
-        AnnotationVisitor av;
-        av = mv.visitParameterAnnotation(parameter, anno, visible);
+      public AnnotationVisitor visitParameterAnnotation(final int parameter, final String anno, final boolean visible) {
+        final AnnotationVisitor av = mv.visitParameterAnnotation(parameter, anno, visible);
         if (isReferenceType(args[parameter]) && anno.equals(NOT_NULL_ANNO)) {
-          myNotNullParams.add(new Integer(parameter));
-        }
-        else if (anno.equals("Ljava/lang/Synthetic;")) {
+          myNotNullParams.add(parameter);
+        } else if (anno.equals(LJAVA_LANG_SYNTHETIC_ANNO)) {
           // See asm r1278 for what we do this,
           // http://forge.objectweb.org/tracker/index.php?func=detail&aid=307392&group_id=23&atid=100023
           mySyntheticCount++;
@@ -83,8 +78,7 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
 
       public AnnotationVisitor visitAnnotation(String anno, boolean isRuntime) {
         final AnnotationVisitor av = mv.visitAnnotation(anno, isRuntime);
-        if (isReferenceType(returnType) &&
-            anno.equals(NOT_NULL_ANNO)) {
+        if (isReferenceType(returnType) && anno.equals(NOT_NULL_ANNO)) {
           myIsNotNull = true;
         }
 
@@ -96,9 +90,9 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
           myStartGeneratedCodeLabel = new Label();
           mv.visitLabel(myStartGeneratedCodeLabel);
         }
-        for (int p = 0; p < myNotNullParams.size(); ++p) {
+        for (Integer myNotNullParam : myNotNullParams) {
           int var = ((access & ACC_STATIC) == 0) ? 1 : 0;
-          int param = ((Integer)myNotNullParams.get(p)).intValue();
+          int param = myNotNullParam;
           for (int i = 0; i < param; ++i) {
             var += args[i].getSize();
           }
@@ -122,8 +116,6 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
         if (opcode == ARETURN) {
           if (myIsNotNull) {
             mv.visitInsn(DUP);
-            /*generateConditionalThrow("@NotNull method " + myClassName + "." + name + " must not return null",
-              "java/lang/IllegalStateException");*/
             final Label skipLabel = new Label();
             mv.visitJumpInsn(IFNONNULL, skipLabel);
             generateThrow(ISE_CLASS_NAME, "@NotNull method " + myClassName + "." + name + " must not return null", skipLabel);
@@ -148,9 +140,8 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
       public void visitMaxs(final int maxStack, final int maxLocals) {
         try {
           super.visitMaxs(maxStack, maxLocals);
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
-          throw new ArrayIndexOutOfBoundsException("maxs processing failed for method " + name + ": " + e.getMessage());
+        } catch (ArrayIndexOutOfBoundsException e) {
+          throw new ArrayIndexOutOfBoundsException("visitMaxs processing failed for method " + name + ": " + e.getMessage());
         }
       }
     };

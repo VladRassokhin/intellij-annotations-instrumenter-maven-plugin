@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2012 JetBrains s.r.o.
+ * Copyright 2000-2013 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,12 +130,12 @@ public abstract class AbstractNotNullInstrumenterTask extends org.apache.maven.p
     }
 
     private static int getClassFileVersion(@NotNull final ClassReader reader) {
-        final int[] classfileVersion = new int[1];
+        final int[] classFileVersion = new int[1];
         reader.accept(new ClassVisitor(Opcodes.ASM4) {
             public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-                classfileVersion[0] = version;
+                classFileVersion[0] = version;
             }
         }, 0);
-        return classfileVersion[0];
+        return classFileVersion[0];
     }
 }
