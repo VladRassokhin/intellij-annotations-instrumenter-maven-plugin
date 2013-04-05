@@ -34,7 +34,7 @@
     <orderEntry type="library" name="Maven: org.sonatype.aether:aether-impl:1.13.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.maven.plugin-tools:maven-plugin-annotations:3.1" level="project" />
     <orderEntry type="library" name="Maven: org.jetbrains.intellij:annotations:117.157" level="project" />
-    <orderEntry type="library" name="Maven: org.ow2.asm:asm:4.0" level="project" />
+    <orderEntry type="library" name="Maven: org.ow2.asm:asm:4.1" level="project" />
   </component>
 </module>
 
