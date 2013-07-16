@@ -54,7 +54,7 @@ public class InstrumentationClassFinder {
     // look into classpath
     final Resource resource = myClasspath.getResource(resourceName, false);
     if (resource == null) {
-      throw new ClassNotFoundException("Class not found: " + internalName);
+        is = ClassLoader.getSystemResourceAsStream(resourceName);
     } else {
       is = resource.getInputStream();
     }
