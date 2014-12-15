@@ -39,7 +39,7 @@
         <maven-core.version>3.0.5</maven-core.version>
         <maven-plugin-annotations.version>3.2</maven-plugin-annotations.version>
         <intellij-annotations.version>117.157</intellij-annotations.version>
-        <asm.version>4.1</asm.version>
+        <asm.version>5.0.3</asm.version>
     </properties>
 
     <licenses>
