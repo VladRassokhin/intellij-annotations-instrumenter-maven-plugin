@@ -178,7 +178,7 @@ public class InstrumentationClassFinder {
     public int myModifiers;
 
     private V() {
-      super(Opcodes.ASM4);
+      super(Opcodes.ASM5);
     }
 
     public void visit(int version, int access, String pName, String signature, String pSuperName, String[] pInterfaces) {

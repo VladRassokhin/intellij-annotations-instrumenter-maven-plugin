@@ -36,7 +36,7 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
   private static final String CONSTRUCTOR_NAME = "<init>";
 
   public NotNullVerifyingInstrumenter(final ClassVisitor classVisitor) {
-    super(Opcodes.ASM4, classVisitor);
+    super(Opcodes.ASM5, classVisitor);
   }
 
   public boolean isModification() {
@@ -57,7 +57,7 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
     final Type[] args = Type.getArgumentTypes(desc);
     final Type returnType = Type.getReturnType(desc);
     final MethodVisitor v = cv.visitMethod(access, name, desc, signature, exceptions);
-    return new MethodVisitor(Opcodes.ASM4, v) {
+    return new MethodVisitor(Opcodes.ASM5, v) {
 
       private final ArrayList<Integer> myNotNullParams = new ArrayList<Integer>();
       private int mySyntheticCount = 0;
@@ -130,7 +130,7 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
         mv.visitTypeInsn(NEW, exceptionClass);
         mv.visitInsn(DUP);
         mv.visitLdcInsn(descr);
-        mv.visitMethodInsn(INVOKESPECIAL, exceptionClass, CONSTRUCTOR_NAME, exceptionParamClass);
+        mv.visitMethodInsn(INVOKESPECIAL, exceptionClass, CONSTRUCTOR_NAME, exceptionParamClass, false);
         mv.visitInsn(ATHROW);
         mv.visitLabel(end);
 

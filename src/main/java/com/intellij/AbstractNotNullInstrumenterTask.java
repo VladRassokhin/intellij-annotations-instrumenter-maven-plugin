@@ -131,7 +131,7 @@ public abstract class AbstractNotNullInstrumenterTask extends org.apache.maven.p
 
     private static int getClassFileVersion(@NotNull final ClassReader reader) {
         final int[] classFileVersion = new int[1];
-        reader.accept(new ClassVisitor(Opcodes.ASM4) {
+        reader.accept(new ClassVisitor(Opcodes.ASM5) {
             public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
                 classFileVersion[0] = version;
             }
