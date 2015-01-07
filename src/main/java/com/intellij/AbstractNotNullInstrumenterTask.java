@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.intellij;
 
 import com.intellij.compiler.instrumentation.InstrumentationClassFinder;
@@ -41,6 +40,7 @@ import java.util.*;
  */
 public abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
 
+    @SuppressWarnings("UnusedDeclaration")
     @Component
     protected MavenProject project;
 

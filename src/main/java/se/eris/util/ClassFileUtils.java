@@ -15,13 +15,13 @@ import java.util.Set;
 public class ClassFileUtils {
 
     @NotNull
-    public static Set<File> collectClassFiles(@NotNull final Path start) {
+    public static Set<File> collectClassFiles(@NotNull final Path rootDir) {
         try {
             final ClassFileCollector collector = new ClassFileCollector();
-            Files.walkFileTree(start, collector);
+            Files.walkFileTree(rootDir, collector);
             return collector.getClassFiles();
         } catch (final IOException e) {
-            throw new RuntimeException("Could not collect class files for directory '" + start + "'", e);
+            throw new RuntimeException("Could not collect class files in directory '" + rootDir + "'", e);
         }
     }
 
