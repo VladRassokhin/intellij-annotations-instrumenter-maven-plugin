@@ -25,7 +25,7 @@ import org.objectweb.asm.ClassWriter;
 public class InstrumenterClassWriter extends ClassWriter {
   private final InstrumentationClassFinder myFinder;
 
-  public InstrumenterClassWriter(int flags, final InstrumentationClassFinder finder) {
+  public InstrumenterClassWriter(final int flags, final InstrumentationClassFinder finder) {
     super(flags);
     myFinder = finder;
   }
@@ -52,7 +52,7 @@ public class InstrumenterClassWriter extends ClassWriter {
         return c.getName();
       }
     }
-    catch (Exception e) {
+    catch (final Exception e) {
       throw new RuntimeException(e.toString(), e);
     }
   }

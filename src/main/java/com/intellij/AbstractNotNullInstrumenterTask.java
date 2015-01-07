@@ -19,18 +19,19 @@ package com.intellij;
 import com.intellij.compiler.instrumentation.InstrumentationClassFinder;
 import com.intellij.compiler.instrumentation.InstrumenterClassWriter;
 import com.intellij.compiler.notNullVerification.NotNullVerifyingInstrumenter;
+import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.project.MavenProject;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
+import se.eris.asm.AsmUtils;
+import se.eris.util.ClassFileUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -38,34 +39,35 @@ import java.util.*;
 /**
  * @author Vladislav.Rassokhin
  */
-public abstract class AbstractNotNullInstrumenterTask extends org.apache.maven.plugin.AbstractMojo {
-    @Component
-    protected org.apache.maven.project.MavenProject project;
+public abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
 
-    protected void instrument(@NotNull final String directory, @NotNull final List<String> classpathElements) throws MojoExecutionException {
-        final ArrayList<URL> urls = new ArrayList<URL>();
+    @Component
+    protected MavenProject project;
+
+    protected void instrument(@NotNull final String classesDirectory, @NotNull final List<String> classpathElements) throws MojoExecutionException {
+        final List<URL> urls = new ArrayList<URL>();
         try {
-            for (String cp : classpathElements) {
+            for (final String cp : classpathElements) {
                 urls.add(new File(cp).toURI().toURL());
             }
-        } catch (MalformedURLException e) {
+        } catch (final MalformedURLException e) {
             throw new MojoExecutionException("Cannot convert classpath element into URL", e);
         }
         final InstrumentationClassFinder finder = new InstrumentationClassFinder(urls.toArray(new URL[urls.size()]));
-        int instrumented = instrumentDirectoryRecursive(new File(directory), finder);
+        final int instrumented = instrumentDirectoryRecursive(new File(classesDirectory), finder);
         getLog().info("Added @NotNull assertions to " + instrumented + " files");
     }
 
-    private int instrumentDirectoryRecursive(@NotNull final File dir, @NotNull final InstrumentationClassFinder finder) throws MojoExecutionException {
+    private int instrumentDirectoryRecursive(@NotNull final File classesDirectory, @NotNull final InstrumentationClassFinder finder) throws MojoExecutionException {
         int instrumented = 0;
-        final Collection<File> classes = collectClasses(dir);
+        final Collection<File> classes = ClassFileUtils.collectClassFiles(classesDirectory.toPath());
         for (@NotNull final File file : classes) {
             getLog().debug("Adding @NotNull assertions to " + file.getPath());
             try {
                 instrumented += instrumentClass(file, finder) ? 1 : 0;
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 getLog().warn("Failed to instrument @NotNull assertion for " + file.getPath() + ": " + e.getMessage());
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new MojoExecutionException("@NotNull instrumentation failed for " + file.getPath() + ": " + e.toString(), e);
             }
         }
@@ -75,15 +77,15 @@ public abstract class AbstractNotNullInstrumenterTask extends org.apache.maven.p
     private boolean instrumentClass(@NotNull final File file, @NotNull final InstrumentationClassFinder finder) throws java.io.IOException {
         final FileInputStream inputStream = new FileInputStream(file);
         try {
-            ClassReader reader = new ClassReader(inputStream);
+            final ClassReader classReader = new ClassReader(inputStream);
 
-            int version = getClassFileVersion(reader);
+            final int fileVersion = getClassFileVersion(classReader);
 
-            if (version != Opcodes.V1_1 && version >= Opcodes.V1_5) {
-                ClassWriter writer = new InstrumenterClassWriter(getAsmClassWriterFlags(version), finder);
+            if (javaVersionSupportsAnnotations(fileVersion)) {
+                final ClassWriter writer = new InstrumenterClassWriter(getAsmClassWriterFlags(fileVersion), finder);
 
                 final NotNullVerifyingInstrumenter instrumenter = new NotNullVerifyingInstrumenter(writer);
-                reader.accept(instrumenter, 0);
+                classReader.accept(instrumenter, 0);
                 if (instrumenter.isModification()) {
                     final FileOutputStream fileOutputStream = new FileOutputStream(file);
                     try {
@@ -100,39 +102,21 @@ public abstract class AbstractNotNullInstrumenterTask extends org.apache.maven.p
         return false;
     }
 
-    @NotNull
-    private static Collection<File> collectClasses(@NotNull final File directory) {
-        final HashSet<File> classes = new HashSet<File>();
-        final Queue<File> queue = new LinkedList<File>();
-        queue.add(directory);
-        while (!queue.isEmpty()) {
-            File dir = queue.poll();
-            File[] files = dir.listFiles();
-            if (files == null) {
-                continue;
-            }
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    queue.add(file);
-                } else if (file.isFile() && file.getName().endsWith(".class")) {
-                    classes.add(file);
-                }
-            }
-        }
-        return classes;
+    private boolean javaVersionSupportsAnnotations(final int version) {
+        return AsmUtils.asmOpcodeToJavaVersion(version) >= 5;
     }
 
     /**
      * @return the flags for class writer
      */
-    private static int getAsmClassWriterFlags(int version) {
-        return version >= Opcodes.V1_6 && version != Opcodes.V1_1 ? ClassWriter.COMPUTE_FRAMES : ClassWriter.COMPUTE_MAXS;
+    private static int getAsmClassWriterFlags(final int version) {
+        return AsmUtils.asmOpcodeToJavaVersion(version) >= 6 ? ClassWriter.COMPUTE_FRAMES : ClassWriter.COMPUTE_MAXS;
     }
 
     private static int getClassFileVersion(@NotNull final ClassReader reader) {
         final int[] classFileVersion = new int[1];
         reader.accept(new ClassVisitor(Opcodes.ASM5) {
-            public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+            public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
                 classFileVersion[0] = version;
             }
         }, 0);

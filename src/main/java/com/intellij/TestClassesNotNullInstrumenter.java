@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.intellij;
 
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
@@ -37,7 +36,7 @@ public class TestClassesNotNullInstrumenter extends AbstractNotNullInstrumenterT
     public void execute() throws MojoExecutionException {
         try {
             instrument(project.getBuild().getTestOutputDirectory(), project.getTestClasspathElements());
-        } catch (DependencyResolutionRequiredException e) {
+        } catch (final DependencyResolutionRequiredException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
