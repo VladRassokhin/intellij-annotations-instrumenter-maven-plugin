@@ -15,7 +15,7 @@ import java.util.Set;
 public class ClassFileUtils {
 
     @NotNull
-    public static Set<File> collectClassFiles(@NotNull final Path rootDir) {
+    public static Set<File> getClassFiles(@NotNull final Path rootDir) {
         try {
             final ClassFileCollector collector = new ClassFileCollector();
             Files.walkFileTree(rootDir, collector);

@@ -13,7 +13,7 @@ public class ClassFileUtilsTest {
 
     @Test
     public void collectClassFiles() {
-        final Set<File> classFiles = ClassFileUtils.collectClassFiles(new File("target/classes").toPath());
+        final Set<File> classFiles = ClassFileUtils.getClassFiles(new File("target/classes").toPath());
 
         assertThat(classFiles, hasSize(greaterThan(0)));
     }

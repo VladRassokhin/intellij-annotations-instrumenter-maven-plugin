@@ -59,19 +59,19 @@ public abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     }
 
     private int instrumentDirectoryRecursive(@NotNull final File classesDirectory, @NotNull final InstrumentationClassFinder finder) throws MojoExecutionException {
-        int instrumented = 0;
-        final Collection<File> classes = ClassFileUtils.collectClassFiles(classesDirectory.toPath());
+        int instrumentedCounter = 0;
+        final Collection<File> classes = ClassFileUtils.getClassFiles(classesDirectory.toPath());
         for (@NotNull final File file : classes) {
             getLog().debug("Adding @NotNull assertions to " + file.getPath());
             try {
-                instrumented += instrumentClass(file, finder) ? 1 : 0;
+                instrumentedCounter += instrumentClass(file, finder) ? 1 : 0;
             } catch (final IOException e) {
                 getLog().warn("Failed to instrument @NotNull assertion for " + file.getPath() + ": " + e.getMessage());
-            } catch (final Exception e) {
+            } catch (final RuntimeException e) {
                 throw new MojoExecutionException("@NotNull instrumentation failed for " + file.getPath() + ": " + e.toString(), e);
             }
         }
-        return instrumented;
+        return instrumentedCounter;
     }
 
     private boolean instrumentClass(@NotNull final File file, @NotNull final InstrumentationClassFinder finder) throws java.io.IOException {
