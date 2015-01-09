@@ -17,8 +17,7 @@ package com.intellij.compiler.instrumentation;
 
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.Opcodes;
+import se.eris.asm.ClassInfoVisitor;
 import sun.misc.Resource;
 
 import java.io.*;
@@ -78,25 +77,7 @@ public class InstrumentationClassFinder {
 
         reader.accept(visitor, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
 
-        return new PseudoClass(this, visitor.myName, visitor.mySuperclassName, visitor.myInterfaces, visitor.myModifiers);
-    }
-
-    private static class ClassInfoVisitor extends ClassVisitor {
-        public String mySuperclassName = null;
-        public String[] myInterfaces = null;
-        public String myName = null;
-        public int myModifiers;
-
-        private ClassInfoVisitor() {
-            super(Opcodes.ASM5);
-        }
-
-        public void visit(final int version, final int access, final String pName, final String signature, final String pSuperName, final String[] pInterfaces) {
-            mySuperclassName = pSuperName;
-            myInterfaces = pInterfaces;
-            myName = pName;
-            myModifiers = access;
-        }
+        return new PseudoClass(this, visitor.getClassInfo());
     }
 
 }

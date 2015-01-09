@@ -53,12 +53,7 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
         return myIsModification;
     }
 
-    public void visit(final int version,
-                      final int access,
-                      final String name,
-                      final String signature,
-                      final String superName,
-                      final String[] interfaces) {
+    public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
         myClassName = name;
     }
@@ -72,15 +67,16 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
 
     private class InstrumenterMethodVisitorThrow extends MethodVisitor {
 
-        private final ArrayList<Integer> myNotNullParams;
-
         private final Type[] argumentTypes;
+
         private final Type returnType;
         private final int access;
         private final String name;
+        private final ArrayList<Integer> myNotNullParams;
         private int mySyntheticCount;
         private boolean myIsNotNull;
         private Label myStartGeneratedCodeLabel;
+
         public InstrumenterMethodVisitorThrow(@Nullable final MethodVisitor v, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String name) {
             super(Opcodes.ASM5, v);
             this.argumentTypes = argumentTypes;
@@ -124,7 +120,7 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
         }
 
         /**
-         * Starts the visit of the method's code, if any (i.e. non abstract method).
+         * Starts the visit of the method's code, if any (ie non abstract method).
          */
         public void visitCode() {
             if (!myNotNullParams.isEmpty()) {
@@ -157,7 +153,7 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
         }
 
         /**
-         * Visits a zero operand instruction.
+         * Visits a zero operand instruction (ie return).
          *
          * {@inheritDoc}
          */

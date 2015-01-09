@@ -62,16 +62,23 @@ public abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
         int instrumentedCounter = 0;
         final Collection<File> classes = ClassFileUtils.getClassFiles(classesDirectory.toPath());
         for (@NotNull final File file : classes) {
-            getLog().debug("Adding @NotNull assertions to " + file.getPath());
-            try {
-                instrumentedCounter += instrumentClass(file, finder) ? 1 : 0;
-            } catch (final IOException e) {
-                getLog().warn("Failed to instrument @NotNull assertion for " + file.getPath() + ": " + e.getMessage());
-            } catch (final RuntimeException e) {
-                throw new MojoExecutionException("@NotNull instrumentation failed for " + file.getPath() + ": " + e.toString(), e);
-            }
+            instrumentedCounter += instrumentFile(file, finder);
         }
         return instrumentedCounter;
+    }
+
+    private int instrumentFile(@NotNull final File file, @NotNull final InstrumentationClassFinder finder) throws MojoExecutionException {
+        getLog().debug("Adding @NotNull assertions to " + file.getPath());
+        try {
+            return instrumentClass(file, finder) ? 1 : 0;
+        }
+        catch (final IOException e) {
+            getLog().warn("Failed to instrument @NotNull assertion for " + file.getPath() + ": " + e.getMessage());
+        }
+        catch (final RuntimeException e) {
+            throw new MojoExecutionException("@NotNull instrumentation failed for " + file.getPath() + ": " + e.toString(), e);
+        }
+        return 0;
     }
 
     private boolean instrumentClass(@NotNull final File file, @NotNull final InstrumentationClassFinder finder) throws java.io.IOException {
@@ -81,7 +88,7 @@ public abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
 
             final int fileVersion = getClassFileVersion(classReader);
 
-            if (javaVersionSupportsAnnotations(fileVersion)) {
+            if (AsmUtils.javaVersionSupportsAnnotations(fileVersion)) {
                 final ClassWriter writer = new InstrumenterClassWriter(getAsmClassWriterFlags(fileVersion), finder);
 
                 final NotNullVerifyingInstrumenter instrumenter = new NotNullVerifyingInstrumenter(writer, new HashSet<String>());
@@ -100,10 +107,6 @@ public abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
             inputStream.close();
         }
         return false;
-    }
-
-    private boolean javaVersionSupportsAnnotations(final int version) {
-        return AsmUtils.asmOpcodeToJavaVersion(version) >= 5;
     }
 
     /**

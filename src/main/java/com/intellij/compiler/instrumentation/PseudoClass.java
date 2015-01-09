@@ -15,52 +15,44 @@
  */
 package com.intellij.compiler.instrumentation;
 
-import org.objectweb.asm.Opcodes;
+import org.jetbrains.annotations.NotNull;
+import se.eris.asm.ClassInfo;
 
 import java.io.IOException;
 
-/**
-* Describe class/interface here.
-*/
 public final class PseudoClass {
     private static final PseudoClass[] EMPTY_PSEUDOCLASS_ARRAY = new PseudoClass[0];
 
     private InstrumentationClassFinder instrumentationClassFinder;
-    private final String myName;
-    private final String mySuperClass;
-    private final String[] myInterfaces;
-    private final int myModifiers;
+    private ClassInfo classInfo;
 
-    PseudoClass(final InstrumentationClassFinder instrumentationClassFinder, final String name, final String superClass, final String[] interfaces, final int modifiers) {
+    public PseudoClass(@NotNull final InstrumentationClassFinder instrumentationClassFinder, @NotNull final ClassInfo classInfo) {
         this.instrumentationClassFinder = instrumentationClassFinder;
-        myName = name;
-        mySuperClass = superClass;
-        myInterfaces = interfaces;
-        myModifiers = modifiers;
+        this.classInfo = classInfo;
     }
 
     public boolean isInterface() {
-        return (myModifiers & Opcodes.ACC_INTERFACE) > 0;
+        return classInfo.isInterface();
     }
 
     public String getName() {
-        return myName;
+        return classInfo.getName();
     }
 
     public PseudoClass getSuperClass() throws IOException, ClassNotFoundException {
-        final String superClass = mySuperClass;
+        final String superClass = classInfo.getSuperName();
         return superClass != null ? instrumentationClassFinder.loadClass(superClass) : null;
     }
 
     private PseudoClass[] getInterfaces() throws IOException, ClassNotFoundException {
-        if (myInterfaces == null) {
+        if (classInfo.getInterfaces() == null) {
             return EMPTY_PSEUDOCLASS_ARRAY;
         }
 
-        final PseudoClass[] result = new PseudoClass[myInterfaces.length];
+        final PseudoClass[] result = new PseudoClass[classInfo.getInterfaces().length];
 
         for (int i = 0; i < result.length; i++) {
-            result[i] = instrumentationClassFinder.loadClass(myInterfaces[i]);
+            result[i] = instrumentationClassFinder.loadClass(classInfo.getInterfaces()[i]);
         }
 
         return result;
