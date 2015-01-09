@@ -22,6 +22,7 @@ import org.objectweb.asm.*;
 import se.eris.asm.AsmUtils;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * @author ven
@@ -30,16 +31,22 @@ import java.util.ArrayList;
  */
 public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcodes {
     public static final String LJAVA_LANG_SYNTHETIC_ANNO = "Ljava/lang/Synthetic;";
-    private boolean myIsModification = false;
-    private String myClassName;
     public static final String NOT_NULL = "org/jetbrains/annotations/NotNull";
     public static final String NOT_NULL_ANNO = "L" + NOT_NULL + ";";
     public static final String IAE_CLASS_NAME = "java/lang/IllegalArgumentException";
     public static final String ISE_CLASS_NAME = "java/lang/IllegalStateException";
     private static final String CONSTRUCTOR_NAME = "<init>";
 
-    public NotNullVerifyingInstrumenter(final ClassVisitor classVisitor) {
+    private String myClassName;
+    private boolean myIsModification = false;
+    private final Set<String> notNullAnnotations;
+
+    public NotNullVerifyingInstrumenter(@NotNull final ClassVisitor classVisitor, @NotNull final Set<String> notNullAnnotations) {
         super(Opcodes.ASM5, classVisitor);
+        this.notNullAnnotations = notNullAnnotations;
+        if (this.notNullAnnotations.isEmpty()) {
+            this.notNullAnnotations.add(NOT_NULL_ANNO);
+        }
     }
 
     public boolean isModification() {
@@ -92,7 +99,7 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
          */
         public AnnotationVisitor visitParameterAnnotation(final int parameter, final String annotation, final boolean visible) {
             final AnnotationVisitor av = mv.visitParameterAnnotation(parameter, annotation, visible);
-            if (AsmUtils.isReferenceType(argumentTypes[parameter]) && annotation.equals(NOT_NULL_ANNO)) {
+            if (AsmUtils.isReferenceType(argumentTypes[parameter]) && notNullAnnotations.contains(annotation)) {
                 myNotNullParams.add(parameter);
             } else if (annotation.equals(LJAVA_LANG_SYNTHETIC_ANNO)) {
                 // See asm r1278 for what we do this,
@@ -126,8 +133,7 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
             }
             for (final Integer myNotNullParam : myNotNullParams) {
                 int var = ((access & ACC_STATIC) == 0) ? 1 : 0;
-                final int param = myNotNullParam;
-                for (int i = 0; i < param; ++i) {
+                for (int i = 0; i < myNotNullParam; ++i) {
                     var += argumentTypes[i].getSize();
                 }
                 mv.visitVarInsn(ALOAD, var);
@@ -135,7 +141,7 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
                 final Label end = new Label();
                 mv.visitJumpInsn(IFNONNULL, end);
 
-                generateThrow(IAE_CLASS_NAME, "Argument " + (param - mySyntheticCount) + " for @NotNull parameter of " + myClassName + "." + name + " must not be null", end);
+                generateThrow(IAE_CLASS_NAME, "Argument " + (myNotNullParam - mySyntheticCount) + " for @NotNull parameter of " + myClassName + "." + name + " must not be null", end);
             }
         }
 

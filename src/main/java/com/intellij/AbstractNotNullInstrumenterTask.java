@@ -84,7 +84,7 @@ public abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
             if (javaVersionSupportsAnnotations(fileVersion)) {
                 final ClassWriter writer = new InstrumenterClassWriter(getAsmClassWriterFlags(fileVersion), finder);
 
-                final NotNullVerifyingInstrumenter instrumenter = new NotNullVerifyingInstrumenter(writer);
+                final NotNullVerifyingInstrumenter instrumenter = new NotNullVerifyingInstrumenter(writer, new HashSet<String>());
                 classReader.accept(instrumenter, 0);
                 if (instrumenter.isModification()) {
                     final FileOutputStream fileOutputStream = new FileOutputStream(file);
