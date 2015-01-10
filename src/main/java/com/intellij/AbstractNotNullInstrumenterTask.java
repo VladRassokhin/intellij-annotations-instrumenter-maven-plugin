@@ -21,6 +21,7 @@ import com.intellij.compiler.notNullVerification.NotNullVerifyingInstrumenter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassReader;
@@ -44,7 +45,12 @@ public abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     @Component
     protected MavenProject project;
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    @Parameter
+    private List<String> annotations;
+
     protected void instrument(@NotNull final String classesDirectory, @NotNull final List<String> classpathElements) throws MojoExecutionException {
+        final Set<String> notNullAnnotations = getNotNullAnnotations();
         final List<URL> urls = new ArrayList<URL>();
         try {
             for (final String cp : classpathElements) {
@@ -54,34 +60,55 @@ public abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
             throw new MojoExecutionException("Cannot convert classpath element into URL", e);
         }
         final InstrumentationClassFinder finder = new InstrumentationClassFinder(urls.toArray(new URL[urls.size()]));
-        final int instrumented = instrumentDirectoryRecursive(new File(classesDirectory), finder);
+        final int instrumented = instrumentDirectoryRecursive(new File(classesDirectory), finder, notNullAnnotations);
         getLog().info("Added @NotNull assertions to " + instrumented + " files");
     }
 
-    private int instrumentDirectoryRecursive(@NotNull final File classesDirectory, @NotNull final InstrumentationClassFinder finder) throws MojoExecutionException {
+    @NotNull
+    private Set<String> getNotNullAnnotations() {
+        final Set<String> notNullAnnotations = new HashSet<String>();
+        if (isConfigurationOverrideAnnotations()) {
+            notNullAnnotations.addAll(annotations);
+            logAnnotations();
+        } else {
+            notNullAnnotations.add(NotNull.class.getName());
+        }
+        return notNullAnnotations;
+    }
+
+    private void logAnnotations() {
+        getLog().info("Using the following NotNull annotations:");
+        for (final String notNullAnnotation : annotations) {
+            getLog().info("  " + notNullAnnotation);
+        }
+    }
+
+    private boolean isConfigurationOverrideAnnotations() {
+        return annotations != null && !annotations.isEmpty();
+    }
+
+    private int instrumentDirectoryRecursive(@NotNull final File classesDirectory, @NotNull final InstrumentationClassFinder finder, @NotNull final Set<String> notNullAnnotations) throws MojoExecutionException {
         int instrumentedCounter = 0;
         final Collection<File> classes = ClassFileUtils.getClassFiles(classesDirectory.toPath());
         for (@NotNull final File file : classes) {
-            instrumentedCounter += instrumentFile(file, finder);
+            instrumentedCounter += instrumentFile(file, finder, notNullAnnotations);
         }
         return instrumentedCounter;
     }
 
-    private int instrumentFile(@NotNull final File file, @NotNull final InstrumentationClassFinder finder) throws MojoExecutionException {
+    private int instrumentFile(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, @NotNull final Set<String> notNullAnnotations) throws MojoExecutionException {
         getLog().debug("Adding @NotNull assertions to " + file.getPath());
         try {
-            return instrumentClass(file, finder) ? 1 : 0;
-        }
-        catch (final IOException e) {
+            return instrumentClass(file, finder, notNullAnnotations) ? 1 : 0;
+        } catch (final IOException e) {
             getLog().warn("Failed to instrument @NotNull assertion for " + file.getPath() + ": " + e.getMessage());
-        }
-        catch (final RuntimeException e) {
+        } catch (final RuntimeException e) {
             throw new MojoExecutionException("@NotNull instrumentation failed for " + file.getPath() + ": " + e.toString(), e);
         }
         return 0;
     }
 
-    private boolean instrumentClass(@NotNull final File file, @NotNull final InstrumentationClassFinder finder) throws java.io.IOException {
+    private boolean instrumentClass(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, @NotNull final Set<String> notNullAnnotations) throws java.io.IOException {
         final FileInputStream inputStream = new FileInputStream(file);
         try {
             final ClassReader classReader = new ClassReader(inputStream);
@@ -91,7 +118,7 @@ public abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
             if (AsmUtils.javaVersionSupportsAnnotations(fileVersion)) {
                 final ClassWriter writer = new InstrumenterClassWriter(getAsmClassWriterFlags(fileVersion), finder);
 
-                final NotNullVerifyingInstrumenter instrumenter = new NotNullVerifyingInstrumenter(writer, new HashSet<String>());
+                final NotNullVerifyingInstrumenter instrumenter = new NotNullVerifyingInstrumenter(writer, notNullAnnotations);
                 classReader.accept(instrumenter, 0);
                 if (instrumenter.isModification()) {
                     final FileOutputStream fileOutputStream = new FileOutputStream(file);
