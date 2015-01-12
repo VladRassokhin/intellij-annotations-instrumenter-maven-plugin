@@ -12,9 +12,10 @@ import static org.junit.Assert.*;
 public class ClassFileUtilsTest {
 
     @Test
-    public void collectClassFiles() {
+    public void getClassFiles() {
         final Set<File> classFiles = ClassFileUtils.getClassFiles(new File("target/classes").toPath());
 
         assertThat(classFiles, hasSize(greaterThan(0)));
     }
+
 }

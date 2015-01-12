@@ -31,4 +31,5 @@ public class AsmUtilsTest {
         assertThat(AsmUtils.asmOpcodeToJavaVersion(Opcodes.V1_6), is(6));
         assertThat(AsmUtils.asmOpcodeToJavaVersion(Opcodes.V1_7), is(7));
     }
+
 }
