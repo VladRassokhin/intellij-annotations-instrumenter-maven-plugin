@@ -5,12 +5,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class TestNotNull {
 
-    public static void main(final String[] args) {
-        System.out.println("args = " + Arrays.toString(args));
-        notNullParameter("");
+    public static void notNullParameter(@NotNull final String s) {
     }
 
-    public static void notNullParameter(@NotNull final String s) {
+    @NotNull
+    public static String notNullReturn(final String s) {
+        return s;
     }
 
 }
