@@ -6,11 +6,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import se.eris.maven.NopLogWrapper;
+import se.eris.util.ReflectionUtil;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -45,32 +45,20 @@ public class NotNullInstrumenterTest {
     public void parameterFT() throws Exception {
         final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
-        simulateMethodCall(notNullParameterMethod, "should work");
+        ReflectionUtil.simulateMethodCall(notNullParameterMethod, "should work");
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Argument 0 for @NotNull parameter of se/eris/test/TestNotNull.notNullParameter must not be null");
-        simulateMethodCall(notNullParameterMethod, new Object[]{null});
+        ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
 
     @Test
     public void returnFT() throws Exception {
         final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
         final Method notNullReturnMethod = c.getMethod("notNullReturn", String.class);
-        simulateMethodCall(notNullReturnMethod, "should work");
-        exception.expect(IllegalArgumentException.class);
+        ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
+        exception.expect(IllegalStateException.class);
         exception.expectMessage("@NotNull method se/eris/test/TestNotNull.notNullReturn must not return null");
-        simulateMethodCall(notNullReturnMethod, new Object[]{null});
-    }
-
-    private void simulateMethodCall(@NotNull final Method notNullReturnMethod, @NotNull final Object... params) throws IllegalAccessException, InvocationTargetException {
-        try {
-            notNullReturnMethod.invoke(null, params);
-        } catch (final InvocationTargetException e) {
-            if (e.getCause() instanceof RuntimeException) {
-                throw RuntimeException.class.cast(e.getCause());
-            } else {
-                throw e;
-            }
-        }
+        ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null});
     }
 
     @NotNull
