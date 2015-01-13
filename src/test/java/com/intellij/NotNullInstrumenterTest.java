@@ -1,6 +1,5 @@
 package com.intellij;
 
-import org.hamcrest.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -46,18 +45,32 @@ public class NotNullInstrumenterTest {
     public void parameterFT() throws Exception {
         final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
-        notNullParameterMethod.invoke(null, "should work");
-        exception.expect(ExceptionCauseMatcher.causeMatcher(new IllegalArgumentException("Argument 0 for @NotNull parameter of se/eris/test/TestNotNull.notNullParameter must not be null")));
-        notNullParameterMethod.invoke(null, (String) null);
+        simulateMethodCall(notNullParameterMethod, "should work");
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Argument 0 for @NotNull parameter of se/eris/test/TestNotNull.notNullParameter must not be null");
+        simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
 
     @Test
     public void returnFT() throws Exception {
         final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
         final Method notNullReturnMethod = c.getMethod("notNullReturn", String.class);
-        notNullReturnMethod.invoke(null, "should work");
-        exception.expect(ExceptionCauseMatcher.causeMatcher(new IllegalStateException("@NotNull method se/eris/test/TestNotNull.notNullReturn must not return null")));
-        notNullReturnMethod.invoke(null, (String) null);
+        simulateMethodCall(notNullReturnMethod, "should work");
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("@NotNull method se/eris/test/TestNotNull.notNullReturn must not return null");
+        simulateMethodCall(notNullReturnMethod, new Object[]{null});
+    }
+
+    private void simulateMethodCall(@NotNull final Method notNullReturnMethod, @NotNull final Object... params) throws IllegalAccessException, InvocationTargetException {
+        try {
+            notNullReturnMethod.invoke(null, params);
+        } catch (final InvocationTargetException e) {
+            if (e.getCause() instanceof RuntimeException) {
+                throw RuntimeException.class.cast(e.getCause());
+            } else {
+                throw e;
+            }
+        }
     }
 
     @NotNull
@@ -78,41 +91,4 @@ public class NotNullInstrumenterTest {
         assertThat(compilationResult, is(0));
     }
 
-    private static class ExceptionCauseMatcher extends TypeSafeMatcher<Exception> {
-
-        @NotNull
-        private RuntimeException expectedException;
-
-        private ExceptionCauseMatcher(@NotNull final RuntimeException expectedException) {
-            super(InvocationTargetException.class);
-            this.expectedException = expectedException;
-        }
-
-        @Override
-        public boolean matchesSafely(@NotNull final Exception exception) {
-            final Throwable cause = exception.getCause();
-            return classesMatch(cause) && messagesMatch(expectedException, cause);
-        }
-
-        private boolean messagesMatch(@NotNull final Exception exception, @NotNull final Throwable cause) {
-            return cause.getMessage().equals(exception.getMessage());
-        }
-
-        private boolean classesMatch(@NotNull final Throwable cause) {
-            return cause.getClass().equals(expectedException.getClass());
-        }
-
-        public void describeTo(@NotNull final Description description) {
-          description.appendText(expectedException.toString());
-        }
-
-        protected void describeMismatchSafely(final Exception item, @NotNull final Description mismatchDescription) {
-            super.describeMismatch(item.getCause(), mismatchDescription);
-        }
-
-        @Factory
-        public static Matcher<Exception> causeMatcher(@NotNull final RuntimeException expectedException) {
-          return new ExceptionCauseMatcher(expectedException);
-        }
-    }
 }
