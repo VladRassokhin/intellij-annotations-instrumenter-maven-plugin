@@ -36,6 +36,40 @@ Just update your pom.xml with following:
     </build>
 ```
 
+Use other and/or multiple annotations
+==============================================
+By default only the annotation org.jetbrains.annotations.NotNull is supported if you
+want to one or more other annotations add them to configuration, for example:
+```xml
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.intellij</groupId>
+                <artifactId>notnull-instrumenter-maven-plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>instrument</goal>
+                            <goal>tests-instrument</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <annotations>
+                        <param>org.jetbrains.annotations.NotNull</param>
+                        <param>javax.validation.constraints.NotNull</param>
+                    </annotations>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+```
+Will instrument both jetbrains and javax annotations.
+
+Note that configuration will replace the default annotations, so org.jetbrains.annotations.NotNull will
+no longer be included by default thus it must be added again if used (as in the above example).
+
 License Information
 ==============================================
 Copyright 2000-2012 JetBrains s.r.o.

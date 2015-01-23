@@ -1,5 +1,6 @@
-package com.intellij;
+package se.eris;
 
+import com.intellij.NotNullInstrumenter;
 import org.jetbrains.annotations.NotNull;
 import org.junit.BeforeClass;
 import org.junit.Rule;
