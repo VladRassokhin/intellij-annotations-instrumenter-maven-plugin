@@ -30,6 +30,7 @@ import java.util.*;
 
 /**
  * @author Vladislav.Rassokhin
+ * @author Olle Sundblad
  */
 public abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
 

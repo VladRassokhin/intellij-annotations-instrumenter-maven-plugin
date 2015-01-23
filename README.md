@@ -3,6 +3,12 @@ intellij-annotations-instrumenter-maven-plugin
 
 IntelliJ IDEA annotations instrumenter maven plugin
 
+This code is based on VladRassokhin's intellij-annotations-instrumenter-maven-plugin. The following
+significant changes have been made:
+* Added configuration: which annotations to instrument
+* Added functional and unit tests
+* A lot of refactoring to allow the other changes
+
 Usage
 ==============================================
 Just update your pom.xml with following: 
@@ -72,6 +78,13 @@ no longer be included by default thus it must be added again if used (as in the 
 
 License Information
 ==============================================
+Copyright 2013-2015 Olle Sundblad
+
+Licensed under the Apache License, Version 2.0 (the "License");
+
+
+Original License:
+
 Copyright 2000-2012 JetBrains s.r.o.
 
 Licensed under the Apache License, Version 2.0 (the "License");

@@ -20,6 +20,10 @@ import se.eris.asm.ClassInfo;
 
 import java.io.IOException;
 
+/**
+ * @author Eugene Zhuravlev
+ * @author Olle Sundblad
+ */
 public final class PseudoClass {
     private static final PseudoClass[] EMPTY_PSEUDOCLASS_ARRAY = new PseudoClass[0];
 

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.intellij.compiler.instrumentation;
 
 import sun.misc.Resource;
@@ -25,9 +24,6 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-/**
-* Describe class/interface here.
-*/
 class ClassFinderClasspath {
     private static final String FILE_PROTOCOL = "file";
 

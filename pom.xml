@@ -21,7 +21,7 @@
 
     <name>IntelliJ Annotations Instrumenter</name>
 
-    <groupId>com.intellij</groupId>
+    <groupId>se.eris.notnull</groupId>
     <artifactId>notnull-instrumenter-maven-plugin</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
@@ -38,7 +38,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven-core.version>3.0.5</maven-core.version>
         <maven-plugin-annotations.version>3.2</maven-plugin-annotations.version>
-        <intellij-annotations.version>117.157</intellij-annotations.version>
+        <intellij-annotations.version>13.0</intellij-annotations.version>
         <asm.version>5.0.3</asm.version>
         <junit.version>4.12</junit.version>
     </properties>
@@ -52,30 +52,43 @@
         </license>
     </licenses>
 
-    <scm>
-        <url>http://github.com/JetBrains/intellij-community/tree/master/platform/annotations</url>
-    </scm>
+    <developers>
+        <developer>
+            <name>Olle Sundblad</name>
+            <email>olle@eris.se</email>
+        </developer>
+        <developer>
+            <name>Vlad Rassokhin</name>
+        </developer>
+        <developer>
+            <name>Eugene Zhuravlev</name>
+        </developer>
+        <developer>
+            <name>Alexander Torstling</name>
+        </developer>
+        <developer>
+            <name>ven</name>
+        </developer>
+    </developers>
 
     <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
         <repository>
-            <id>idea-community-builds</id>
-            <name>IntelliJ IDEA Community Edition Builds</name>
-            <url>http://repository.jetbrains.com/idea-community-builds/</url>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>repository.jetbrains.com</id>
-            <url>http://repository.jetbrains.com/idea-community-builds</url>
-        </pluginRepository>
-    </pluginRepositories>
-    <repositories>
-        <repository>
-            <id>repository.jetbrains.com</id>
-            <url>http://repository.jetbrains.com/idea-community-builds</url>
-        </repository>
-    </repositories>
+    <scm>
+        <url>https://github.com/osundblad/intellij-annotations-instrumenter-maven-plugin</url>
+        <connection>scm:git:git@github.com:osundblad/intellij-annotations-instrumenter-maven-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:osundblad/intellij-annotations-instrumenter-maven-plugin.git
+        </developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 
     <dependencies>
         <dependency>
@@ -94,7 +107,7 @@
             <version>${maven-plugin-annotations.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jetbrains.intellij</groupId>
+            <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>${intellij-annotations.version}</version>
         </dependency>
@@ -119,6 +132,28 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.3</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <useReleaseProfile>false</useReleaseProfile>
+                    <releaseProfiles>release</releaseProfiles>
+                    <goals>deploy</goals>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
                 <version>${maven-plugin-annotations.version}</version>
@@ -136,5 +171,55 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>2.4</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.10.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
