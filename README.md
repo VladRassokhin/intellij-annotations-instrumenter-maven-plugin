@@ -3,32 +3,32 @@ intellij-annotations-instrumenter-maven-plugin
 
 IntelliJ IDEA annotations instrumenter maven plugin
 
-This code is based on VladRassokhin's intellij-annotations-instrumenter-maven-plugin. The following
+This code is based on Vlad Rassokhin's intellij-annotations-instrumenter-maven-plugin. The following
 significant changes have been made:
-* Added configuration: which annotations to instrument
-* Added functional and unit tests
-* A lot of refactoring to allow the other changes
+* Added Java 8 bytecode support
+* Added configuration: which "NotNull" annotations to instrument
+* Added unit and functional tests
+* Isolated Maven plugin dependencies to allow usage without Maven
 
 Usage
 ==============================================
 Just update your pom.xml with following: 
-```xml
-    <pluginRepositories>
-        <pluginRepository>
-            <id>repository.jetbrains.com</id>
-            <name>repository.jetbrains.com-all</name>
-            <url>http://repository.jetbrains.com/all</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>15.0</version>
+        </dependency>
+        ...
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
-                <groupId>com.intellij</groupId>
+                <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>0.2</version>
                 <executions>
                     <execution>
                         <goals>
@@ -38,23 +38,24 @@ Just update your pom.xml with following:
                     </execution>
                 </executions>
             </plugin>
+            ...
         </plugins>
     </build>
-```
 
 Use other and/or multiple annotations
 ==============================================
 By default only the annotation org.jetbrains.annotations.NotNull is supported if you
 want to one or more other annotations add them to configuration, for example:
-```xml
+
     <build>
         <plugins>
             <plugin>
-                <groupId>com.intellij</groupId>
+                <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>0.2</version>
                 <executions>
                     <execution>
+                        <id>instrument</id>
                         <goals>
                             <goal>instrument</goal>
                             <goal>tests-instrument</goal>
@@ -70,7 +71,7 @@ want to one or more other annotations add them to configuration, for example:
             </plugin>
         </plugins>
     </build>
-```
+
 Will instrument both jetbrains and javax annotations.
 
 Note that configuration will replace the default annotations, so org.jetbrains.annotations.NotNull will
@@ -78,7 +79,7 @@ no longer be included by default thus it must be added again if used (as in the 
 
 License Information
 ==============================================
-Copyright 2013-2015 Olle Sundblad
+Copyright 2013-2015 Eris IT AB
 
 Licensed under the Apache License, Version 2.0 (the "License");
 
