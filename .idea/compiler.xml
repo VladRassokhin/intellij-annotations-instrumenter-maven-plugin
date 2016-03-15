@@ -19,10 +19,14 @@
       </profile>
       <profile default="false" name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
         <module name="notnull-instrumenter-maven-plugin" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="notnull-instrumenter-maven-plugin" target="1.5" />
+    </bytecodeTargetLevel>
   </component>
 </project>
-
