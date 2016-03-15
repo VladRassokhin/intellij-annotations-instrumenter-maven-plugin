@@ -34,7 +34,7 @@ public final class AsmUtils {
 
     /**
      * @return the Java version as an integer (ie. 1, 2, 3, ... 8)
-     * @param versionOpcode
+     * @param versionOpcode .
      */
     public static int asmOpcodeToJavaVersion(final int versionOpcode) {
         return versionOpcode % (3 << 16) - 44;
