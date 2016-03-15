@@ -22,7 +22,7 @@
 
     <groupId>se.eris</groupId>
     <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
     <packaging>maven-plugin</packaging>
 
     <description>IntelliJ IDEA annotations instrumenter maven plugin</description>
@@ -88,7 +88,7 @@
         <developerConnection>scm:git:git@github.com:osundblad/intellij-annotations-instrumenter-maven-plugin.git
         </developerConnection>
         <url>https://github.com/osundblad/intellij-annotations-instrumenter-maven-plugin</url>
-        <tag>notnull-instrumenter-maven-plugin-1.0</tag>
+        <tag>notnull-instrumenter-maven-plugin-0.1</tag>
     </scm>
 
     <dependencies>
