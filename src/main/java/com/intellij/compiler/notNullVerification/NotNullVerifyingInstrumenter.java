@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * @author ven
  * @author Vladislav.Rassokhin
- * @noinspection HardCodedStringLiteral
+ * noinspection HardCodedStringLiteral
  */
 public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcodes {
     public static final String LJAVA_LANG_SYNTHETIC_ANNO = "Ljava/lang/Synthetic;";
