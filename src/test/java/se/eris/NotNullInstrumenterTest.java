@@ -53,8 +53,6 @@ public class NotNullInstrumenterTest {
         final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", Collections.singleton("org.jetbrains.annotations.NotNull"), Collections.<URL>emptyList());
 
         assertThat(numberOfInstrumentedFiles, is(1));
-
-
     }
 
     @Test

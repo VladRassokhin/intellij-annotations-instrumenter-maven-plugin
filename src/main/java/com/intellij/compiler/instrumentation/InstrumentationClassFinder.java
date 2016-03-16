@@ -36,10 +36,10 @@ public class InstrumentationClassFinder {
     @NotNull
     private final Map<String, PseudoClass> myLoaded = new HashMap<>(); // className -> class object
     @NotNull
-    private final ClassFinderClasspath myClasspath;
+    private final ClassFinderClasspath classpath;
 
     public InstrumentationClassFinder(final URL[] cp) {
-        myClasspath = new ClassFinderClasspath(cp);
+        classpath = new ClassFinderClasspath(cp);
     }
 
     @NotNull
@@ -52,7 +52,7 @@ public class InstrumentationClassFinder {
 
         final String resourceName = internalName + CLASS_RESOURCE_EXTENSION;
         // look into classpath
-        final Resource resource = myClasspath.getResource(resourceName);
+        final Resource resource = classpath.getResource(resourceName);
         final InputStream is;
         if (resource == null) {
             is = ClassLoader.getSystemResourceAsStream(resourceName);

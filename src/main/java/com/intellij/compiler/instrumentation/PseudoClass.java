@@ -49,14 +49,15 @@ final class PseudoClass {
     }
 
     private PseudoClass[] getInterfaces() throws IOException, ClassNotFoundException {
-        if (classInfo.getInterfaces() == null) {
+        final String[] interfaces = classInfo.getInterfaces();
+        if (interfaces.length == 0) {
             return EMPTY_PSEUDOCLASS_ARRAY;
         }
 
-        final PseudoClass[] result = new PseudoClass[classInfo.getInterfaces().length];
+        final PseudoClass[] result = new PseudoClass[interfaces.length];
 
         for (int i = 0; i < result.length; i++) {
-            result[i] = instrumentationClassFinder.loadClass(classInfo.getInterfaces()[i]);
+            result[i] = instrumentationClassFinder.loadClass(interfaces[i]);
         }
 
         return result;

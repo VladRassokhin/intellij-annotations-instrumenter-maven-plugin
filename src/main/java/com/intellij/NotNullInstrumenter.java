@@ -86,7 +86,7 @@ public class NotNullInstrumenter {
 
                 final NotNullVerifyingInstrumenter instrumenter = new NotNullVerifyingInstrumenter(writer, notNullAnnotations);
                 classReader.accept(instrumenter, 0);
-                if (instrumenter.isModification()) {
+                if (instrumenter.isInstrumented()) {
                     try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
                         fileOutputStream.write(writer.toByteArray());
                         return true;

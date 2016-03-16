@@ -32,7 +32,7 @@ public class ClassInfo {
     private final String signature;
     @Nullable
     private final String superName;
-    @Nullable
+    @NotNull
     private final String[] interfaces;
 
     public ClassInfo(final int version, final int access, @NotNull final String name, @NotNull final String signature, @Nullable final String superName, @Nullable final String[] interfaces) {
@@ -41,7 +41,7 @@ public class ClassInfo {
         this.name = name;
         this.signature = signature;
         this.superName = superName;
-        this.interfaces = interfaces;
+        this.interfaces = interfaces == null ? new String[0] : interfaces;
     }
 
     public int getVersion() {
@@ -67,7 +67,7 @@ public class ClassInfo {
         return superName;
     }
 
-    @Nullable
+    @NotNull
     public String[] getInterfaces() {
         return interfaces;
     }
