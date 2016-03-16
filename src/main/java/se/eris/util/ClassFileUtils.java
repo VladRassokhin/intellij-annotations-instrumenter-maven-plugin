@@ -41,7 +41,7 @@ public class ClassFileUtils {
     }
 
     private static class ClassFileCollector extends SimpleFileVisitor<Path> {
-        private final Set<File> classFiles = new HashSet<File>();
+        private final Set<File> classFiles = new HashSet<>();
 
         @Override
         public FileVisitResult visitFile(@NotNull final Path path, @NotNull final BasicFileAttributes attrs) throws IOException {

@@ -23,30 +23,32 @@ import org.apache.maven.project.MavenProject;
 import org.jetbrains.annotations.NotNull;
 import se.eris.maven.MavenLogWrapper;
 
-import java.io.*;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Vladislav.Rassokhin
  * @author Olle Sundblad
  */
-public abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
+abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
 
-    @SuppressWarnings("UnusedDeclaration")
     @Component
-    protected MavenProject project;
+    MavenProject project;
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Parameter
     private List<String> annotations;
 
-    private NotNullInstrumenter instrumenter = new NotNullInstrumenter(new MavenLogWrapper(getLog()));
+    private final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new MavenLogWrapper(getLog()));
 
-    protected void instrument(@NotNull final String classesDirectory, @NotNull final List<String> classpathElements) throws MojoExecutionException {
+    void instrument(@NotNull final String classesDirectory, @NotNull final List<String> classpathElements) throws MojoExecutionException {
         final Set<String> notNullAnnotations = getNotNullAnnotations();
-        final List<URL> urls = new ArrayList<URL>();
+        final List<URL> urls = new ArrayList<>();
         try {
             for (final String cp : classpathElements) {
                 urls.add(new File(cp).toURI().toURL());
@@ -54,17 +56,17 @@ public abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
         }
         catch (final MalformedURLException e) {
             throw new MojoExecutionException("Cannot convert classpath element into URL", e);
-            }
+        }
         catch (final RuntimeException e) {
             throw new MojoExecutionException(e.getMessage(), e.getCause());
         }
-            final int instrumented = instrumenter.addNotNullAnnotations(classesDirectory, notNullAnnotations, urls);
+        final int instrumented = instrumenter.addNotNullAnnotations(classesDirectory, notNullAnnotations, urls);
         getLog().info("Added @NotNull assertions to " + instrumented + " files");
     }
 
     @NotNull
     private Set<String> getNotNullAnnotations() {
-        final Set<String> notNullAnnotations = new HashSet<String>();
+        final Set<String> notNullAnnotations = new HashSet<>();
         if (isConfigurationOverrideAnnotations()) {
             notNullAnnotations.addAll(annotations);
             logAnnotations();

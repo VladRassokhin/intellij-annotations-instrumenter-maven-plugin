@@ -31,9 +31,9 @@ import java.util.Set;
  * noinspection HardCodedStringLiteral
  */
 public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcodes {
-    public static final String LJAVA_LANG_SYNTHETIC_ANNO = "Ljava/lang/Synthetic;";
-    public static final String IAE_CLASS_NAME = "java/lang/IllegalArgumentException";
-    public static final String ISE_CLASS_NAME = "java/lang/IllegalStateException";
+    private static final String LJAVA_LANG_SYNTHETIC_ANNO = "Ljava/lang/Synthetic;";
+    private static final String IAE_CLASS_NAME = "java/lang/IllegalArgumentException";
+    private static final String ISE_CLASS_NAME = "java/lang/IllegalStateException";
     private static final String CONSTRUCTOR_NAME = "<init>";
 
     private String myClassName;
@@ -42,7 +42,7 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
 
     public NotNullVerifyingInstrumenter(@NotNull final ClassVisitor classVisitor, @NotNull final Set<String> notNullAnnotations) {
         super(Opcodes.ASM5, classVisitor);
-        this.notNullAnnotations = new HashSet<String>();
+        this.notNullAnnotations = new HashSet<>();
         for (@NotNull final String annotation : notNullAnnotations) {
             this.notNullAnnotations.add(LangUtils.convertToJavaClassName(annotation));
         }
@@ -82,7 +82,7 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
             this.returnType = returnType;
             this.access = access;
             this.name = name;
-            myNotNullParams = new ArrayList<Integer>();
+            myNotNullParams = new ArrayList<>();
             mySyntheticCount = 0;
             myIsNotNull = false;
         }

@@ -24,7 +24,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 /**
  * @author Vladislav.Rassokhin
  */
-@SuppressWarnings("UnusedDeclaration")
+@SuppressWarnings({"UnusedDeclaration", "DefaultAnnotationParam"})
 @Mojo(
         name = "tests-instrument",
         defaultPhase = LifecyclePhase.PROCESS_TEST_CLASSES,
@@ -36,7 +36,8 @@ public class TestClassesNotNullInstrumenter extends AbstractNotNullInstrumenterT
     public void execute() throws MojoExecutionException {
         try {
             instrument(project.getBuild().getTestOutputDirectory(), project.getTestClasspathElements());
-        } catch (final DependencyResolutionRequiredException e) {
+        }
+        catch (final DependencyResolutionRequiredException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }

@@ -43,7 +43,7 @@ import java.util.Set;
 public class NotNullInstrumenter {
 
     @NotNull
-    private LogWrapper logger;
+    private final LogWrapper logger;
 
     public NotNullInstrumenter(@NotNull final LogWrapper logWrapper) {
         logger = logWrapper;
@@ -76,8 +76,7 @@ public class NotNullInstrumenter {
     }
 
     private static boolean instrumentClass(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, @NotNull final Set<String> notNullAnnotations) throws IOException {
-        final FileInputStream inputStream = new FileInputStream(file);
-        try {
+        try (FileInputStream inputStream = new FileInputStream(file)) {
             final ClassReader classReader = new ClassReader(inputStream);
 
             final int fileVersion = getClassFileVersion(classReader);
@@ -88,17 +87,12 @@ public class NotNullInstrumenter {
                 final NotNullVerifyingInstrumenter instrumenter = new NotNullVerifyingInstrumenter(writer, notNullAnnotations);
                 classReader.accept(instrumenter, 0);
                 if (instrumenter.isModification()) {
-                    final FileOutputStream fileOutputStream = new FileOutputStream(file);
-                    try {
+                    try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
                         fileOutputStream.write(writer.toByteArray());
                         return true;
-                    } finally {
-                        fileOutputStream.close();
                     }
                 }
             }
-        } finally {
-            inputStream.close();
         }
         return false;
     }

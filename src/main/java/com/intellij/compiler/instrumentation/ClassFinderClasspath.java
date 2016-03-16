@@ -27,11 +27,11 @@ import java.util.zip.ZipFile;
 class ClassFinderClasspath {
     private static final String FILE_PROTOCOL = "file";
 
-    private final Stack<URL> myUrls = new Stack<URL>();
-    private final List<Loader> myLoaders = new ArrayList<Loader>();
-    private final Map<URL, Loader> myLoadersMap = new HashMap<URL, Loader>();
+    private final Stack<URL> myUrls = new Stack<>();
+    private final List<Loader> myLoaders = new ArrayList<>();
+    private final Map<URL, Loader> myLoadersMap = new HashMap<>();
 
-    public ClassFinderClasspath(final URL[] urls) {
+    ClassFinderClasspath(final URL[] urls) {
         if (urls.length > 0) {
             for (int i = urls.length - 1; i >= 0; i--) {
                 myUrls.push(urls[i]);
@@ -49,7 +49,7 @@ class ClassFinderClasspath {
         while (i < len) {
             final char c = s.charAt(i);
             if (c == '%') {
-                final List<Integer> bytes = new ArrayList<Integer>();
+                final List<Integer> bytes = new ArrayList<>();
                 while (i + 2 < len && s.charAt(i) == '%') {
                     final int d1 = decode(s.charAt(i + 1));
                     final int d2 = decode(s.charAt(i + 2));
@@ -92,7 +92,7 @@ class ClassFinderClasspath {
         return -1;
     }
 
-    public Resource getResource(final String s) {
+    Resource getResource(final String s) {
         int i = 0;
         for (Loader loader; (loader = getLoader(i)) != null; i++) {
             final Resource resource = loader.getResource(s);
@@ -158,17 +158,16 @@ class ClassFinderClasspath {
 
 
     private abstract static class Loader {
-        protected static final String JAR_PROTOCOL = "jar";
-        protected static final String FILE_PROTOCOL = "file";
+        static final String JAR_PROTOCOL = "jar";
+        static final String FILE_PROTOCOL = "file";
 
         private final URL myURL;
 
-        protected Loader(final URL url) {
+        Loader(final URL url) {
             myURL = url;
         }
 
-
-        protected URL getBaseURL() {
+        URL getBaseURL() {
             return myURL;
         }
 
@@ -218,7 +217,7 @@ class ClassFinderClasspath {
             private final URL myUrl;
             private final File myFile;
 
-            public FileResource(final String name, final URL url, final File file, final boolean willLoadBytes) throws IOException {
+            FileResource(final String name, final URL url, final File file, final boolean willLoadBytes) throws IOException {
                 myName = name;
                 myUrl = url;
                 myFile = file;
@@ -305,7 +304,7 @@ class ClassFinderClasspath {
             private final ZipEntry myEntry;
             private final URL myUrl;
 
-            public JarResource(final ZipEntry name, final URL url) {
+            JarResource(final ZipEntry name, final URL url) {
                 myEntry = name;
                 myUrl = url;
             }

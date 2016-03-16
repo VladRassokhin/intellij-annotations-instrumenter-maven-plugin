@@ -20,9 +20,11 @@ import org.objectweb.asm.ClassReader;
 import se.eris.asm.ClassInfoVisitor;
 import sun.misc.Resource;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Eugene Zhuravlev
@@ -32,7 +34,7 @@ public class InstrumentationClassFinder {
     private static final String CLASS_RESOURCE_EXTENSION = ".class";
 
     @NotNull
-    private final Map<String, PseudoClass> myLoaded = new HashMap<String, PseudoClass>(); // className -> class object
+    private final Map<String, PseudoClass> myLoaded = new HashMap<>(); // className -> class object
     @NotNull
     private final ClassFinderClasspath myClasspath;
 
@@ -41,17 +43,17 @@ public class InstrumentationClassFinder {
     }
 
     @NotNull
-    public PseudoClass loadClass(final String name) throws IOException, ClassNotFoundException {
+    PseudoClass loadClass(final String name) throws IOException, ClassNotFoundException {
         final String internalName = name.replace('.', '/'); // normalize
         final PseudoClass aClass = myLoaded.get(internalName);
         if (aClass != null) {
             return aClass;
         }
 
-        final InputStream is;
         final String resourceName = internalName + CLASS_RESOURCE_EXTENSION;
         // look into classpath
         final Resource resource = myClasspath.getResource(resourceName);
+        final InputStream is;
         if (resource == null) {
             is = ClassLoader.getSystemResourceAsStream(resourceName);
         } else {

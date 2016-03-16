@@ -24,26 +24,26 @@ import java.io.IOException;
  * @author Eugene Zhuravlev
  * @author Olle Sundblad
  */
-public final class PseudoClass {
+final class PseudoClass {
     private static final PseudoClass[] EMPTY_PSEUDOCLASS_ARRAY = new PseudoClass[0];
 
-    private InstrumentationClassFinder instrumentationClassFinder;
-    private ClassInfo classInfo;
+    private final InstrumentationClassFinder instrumentationClassFinder;
+    private final ClassInfo classInfo;
 
-    public PseudoClass(@NotNull final InstrumentationClassFinder instrumentationClassFinder, @NotNull final ClassInfo classInfo) {
+    PseudoClass(@NotNull final InstrumentationClassFinder instrumentationClassFinder, @NotNull final ClassInfo classInfo) {
         this.instrumentationClassFinder = instrumentationClassFinder;
         this.classInfo = classInfo;
     }
 
-    public boolean isInterface() {
+    boolean isInterface() {
         return classInfo.isInterface();
     }
 
-    public String getName() {
+    String getName() {
         return classInfo.getName();
     }
 
-    public PseudoClass getSuperClass() throws IOException, ClassNotFoundException {
+    PseudoClass getSuperClass() throws IOException, ClassNotFoundException {
         final String superClass = classInfo.getSuperName();
         return superClass != null ? instrumentationClassFinder.loadClass(superClass) : null;
     }
@@ -94,7 +94,7 @@ public final class PseudoClass {
         return false;
     }
 
-    public boolean isAssignableFrom(final PseudoClass x) throws IOException, ClassNotFoundException {
+    boolean isAssignableFrom(final PseudoClass x) throws IOException, ClassNotFoundException {
         if (this.equals(x)) {
             return true;
         }
