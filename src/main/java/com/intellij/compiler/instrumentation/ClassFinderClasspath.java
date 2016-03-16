@@ -15,7 +15,9 @@
  */
 package com.intellij.compiler.instrumentation;
 
-import sun.misc.Resource;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import se.eris.notnull.instrumentation.Resource;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -68,7 +70,8 @@ class ClassFinderClasspath {
                     try {
                         decoded.append(new String(bytesArray, "UTF-8"));
                         continue;
-                    } catch (final UnsupportedEncodingException ignored) {
+                    }
+                    catch (final UnsupportedEncodingException ignored) {
                     }
                 }
             }
@@ -124,7 +127,8 @@ class ClassFinderClasspath {
                 if (loader == null) {
                     continue;
                 }
-            } catch (final IOException ioexception) {
+            }
+            catch (final IOException ioexception) {
                 continue;
             }
 
@@ -139,7 +143,8 @@ class ClassFinderClasspath {
         String s;
         try {
             s = url.toURI().getSchemeSpecificPart();
-        } catch (final URISyntaxException thisShouldNotHappen) {
+        }
+        catch (final URISyntaxException thisShouldNotHappen) {
             thisShouldNotHappen.printStackTrace();
             s = url.getFile();
         }
@@ -176,7 +181,7 @@ class ClassFinderClasspath {
     }
 
     private static class FileLoader extends Loader {
-        private final File myRootDir;
+        private final File rootDir;
 
         FileLoader(final URL url) {
             super(url);
@@ -184,12 +189,12 @@ class ClassFinderClasspath {
                 throw new IllegalArgumentException("url");
             } else {
                 final String s = unescapePercentSequences(url.getFile().replace('/', File.separatorChar));
-                myRootDir = new File(s);
+                rootDir = new File(s);
             }
         }
 
         public Resource getResource(final String name) {
-            URL url = null;
+            final URL url;
             File file = null;
 
             try {
@@ -198,14 +203,16 @@ class ClassFinderClasspath {
                     return null;
                 }
 
-                file = new File(myRootDir, name.replace('/', File.separatorChar));
+                file = new File(rootDir, name.replace('/', File.separatorChar));
                 // check means we load or process resource so we check its existence via old way
-                return new FileLoader.FileResource(name, url, file, true);
-            } catch (final Exception exception) {
+                return new FileLoader.FileResource(file, true);
+            }
+            catch (final Exception exception) {
                 if (file != null && file.exists()) {
                     try {   // we can not open the file if it is directory, Resource still can be created
-                        return new FileLoader.FileResource(name, url, file, false);
-                    } catch (final IOException ignored) {
+                        return new FileLoader.FileResource(file, false);
+                    }
+                    catch (final IOException ignored) {
                     }
                 }
             }
@@ -213,44 +220,27 @@ class ClassFinderClasspath {
         }
 
         private class FileResource extends Resource {
-            private final String myName;
-            private final URL myUrl;
-            private final File myFile;
+            private final File file;
 
-            FileResource(final String name, final URL url, final File file, final boolean willLoadBytes) throws IOException {
-                myName = name;
-                myUrl = url;
-                myFile = file;
-                if (willLoadBytes) getByteBuffer(); // check for existence by creating cached file input stream
+            FileResource(final File file, final boolean willLoadBytes) throws IOException {
+                this.file = file;
+                if (willLoadBytes) {
+                    getByteBuffer(); // check for existence by creating cached file input stream
+                }
             }
 
-            public String getName() {
-                return myName;
-            }
-
-            public URL getURL() {
-                return myUrl;
-            }
-
-            public URL getCodeSourceURL() {
-                return getBaseURL();
-            }
-
+            @NotNull
             public InputStream getInputStream() throws IOException {
-                return new BufferedInputStream(new FileInputStream(myFile));
-            }
-
-            public int getContentLength() throws IOException {
-                return -1;
+                return new BufferedInputStream(new FileInputStream(file));
             }
 
             public String toString() {
-                return myFile.getAbsolutePath();
+                return file.getAbsolutePath();
             }
         }
 
         public String toString() {
-            return "FileLoader [" + myRootDir + "]";
+            return "FileLoader [" + rootDir + "]";
         }
     }
 
@@ -291,36 +281,24 @@ class ClassFinderClasspath {
                 if (file != null) {
                     final ZipEntry entry = file.getEntry(name);
                     if (entry != null) {
-                        return new JarLoader.JarResource(entry, new URL(getBaseURL(), name));
+                        return new JarLoader.JarResource(entry);
                     }
                 }
-            } catch (final Exception e) {
+            }
+            catch (final Exception e) {
                 return null;
             }
             return null;
         }
 
         private class JarResource extends Resource {
-            private final ZipEntry myEntry;
-            private final URL myUrl;
+            private final ZipEntry zipEntry;
 
-            JarResource(final ZipEntry name, final URL url) {
-                myEntry = name;
-                myUrl = url;
+            JarResource(final ZipEntry zipEntry) {
+                this.zipEntry = zipEntry;
             }
 
-            public String getName() {
-                return myEntry.getName();
-            }
-
-            public URL getURL() {
-                return myUrl;
-            }
-
-            public URL getCodeSourceURL() {
-                return myURL;
-            }
-
+            @Nullable
             public InputStream getInputStream() throws IOException {
                 try {
                     final ZipFile file = acquireZipFile();
@@ -328,21 +306,19 @@ class ClassFinderClasspath {
                         return null;
                     }
 
-                    final InputStream inputStream = file.getInputStream(myEntry);
+                    final InputStream inputStream = file.getInputStream(zipEntry);
                     if (inputStream == null) {
                         return null; // if entry was not found
                     }
                     return new FilterInputStream(inputStream) {
                     };
-                } catch (final IOException e) {
+                }
+                catch (final IOException e) {
                     e.printStackTrace();
                     return null;
                 }
             }
 
-            public int getContentLength() {
-                return (int) myEntry.getSize();
-            }
         }
 
         public String toString() {

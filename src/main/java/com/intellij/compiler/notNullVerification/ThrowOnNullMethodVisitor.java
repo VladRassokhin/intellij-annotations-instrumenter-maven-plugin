@@ -99,9 +99,9 @@ class ThrowOnNullMethodVisitor extends MethodVisitor {
             startGeneratedCodeLabel = new Label();
             mv.visitLabel(startGeneratedCodeLabel);
         }
-        for (final Integer myNotNullParam : notNullParams) {
+        for (final Integer notNullParam : notNullParams) {
             int var = ((access & Opcodes.ACC_STATIC) == 0) ? 1 : 0;
-            for (int i = 0; i < myNotNullParam; ++i) {
+            for (int i = 0; i < notNullParam; ++i) {
                 var += argumentTypes[i].getSize();
             }
             mv.visitVarInsn(Opcodes.ALOAD, var);
@@ -109,7 +109,7 @@ class ThrowOnNullMethodVisitor extends MethodVisitor {
             final Label end = new Label();
             mv.visitJumpInsn(Opcodes.IFNONNULL, end);
 
-            generateThrow(IAE_CLASS_NAME, "Argument " + (myNotNullParam - syntheticCount) + " for @NotNull parameter of " + className + "." + methodName + " must not be null", end);
+            generateThrow(IAE_CLASS_NAME, "Argument " + (notNullParam - syntheticCount) + " for @NotNull parameter of " + className + "." + methodName + " must not be null", end);
         }
     }
 

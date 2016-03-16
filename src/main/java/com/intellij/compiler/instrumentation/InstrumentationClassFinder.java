@@ -18,7 +18,7 @@ package com.intellij.compiler.instrumentation;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassReader;
 import se.eris.asm.ClassInfoVisitor;
-import sun.misc.Resource;
+import se.eris.notnull.instrumentation.Resource;
 
 import java.io.IOException;
 import java.io.InputStream;
