@@ -42,6 +42,8 @@ import java.util.Set;
  */
 public class NotNullInstrumenter {
 
+    private static final int NO_FLAGS = 0;
+
     @NotNull
     private final LogWrapper logger;
 
@@ -84,9 +86,9 @@ public class NotNullInstrumenter {
             if (AsmUtils.javaVersionSupportsAnnotations(fileVersion)) {
                 final ClassWriter writer = new InstrumenterClassWriter(getAsmClassWriterFlags(fileVersion), finder);
 
-                final NotNullVerifyingInstrumenter instrumenter = new NotNullVerifyingInstrumenter(writer, notNullAnnotations);
-                classReader.accept(instrumenter, 0);
-                if (instrumenter.isInstrumented()) {
+                final NotNullVerifyingInstrumenter instrumentingVisitor = new NotNullVerifyingInstrumenter(writer, notNullAnnotations);
+                classReader.accept(instrumentingVisitor, NO_FLAGS);
+                if (instrumentingVisitor.hasInstrumented()) {
                     try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
                         fileOutputStream.write(writer.toByteArray());
                         return true;

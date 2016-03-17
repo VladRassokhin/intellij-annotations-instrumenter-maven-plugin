@@ -30,7 +30,7 @@ public abstract class Resource {
     public abstract InputStream getInputStream() throws IOException;
 
     @Nullable
-    public ByteBuffer getByteBuffer() throws IOException {
+    protected ByteBuffer getByteBuffer() throws IOException {
         final InputStream is = this.cachedInputStream();
         return is instanceof ByteBuffered ? ((ByteBuffered) is).getByteBuffer() : null;
     }

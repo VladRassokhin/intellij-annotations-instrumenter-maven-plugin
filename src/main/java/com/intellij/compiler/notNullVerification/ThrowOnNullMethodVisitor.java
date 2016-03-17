@@ -167,7 +167,7 @@ class ThrowOnNullMethodVisitor extends MethodVisitor {
         return notNullAnnotations.contains(annotation);
     }
 
-    boolean isInstrumented() {
+    boolean hasInstrumented() {
         return instrumented;
     }
 }

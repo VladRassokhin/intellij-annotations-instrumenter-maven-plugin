@@ -62,9 +62,9 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
         return visitor;
     }
 
-    public boolean isInstrumented() {
+    public boolean hasInstrumented() {
         for (final ThrowOnNullMethodVisitor methodVisitor : methodVisitors) {
-            if (methodVisitor.isInstrumented()) {
+            if (methodVisitor.hasInstrumented()) {
                 return true;
             }
         }
