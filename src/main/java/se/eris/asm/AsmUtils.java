@@ -24,8 +24,8 @@ public final class AsmUtils {
     }
 
     public static boolean isReferenceType(@NotNull final Type type) {
-        final int typeSort = type.getSort();
-        return typeSort == Type.OBJECT || typeSort == Type.ARRAY;
+        final int sort = type.getSort();
+        return sort == Type.OBJECT || sort == Type.ARRAY;
     }
 
     public static boolean javaVersionSupportsAnnotations(final int opcodeVersion) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Eris IT AB
+ * Copyright 2013-2016 Eris IT AB
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import java.util.Collections;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class NotNullInstrumenterTest {
+public class ImplicitNotNullInstrumenterTest {
 
     public static final File SRC_DIR = new File("src/test/data");
     public static final File TARGET_DIR = new File("src/test/data");
@@ -45,12 +45,12 @@ public class NotNullInstrumenterTest {
     public ExpectedException exception = ExpectedException.none();
 
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws Exception {
         final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/test/TestNotNull.java");
         compile(fileToCompile);
 
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
-        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", Collections.singleton("org.jetbrains.annotations.NotNull"), Collections.<URL>emptyList());
+        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", Collections.<String>emptySet(), Collections.<URL>emptyList());
 
         assertThat(numberOfInstrumentedFiles, is(1));
     }
@@ -65,6 +65,23 @@ public class NotNullInstrumenterTest {
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
 
+    @Test
+    public void parameter_implicit() throws Exception {
+        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
+        final Method implicitParameterMethod = c.getMethod("implicitParameter", String.class);
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Argument 0 for @NotNull parameter of se/eris/test/TestNotNull.implicitParameter must not be null");
+        ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null});
+    }
+
+    @Test
+    public void parameter_nullable() throws Exception {
+        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
+        final Method implicitParameterMethod = c.getMethod("nullableParameter", String.class);
+        ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null});
+    }
+
+    // todo
     @Test
     public void returnFT() throws Exception {
         final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");

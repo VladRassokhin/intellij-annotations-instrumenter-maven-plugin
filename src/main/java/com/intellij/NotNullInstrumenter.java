@@ -51,7 +51,7 @@ public class NotNullInstrumenter {
         logger = logWrapper;
     }
 
-    public int addNotNullAnnotations(@NotNull final String classesDirectory, @NotNull final Set<String> notNullAnnotations,@NotNull final  List<URL> urls) {
+    public int addNotNullAnnotations(@NotNull final String classesDirectory, @NotNull final Set<String> notNullAnnotations, @NotNull final List<URL> urls) {
         final InstrumentationClassFinder finder = new InstrumentationClassFinder(urls.toArray(new URL[urls.size()]));
         return instrumentDirectoryRecursive(new File(classesDirectory), finder, notNullAnnotations);
     }
@@ -65,13 +65,15 @@ public class NotNullInstrumenter {
         return instrumentedCounter;
     }
 
-    private int instrumentFile(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, @NotNull final Set<String> notNullAnnotations)  {
+    private int instrumentFile(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, @NotNull final Set<String> notNullAnnotations) {
         logger.debug("Adding @NotNull assertions to " + file.getPath());
         try {
             return instrumentClass(file, finder, notNullAnnotations) ? 1 : 0;
-        } catch (final IOException e) {
+        }
+        catch (final IOException e) {
             logger.warn("Failed to instrument @NotNull assertion for " + file.getPath() + ": " + e.getMessage());
-        } catch (final RuntimeException e) {
+        }
+        catch (final RuntimeException e) {
             throw new InstrumenterExecutionException("@NotNull instrumentation failed for " + file.getPath() + ": " + e.toString(), e);
         }
         return 0;

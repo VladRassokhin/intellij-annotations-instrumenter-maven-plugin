@@ -22,6 +22,7 @@ import se.eris.asm.AsmUtils;
 import se.eris.lang.LangUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -46,8 +47,8 @@ class ThrowOnNullMethodVisitor extends MethodVisitor {
     private Label startGeneratedCodeLabel;
     private boolean instrumented;
 
-    ThrowOnNullMethodVisitor(@Nullable final MethodVisitor v, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> notNullAnnotations) {
-        super(Opcodes.ASM5, v);
+    ThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> notNullAnnotations) {
+        super(Opcodes.ASM5, methodVisitor);
         this.argumentTypes = argumentTypes;
         this.returnType = returnType;
         this.access = access;
@@ -58,17 +59,30 @@ class ThrowOnNullMethodVisitor extends MethodVisitor {
         syntheticCount = 0;
         returnIsNotNull = false;
         instrumented = false;
+        if (isImplicitNotNull()) {
+            addImplicitNotNulls();
+        }
+    }
+
+    private boolean isImplicitNotNull() {
+        return notNullAnnotations.isEmpty();
     }
 
     /**
      * Visits an annotation of a parameter this method.
-     *
+     * <p>
      * {@inheritDoc}
      */
     public AnnotationVisitor visitParameterAnnotation(final int parameter, final String annotation, final boolean visible) {
         final AnnotationVisitor av = mv.visitParameterAnnotation(parameter, annotation, visible);
-        if (AsmUtils.isReferenceType(argumentTypes[parameter]) && isNotNullAnnotation(annotation)) {
-            notNullParams.add(parameter);
+        if (AsmUtils.isReferenceType(argumentTypes[parameter])) {
+            if (isImplicitNotNull()) {
+                if (isNullableAnnotation(annotation)) {
+                    notNullParams.removeAll(Collections.singleton(parameter));
+                }
+            } else if (isNotNullAnnotation(annotation)) {
+                notNullParams.add(parameter);
+            }
         } else if (annotation.equals(LJAVA_LANG_SYNTHETIC_ANNO)) {
             // See asm r1278 for what we do this,
             // http://forge.objectweb.org/tracker/index.php?func=detail&aid=307392&group_id=23&atid=100023
@@ -79,7 +93,7 @@ class ThrowOnNullMethodVisitor extends MethodVisitor {
 
     /**
      * Visits an annotation of this method.
-     *
+     * <p>
      * {@inheritDoc}
      */
     public AnnotationVisitor visitAnnotation(final String annotation, final boolean visible) {
@@ -113,9 +127,19 @@ class ThrowOnNullMethodVisitor extends MethodVisitor {
         }
     }
 
+    private void addImplicitNotNulls() {
+        int counter = 0;
+        for (final Type argumentType : argumentTypes) {
+            if (AsmUtils.isReferenceType(argumentType)) {
+                notNullParams.add(counter);
+            }
+            counter++;
+        }
+    }
+
     /**
      * Visits a local variable declaration.
-     *
+     * <p>
      * {@inheritDoc}
      */
     public void visitLocalVariable(final String name, final String description, final String signature, final Label start, final Label end, final int index) {
@@ -126,7 +150,7 @@ class ThrowOnNullMethodVisitor extends MethodVisitor {
 
     /**
      * Visits a zero operand instruction (ie return).
-     *
+     * <p>
      * {@inheritDoc}
      */
     public void visitInsn(final int opcode) {
@@ -167,7 +191,12 @@ class ThrowOnNullMethodVisitor extends MethodVisitor {
         return notNullAnnotations.contains(annotation);
     }
 
+    private boolean isNullableAnnotation(@NotNull final String annotation) {
+        return Collections.singleton(LangUtils.convertToJavaClassName(Nullable.class.getName())).contains(annotation);
+    }
+
     boolean hasInstrumented() {
         return instrumented;
     }
+
 }

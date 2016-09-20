@@ -17,10 +17,17 @@ package se.eris.test;
 
 import java.util.Arrays;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class TestNotNull {
 
     public static void notNullParameter(@NotNull final String s) {
+    }
+
+    public static void implicitParameter(final String s) {
+    }
+
+    public static void nullableParameter(@Nullable final String s) {
     }
 
     @NotNull
