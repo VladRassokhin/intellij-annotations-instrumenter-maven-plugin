@@ -52,7 +52,7 @@ want to one or more other annotations add them to configuration, for example:
             <plugin>
                 <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.2</version>
+                <version>0.3</version>
                 <executions>
                     <execution>
                         <id>instrument</id>
