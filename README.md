@@ -28,7 +28,7 @@ Just update your pom.xml with following:
             <plugin>
                 <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.2</version>
+                <version>0.3</version>
                 <executions>
                     <execution>
                         <goals>
