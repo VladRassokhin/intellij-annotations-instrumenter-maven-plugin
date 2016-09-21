@@ -26,6 +26,7 @@ import org.objectweb.asm.Opcodes;
 import se.eris.asm.AsmUtils;
 import se.eris.maven.LogWrapper;
 import se.eris.notnull.InstrumenterExecutionException;
+import se.eris.notnull.NotNullConfiguration;
 import se.eris.util.ClassFileUtils;
 
 import java.io.File;
@@ -35,7 +36,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Olle Sundblad
@@ -51,24 +51,24 @@ public class NotNullInstrumenter {
         logger = logWrapper;
     }
 
-    public int addNotNullAnnotations(@NotNull final String classesDirectory, @NotNull final Set<String> notNullAnnotations, @NotNull final List<URL> urls) {
+    public int addNotNullAnnotations(@NotNull final String classesDirectory, final NotNullConfiguration configuration, @NotNull final List<URL> urls) {
         final InstrumentationClassFinder finder = new InstrumentationClassFinder(urls.toArray(new URL[urls.size()]));
-        return instrumentDirectoryRecursive(new File(classesDirectory), finder, notNullAnnotations);
+        return instrumentDirectoryRecursive(new File(classesDirectory), finder, configuration);
     }
 
-    private int instrumentDirectoryRecursive(@NotNull final File classesDirectory, @NotNull final InstrumentationClassFinder finder, @NotNull final Set<String> notNullAnnotations) {
+    private int instrumentDirectoryRecursive(@NotNull final File classesDirectory, @NotNull final InstrumentationClassFinder finder, final NotNullConfiguration configuration) {
         int instrumentedCounter = 0;
         final Collection<File> classes = ClassFileUtils.getClassFiles(classesDirectory.toPath());
         for (@NotNull final File file : classes) {
-            instrumentedCounter += instrumentFile(file, finder, notNullAnnotations);
+            instrumentedCounter += instrumentFile(file, finder, configuration);
         }
         return instrumentedCounter;
     }
 
-    private int instrumentFile(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, @NotNull final Set<String> notNullAnnotations) {
+    private int instrumentFile(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, final NotNullConfiguration configuration) {
         logger.debug("Adding @NotNull assertions to " + file.getPath());
         try {
-            return instrumentClass(file, finder, notNullAnnotations) ? 1 : 0;
+            return instrumentClass(file, finder, configuration) ? 1 : 0;
         }
         catch (final IOException e) {
             logger.warn("Failed to instrument @NotNull assertion for " + file.getPath() + ": " + e.getMessage());
@@ -79,7 +79,7 @@ public class NotNullInstrumenter {
         return 0;
     }
 
-    private static boolean instrumentClass(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, @NotNull final Set<String> notNullAnnotations) throws IOException {
+    private static boolean instrumentClass(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, final NotNullConfiguration configuration) throws IOException {
         try (FileInputStream inputStream = new FileInputStream(file)) {
             final ClassReader classReader = new ClassReader(inputStream);
 
@@ -88,7 +88,7 @@ public class NotNullInstrumenter {
             if (AsmUtils.javaVersionSupportsAnnotations(fileVersion)) {
                 final ClassWriter writer = new InstrumenterClassWriter(getAsmClassWriterFlags(fileVersion), finder);
 
-                final NotNullVerifyingInstrumenter instrumentingVisitor = new NotNullVerifyingInstrumenter(writer, notNullAnnotations);
+                final NotNullVerifyingInstrumenter instrumentingVisitor = new NotNullVerifyingInstrumenter(writer, configuration);
                 classReader.accept(instrumentingVisitor, NO_FLAGS);
                 if (instrumentingVisitor.hasInstrumented()) {
                     try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {

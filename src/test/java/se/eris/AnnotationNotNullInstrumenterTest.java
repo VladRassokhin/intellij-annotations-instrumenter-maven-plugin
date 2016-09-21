@@ -22,6 +22,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import se.eris.maven.NopLogWrapper;
+import se.eris.notnull.NotNullConfiguration;
 import se.eris.util.ReflectionUtil;
 
 import javax.tools.JavaCompiler;
@@ -49,14 +50,15 @@ public class AnnotationNotNullInstrumenterTest {
         final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/test/TestNotNull.java");
         compile(fileToCompile);
 
+        final NotNullConfiguration configuration = new NotNullConfiguration(false, Collections.singleton("org.jetbrains.annotations.NotNull"));
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
-        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", Collections.singleton("org.jetbrains.annotations.NotNull"), Collections.<URL>emptyList());
+        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", configuration, Collections.<URL>emptyList());
 
         assertThat(numberOfInstrumentedFiles, is(1));
     }
 
     @Test
-    public void parameterFT() throws Exception {
+    public void annotatedParameter_shouldValidate() throws Exception {
         final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, "should work");
@@ -66,7 +68,7 @@ public class AnnotationNotNullInstrumenterTest {
     }
 
     @Test
-    public void returnFT() throws Exception {
+    public void annotatedReturn_shouldValidate() throws Exception {
         final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
         final Method notNullReturnMethod = c.getMethod("notNullReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");

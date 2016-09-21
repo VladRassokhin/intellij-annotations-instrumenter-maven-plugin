@@ -22,6 +22,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.jetbrains.annotations.NotNull;
 import se.eris.maven.MavenLogWrapper;
+import se.eris.notnull.NotNullConfiguration;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -43,11 +44,13 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Parameter
     private List<String> annotations;
+    @Parameter
+    private boolean implicit;
 
     private final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new MavenLogWrapper(getLog()));
 
     void instrument(@NotNull final String classesDirectory, @NotNull final List<String> classpathElements) throws MojoExecutionException {
-        final Set<String> notNullAnnotations = getNotNullAnnotations();
+        final NotNullConfiguration configuration = getConfiguration();
         final List<URL> urls = new ArrayList<>();
         try {
             for (final String cp : classpathElements) {
@@ -60,20 +63,24 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
         catch (final RuntimeException e) {
             throw new MojoExecutionException(e.getMessage(), e.getCause());
         }
-        final int instrumented = instrumenter.addNotNullAnnotations(classesDirectory, notNullAnnotations, urls);
+        final int instrumented = instrumenter.addNotNullAnnotations(classesDirectory, configuration, urls);
         getLog().info("Added @NotNull assertions to " + instrumented + " files");
     }
 
+    private NotNullConfiguration getConfiguration() {
+        return new NotNullConfiguration(implicit, getAnnotations());
+    }
+
     @NotNull
-    private Set<String> getNotNullAnnotations() {
-        final Set<String> notNullAnnotations = new HashSet<>();
+    private Set<String> getAnnotations() {
+        final Set<String> annotations = new HashSet<>();
         if (isConfigurationOverrideAnnotations()) {
-            notNullAnnotations.addAll(annotations);
+            annotations.addAll(this.annotations);
             logAnnotations();
         } else {
-            notNullAnnotations.add(NotNull.class.getName());
+            annotations.add(NotNull.class.getName());
         }
-        return notNullAnnotations;
+        return annotations;
     }
 
     private void logAnnotations() {

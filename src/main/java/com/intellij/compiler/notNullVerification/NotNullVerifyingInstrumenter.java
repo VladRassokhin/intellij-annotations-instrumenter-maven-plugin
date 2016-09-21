@@ -21,6 +21,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import se.eris.lang.LangUtils;
+import se.eris.notnull.NotNullConfiguration;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -34,16 +35,19 @@ import java.util.Set;
  */
 public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcodes {
 
-    private final Set<String> notNullAnnotations;
+    private final Set<String> annotations;
     private final List<ThrowOnNullMethodVisitor> methodVisitors = new ArrayList<>();
 
     private String className;
+    @NotNull
+    private NotNullConfiguration configuration;
 
-    public NotNullVerifyingInstrumenter(@NotNull final ClassVisitor classVisitor, @NotNull final Set<String> notNullAnnotations) {
+    public NotNullVerifyingInstrumenter(@NotNull final ClassVisitor classVisitor, @NotNull final NotNullConfiguration configuration) {
         super(Opcodes.ASM5, classVisitor);
-        this.notNullAnnotations = new HashSet<>();
-        for (@NotNull final String annotation : notNullAnnotations) {
-            this.notNullAnnotations.add(LangUtils.convertToJavaClassName(annotation));
+        this.configuration = configuration;
+        this.annotations = new HashSet<>();
+        for (@NotNull final String annotation : configuration.getAnnotations()) {
+            this.annotations.add(LangUtils.convertToJavaClassName(annotation));
         }
     }
 
@@ -57,9 +61,14 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
         final Type[] argumentTypes = Type.getArgumentTypes(desc);
         final Type returnType = Type.getReturnType(desc);
         final MethodVisitor methodVisitor = cv.visitMethod(access, name, desc, signature, exceptions);
-        final ThrowOnNullMethodVisitor visitor = new ThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, notNullAnnotations);
+        final ThrowOnNullMethodVisitor visitor;
+        if (configuration.isImplicit()) {
+            visitor = new ImplicitThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, annotations);
+        } else {
+            visitor = new AnnotationThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, annotations);
+        }
         methodVisitors.add(visitor);
-        return visitor;
+        return (MethodVisitor) visitor;
     }
 
     public boolean hasInstrumented() {

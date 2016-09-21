@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Eris IT AB
+ * Copyright 2013-2016 Eris IT AB
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,30 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.eris.test;
+package se.eris.notnull;
 
-import java.util.Arrays;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-public class TestNotNull {
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-    public static void notNullParameter(@NotNull final String s) {
+public class NotNullConfiguration {
+
+    private final boolean implicit;
+    @NotNull
+    private final Set<String> annotations;
+
+    public NotNullConfiguration(final boolean implicit, @NotNull final Set<String> annotations) {
+        this.implicit = implicit;
+        this.annotations = Collections.unmodifiableSet(new HashSet<>(annotations));
     }
 
-    public static void implicitParameter(final String s) {
-    }
-
-    public static void nullableParameter(@Nullable final String s) {
+    public boolean isImplicit() {
+        return implicit;
     }
 
     @NotNull
-    public static String notNullReturn(@Nullable final String s) {
-        return s;
-    }
-
-    public static String implicitReturn(@Nullable final String s) {
-        return s;
+    public Set<String> getAnnotations() {
+        return annotations;
     }
 
 }
