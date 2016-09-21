@@ -79,16 +79,16 @@ no longer be included by default thus it must be added again if used (as in the 
 
 License Information
 ==============================================
-Copyright 2013-2015 Eris IT AB
+Copyright 2013-2016 Eris IT AB
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0
 
 
 Original License:
 
 Copyright 2000-2012 JetBrains s.r.o.
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
