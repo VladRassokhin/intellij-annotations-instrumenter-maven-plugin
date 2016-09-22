@@ -73,7 +73,7 @@ public class AnnotationNotNullInstrumenterTest {
         final Method notNullReturnMethod = c.getMethod("notNullReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
         exception.expect(IllegalStateException.class);
-        exception.expectMessage("@NotNull method se/eris/test/TestNotNull.notNullReturn must not return null");
+        exception.expectMessage("NotNull method se/eris/test/TestNotNull.notNullReturn must not return null");
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null});
     }
 

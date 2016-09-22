@@ -19,45 +19,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.*;
 import se.eris.asm.AsmUtils;
-import se.eris.lang.LangUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
-class AnnotationThrowOnNullMethodVisitor extends MethodVisitor implements ThrowOnNullMethodVisitor {
-
-    private static final String LJAVA_LANG_SYNTHETIC_ANNO = "Ljava/lang/Synthetic;";
-    private static final String IAE_CLASS_NAME = "java/lang/IllegalArgumentException";
-    private static final String ISE_CLASS_NAME = "java/lang/IllegalStateException";
-    private static final String CONSTRUCTOR_NAME = "<init>";
-
-    private final Type[] argumentTypes;
+class AnnotationThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
 
     private final Set<String> notNullAnnotations;
 
-    private final Type returnType;
-    private final int access;
-    private final String methodName;
-    private final String className;
-    private final List<Integer> notNullParams;
-    private int syntheticCount;
-    private boolean returnIsNotNull;
-    private Label startGeneratedCodeLabel;
-    private boolean instrumented;
-
     AnnotationThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> notNullAnnotations) {
-        super(Opcodes.ASM5, methodVisitor);
-        this.argumentTypes = argumentTypes;
-        this.returnType = returnType;
-        this.access = access;
-        this.methodName = methodName;
-        this.className = className;
+        super(Opcodes.ASM5, methodVisitor, argumentTypes, returnType, access, methodName, className);
         this.notNullAnnotations = notNullAnnotations;
-        notNullParams = new ArrayList<>();
-        syntheticCount = 0;
-        returnIsNotNull = false;
-        instrumented = false;
     }
 
     /**
@@ -126,36 +97,6 @@ class AnnotationThrowOnNullMethodVisitor extends MethodVisitor implements ThrowO
         mv.visitLocalVariable(name, description, signature, (isParameter && startGeneratedCodeLabel != null) ? startGeneratedCodeLabel : start, end, index);
     }
 
-    /**
-     * Visits a zero operand instruction (ie return).
-     * <p>
-     * {@inheritDoc}
-     */
-    public void visitInsn(final int opcode) {
-        if (opcode == Opcodes.ARETURN) {
-            if (returnIsNotNull) {
-                mv.visitInsn(Opcodes.DUP);
-                final Label skipLabel = new Label();
-                mv.visitJumpInsn(Opcodes.IFNONNULL, skipLabel);
-                generateThrow(ISE_CLASS_NAME, "@NotNull method " + className + "." + methodName + " must not return null", skipLabel);
-            }
-        }
-
-        mv.visitInsn(opcode);
-    }
-
-    private void generateThrow(@NotNull final String exceptionClass, @NotNull final String description, @NotNull final Label end) {
-        final String exceptionParamClass = "(" + LangUtils.convertToJavaClassName(String.class.getName()) + ")V";
-        mv.visitTypeInsn(Opcodes.NEW, exceptionClass);
-        mv.visitInsn(Opcodes.DUP);
-        mv.visitLdcInsn(description);
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, exceptionClass, CONSTRUCTOR_NAME, exceptionParamClass, false);
-        mv.visitInsn(Opcodes.ATHROW);
-        mv.visitLabel(end);
-
-        instrumented = true;
-    }
-
     public void visitMaxs(final int maxStack, final int maxLocals) {
         try {
             super.visitMaxs(maxStack, maxLocals);
@@ -167,11 +108,6 @@ class AnnotationThrowOnNullMethodVisitor extends MethodVisitor implements ThrowO
 
     private boolean isNotNullAnnotation(@NotNull final String annotation) {
         return notNullAnnotations.contains(annotation);
-    }
-
-    @Override
-    public boolean hasInstrumented() {
-        return instrumented;
     }
 
 }

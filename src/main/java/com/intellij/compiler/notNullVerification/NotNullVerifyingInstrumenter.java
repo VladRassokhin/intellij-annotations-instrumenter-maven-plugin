@@ -45,10 +45,16 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
     public NotNullVerifyingInstrumenter(@NotNull final ClassVisitor classVisitor, @NotNull final NotNullConfiguration configuration) {
         super(Opcodes.ASM5, classVisitor);
         this.configuration = configuration;
-        this.annotations = new HashSet<>();
+        this.annotations = convertToClassName(configuration);
+    }
+
+    @NotNull
+    private Set<String> convertToClassName(@NotNull final NotNullConfiguration configuration) {
+        final Set<String> annotations = new HashSet<>();
         for (@NotNull final String annotation : configuration.getAnnotations()) {
-            this.annotations.add(LangUtils.convertToJavaClassName(annotation));
+            annotations.add(LangUtils.convertToJavaClassName(annotation));
         }
+        return annotations;
     }
 
     public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
@@ -68,7 +74,7 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
             visitor = new AnnotationThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, annotations);
         }
         methodVisitors.add(visitor);
-        return (MethodVisitor) visitor;
+        return visitor;
     }
 
     public boolean hasInstrumented() {

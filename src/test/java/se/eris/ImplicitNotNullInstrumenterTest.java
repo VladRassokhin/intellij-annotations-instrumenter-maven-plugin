@@ -89,7 +89,7 @@ public class ImplicitNotNullInstrumenterTest {
         final Method notNullReturnMethod = c.getMethod("implicitReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
         exception.expect(IllegalStateException.class);
-        exception.expectMessage("@NotNull method se/eris/test/TestNotNull.implicitReturn must not return null");
+        exception.expectMessage("NotNull method se/eris/test/TestNotNull.implicitReturn must not return null");
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null});
     }
 
