@@ -51,6 +51,7 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
 
     void instrument(@NotNull final String classesDirectory, @NotNull final List<String> classpathElements) throws MojoExecutionException {
         final NotNullConfiguration configuration = getConfiguration();
+        logAnnotations(configuration);
         final List<URL> urls = new ArrayList<>();
         try {
             for (final String cp : classpathElements) {
@@ -76,16 +77,13 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
         final Set<String> annotations = new HashSet<>();
         if (isConfigurationOverrideAnnotations()) {
             annotations.addAll(this.annotations);
-            logAnnotations();
-        } else {
-            annotations.add(NotNull.class.getName());
         }
         return annotations;
     }
 
-    private void logAnnotations() {
+    private void logAnnotations(@NotNull final NotNullConfiguration configuration) {
         getLog().info("Using the following NotNull annotations:");
-        for (final String notNullAnnotation : annotations) {
+        for (final String notNullAnnotation : configuration.getAnnotations()) {
             getLog().info("  " + notNullAnnotation);
         }
     }

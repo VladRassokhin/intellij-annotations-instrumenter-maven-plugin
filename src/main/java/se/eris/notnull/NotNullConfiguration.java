@@ -16,6 +16,7 @@
 package se.eris.notnull;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -29,7 +30,11 @@ public class NotNullConfiguration {
 
     public NotNullConfiguration(final boolean implicit, @NotNull final Set<String> annotations) {
         this.implicit = implicit;
-        this.annotations = Collections.unmodifiableSet(new HashSet<>(annotations));
+        if (annotations.isEmpty()) {
+            this.annotations = Collections.singleton(implicit ? Nullable.class.getName() : NotNull.class.getName());
+        } else {
+            this.annotations = Collections.unmodifiableSet(new HashSet<>(annotations));
+        }
     }
 
     public boolean isImplicit() {
