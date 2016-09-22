@@ -9,6 +9,7 @@ significant changes have been made:
 * Added configuration: which NotNull/Nullable annotations to instrument (default is still @org.jetbrains.annotations.NotNull and  @org.jetbrains.annotations.Nullable)
 * Added basic unit and functional tests
 * Isolated Maven plugin dependencies to allow usage without Maven
+* Added implicit NotNull option
 
 Usage
 ==============================================
@@ -107,7 +108,9 @@ If you don't like to have @NotNull on 99.99% of your parameters and methods turn
         </plugins>
     </build>
 
-Will instrument all parameters and return values with NotNull unless annotated with @Nullable (org.jetbrains.annotations.Nullable).
+Will instrument all parameters and return values with NotNull unless annotated with @Nullable (org.jetbrains.annotations.Nullable). 
+
+**Note** that when using implicit you need to specify the Nullable annotation (not NotNull).
 
 
 License Information
