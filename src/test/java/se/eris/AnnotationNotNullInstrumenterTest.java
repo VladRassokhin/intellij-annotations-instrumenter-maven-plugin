@@ -33,6 +33,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -50,11 +52,19 @@ public class AnnotationNotNullInstrumenterTest {
         final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/test/TestNotNull.java");
         compile(fileToCompile);
 
-        final NotNullConfiguration configuration = new NotNullConfiguration(false, Collections.singleton("org.jetbrains.annotations.NotNull"));
+        final NotNullConfiguration configuration = new NotNullConfiguration(false, annotations());
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
         final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", configuration, Collections.<URL>emptyList());
 
         assertThat(numberOfInstrumentedFiles, is(1));
+    }
+
+    @NotNull
+    private static Set<String> annotations() {
+        final Set<String> annotations = new HashSet<>();
+        annotations.add("org.jetbrains.annotations.NotNull");
+        annotations.add("java.lang.Deprecated");
+        return annotations;
     }
 
     @Test
@@ -68,12 +78,22 @@ public class AnnotationNotNullInstrumenterTest {
     }
 
     @Test
-    public void annotatedReturn_shouldValidate() throws Exception {
+    public void notnullReturn_shouldValidate() throws Exception {
         final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
         final Method notNullReturnMethod = c.getMethod("notNullReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
         exception.expect(IllegalStateException.class);
         exception.expectMessage("NotNull method se/eris/test/TestNotNull.notNullReturn must not return null");
+        ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null});
+    }
+
+    @Test
+    public void annotatedReturn_shouldValidate() throws Exception {
+        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
+        final Method notNullReturnMethod = c.getMethod("annotatedReturn", String.class);
+        ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage("NotNull method se/eris/test/TestNotNull.annotatedReturn must not return null");
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null});
     }
 

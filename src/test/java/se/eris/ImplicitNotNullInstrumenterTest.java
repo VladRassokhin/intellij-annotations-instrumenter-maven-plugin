@@ -33,6 +33,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -50,11 +52,19 @@ public class ImplicitNotNullInstrumenterTest {
         final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/test/TestNotNull.java");
         compile(fileToCompile);
 
-        final NotNullConfiguration configuration = new NotNullConfiguration(true, Collections.singleton("org.jetbrains.annotations.Nullable"));
+        final NotNullConfiguration configuration = new NotNullConfiguration(true, annotations());
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
         final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", configuration, Collections.<URL>emptyList());
 
         assertThat(numberOfInstrumentedFiles, is(1));
+    }
+
+    @NotNull
+    private static Set<String> annotations() {
+        final Set<String> annotations = new HashSet<>();
+        annotations.add("org.jetbrains.annotations.Nullable");
+        annotations.add("java.lang.Deprecated");
+        return annotations;
     }
 
     @Test
@@ -91,6 +101,13 @@ public class ImplicitNotNullInstrumenterTest {
         exception.expect(IllegalStateException.class);
         exception.expectMessage("NotNull method se/eris/test/TestNotNull.implicitReturn must not return null");
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null});
+    }
+
+    @Test
+    public void annotatedReturn_shouldNotValidate() throws Exception {
+        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
+        final Method notNullReturnMethod = c.getMethod("annotatedReturn", String.class);
+        ReflectionUtil.simulateMethodCall(notNullReturnMethod, (String)null);
     }
 
     @NotNull

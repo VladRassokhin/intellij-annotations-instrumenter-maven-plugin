@@ -39,4 +39,9 @@ public class TestNotNull {
         return s;
     }
 
+    @java.lang.Deprecated
+    public static String annotatedReturn(@Nullable final String s) {
+        return s;
+    }
+
 }
