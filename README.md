@@ -6,8 +6,8 @@ IntelliJ IDEA annotations instrumenter maven plugin
 This code is based on Vlad Rassokhin's intellij-annotations-instrumenter-maven-plugin. The following
 significant changes have been made:
 * Added Java 8 bytecode support
-* Added configuration: which "NotNull" annotations to instrument
-* Added unit and functional tests
+* Added configuration: which NotNull/Nullable annotations to instrument (default is still @org.jetbrains.annotations.NotNull and  @org.jetbrains.annotations.Nullable)
+* Added basic unit and functional tests
 * Isolated Maven plugin dependencies to allow usage without Maven
 
 Usage
@@ -28,7 +28,7 @@ Just update your pom.xml with following:
             <plugin>
                 <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.3</version>
+                <version>0.4</version>
                 <executions>
                     <execution>
                         <goals>
@@ -52,7 +52,7 @@ want to one or more other annotations add them to configuration, for example:
             <plugin>
                 <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.3</version>
+                <version>0.4</version>
                 <executions>
                     <execution>
                         <id>instrument</id>
@@ -76,6 +76,39 @@ Will instrument both jetbrains and javax annotations.
 
 Note that configuration will replace the default annotations, so org.jetbrains.annotations.NotNull will
 no longer be included by default thus it must be added again if used (as in the above example).
+
+
+Implicit NotNull instrumentation
+==============================================
+If you don't like to have @NotNull on 99.99% of your parameters and methods turn on the implicit instrumentation:
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>se.eris</groupId>
+                <artifactId>notnull-instrumenter-maven-plugin</artifactId>
+                <version>0.4</version>
+                <executions>
+                    <execution>
+                        <id>instrument</id>
+                        <goals>
+                            <goal>instrument</goal>
+                            <goal>tests-instrument</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <implicit>true</implicit>
+                    <annotations>
+                        <param>org.jetbrains.annotations.Nullable</param>
+                    </annotations>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+Will instrument all parameters and return values with NotNull unless annotated with @Nullable (org.jetbrains.annotations.Nullable).
+
 
 License Information
 ==============================================
