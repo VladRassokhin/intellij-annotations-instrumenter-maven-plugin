@@ -25,9 +25,9 @@ import java.lang.reflect.Method;
  */
 public class ReflectionUtil {
 
-    public static void simulateMethodCall(@NotNull final Method notNullReturnMethod, @NotNull final Object... params) throws IllegalAccessException, InvocationTargetException {
+    public static Object simulateMethodCall(@NotNull final Method method, @NotNull final Object... params) throws IllegalAccessException, InvocationTargetException {
         try {
-            notNullReturnMethod.invoke(null, params);
+            return method.invoke(null, params);
         } catch (final InvocationTargetException e) {
             if (e.getCause() instanceof RuntimeException) {
                 throw RuntimeException.class.cast(e.getCause());

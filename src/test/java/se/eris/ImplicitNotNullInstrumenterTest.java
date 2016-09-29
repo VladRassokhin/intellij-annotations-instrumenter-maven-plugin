@@ -28,6 +28,7 @@ import se.eris.util.ReflectionUtil;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -56,7 +57,7 @@ public class ImplicitNotNullInstrumenterTest {
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
         final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", configuration, Collections.<URL>emptyList());
 
-        assertThat(numberOfInstrumentedFiles, is(1));
+        assertThat(numberOfInstrumentedFiles, is(2));
     }
 
     @NotNull
@@ -108,6 +109,15 @@ public class ImplicitNotNullInstrumenterTest {
         final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
         final Method notNullReturnMethod = c.getMethod("annotatedReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, (String)null);
+    }
+
+    @Test
+    public void innerClassWithoutConstructor_shouldWork() throws Exception {
+        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull$Inner");
+        for (final Constructor<?> constructor : c.getConstructors()) {
+            constructor.isSynthetic();
+            System.out.println("constructor.isSynthetic() = " + constructor.isSynthetic());
+        }
     }
 
     @NotNull
