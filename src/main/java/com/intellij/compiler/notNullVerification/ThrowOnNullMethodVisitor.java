@@ -43,16 +43,16 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     final List<Integer> notNullParams;
     Label startGeneratedCodeLabel;
 
-    ThrowOnNullMethodVisitor(final int api, final MethodVisitor mv, @NotNull final Type[] argumentTypes, final Type returnType, final int access, final String methodName, final String className) {
+    ThrowOnNullMethodVisitor(final int api, final MethodVisitor mv, @NotNull final Type[] argumentTypes, final Type returnType, final int access, final String methodName, final String className, final boolean returnIsNotNull) {
         super(api, mv);
         this.argumentTypes = argumentTypes;
         this.returnType = returnType;
         this.access = access;
         this.methodName = methodName;
         this.className = className;
+        this.returnIsNotNull = returnIsNotNull;
         syntheticCount = 0;
         notNullParams = new ArrayList<>();
-        returnIsNotNull = false;
     }
 
     private void setInstrumented() {

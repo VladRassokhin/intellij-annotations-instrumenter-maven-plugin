@@ -28,17 +28,15 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     private final Set<String> nullableAnnotations;
 
     ImplicitThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> nullableAnnotations) {
-        super(Opcodes.ASM5, methodVisitor, argumentTypes, returnType, access, methodName, className);
+        super(Opcodes.ASM5, methodVisitor, argumentTypes, returnType, access, methodName, className, true);
         this.nullableAnnotations = nullableAnnotations;
-        if (!isSynthetic(access)) {
+        if (!isSynthetic()) {
             addImplicitNotNulls();
         }
-        // todo move into constructor
-        returnIsNotNull = true;
     }
 
-    private boolean isSynthetic(final int access) {
-        return (access | Opcodes.ACC_SYNTHETIC) == Opcodes.ACC_SYNTHETIC;
+    private boolean isSynthetic() {
+        return (this.access | Opcodes.ACC_SYNTHETIC) == Opcodes.ACC_SYNTHETIC;
     }
 
     private void addImplicitNotNulls() {
