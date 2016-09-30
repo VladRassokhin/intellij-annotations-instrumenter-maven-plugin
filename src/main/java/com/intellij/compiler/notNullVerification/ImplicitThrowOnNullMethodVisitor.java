@@ -15,6 +15,7 @@
  */
 package com.intellij.compiler.notNullVerification;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.*;
@@ -35,6 +36,7 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
         }
     }
 
+    @Contract(pure = true)
     private boolean isSynthetic() {
         return (this.access | Opcodes.ACC_SYNTHETIC) == Opcodes.ACC_SYNTHETIC;
     }

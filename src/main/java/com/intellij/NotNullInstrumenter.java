@@ -17,7 +17,7 @@ package com.intellij;
 
 import com.intellij.compiler.instrumentation.InstrumentationClassFinder;
 import com.intellij.compiler.instrumentation.InstrumenterClassWriter;
-import com.intellij.compiler.notNullVerification.NotNullVerifyingInstrumenter;
+import com.intellij.compiler.notNullVerification.NotNullInstrumenterClassVisitor;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -88,7 +88,7 @@ public class NotNullInstrumenter {
             if (AsmUtils.javaVersionSupportsAnnotations(fileVersion)) {
                 final ClassWriter writer = new InstrumenterClassWriter(getAsmClassWriterFlags(fileVersion), finder);
 
-                final NotNullVerifyingInstrumenter instrumentingVisitor = new NotNullVerifyingInstrumenter(writer, configuration);
+                final NotNullInstrumenterClassVisitor instrumentingVisitor = new NotNullInstrumenterClassVisitor(writer, configuration);
                 classReader.accept(instrumentingVisitor, NO_FLAGS);
                 if (instrumentingVisitor.hasInstrumented()) {
                     try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {

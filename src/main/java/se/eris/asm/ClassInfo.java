@@ -19,6 +19,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 
+import java.util.Arrays;
+
 /**
 * Collects class info. That is name, modifiers, super class, and interfaces.
 */
@@ -75,4 +77,45 @@ public class ClassInfo {
     public boolean isInterface() {
         return (access & Opcodes.ACC_INTERFACE) > 0;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ClassInfo classInfo = (ClassInfo) o;
+
+        if (version != classInfo.version) return false;
+        if (access != classInfo.access) return false;
+        if (!name.equals(classInfo.name)) return false;
+        if (!signature.equals(classInfo.signature)) return false;
+        if (superName != null ? !superName.equals(classInfo.superName) : classInfo.superName != null) return false;
+        // Probably incorrect - comparing Object[] arrays with Arrays.equals
+        return Arrays.equals(interfaces, classInfo.interfaces);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = version;
+        result = 31 * result + access;
+        result = 31 * result + name.hashCode();
+        result = 31 * result + signature.hashCode();
+        result = 31 * result + (superName != null ? superName.hashCode() : 0);
+        result = 31 * result + Arrays.hashCode(interfaces);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "ClassInfo{" +
+                "version=" + version +
+                ", access=" + access +
+                ", name='" + name + '\'' +
+                ", signature='" + signature + '\'' +
+                ", superName='" + superName + '\'' +
+                ", interfaces=" + Arrays.toString(interfaces) +
+                '}';
+    }
+
 }
