@@ -19,7 +19,7 @@ Just update your pom.xml with following:
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>15.0</version>
+            <version>13.0</version>
         </dependency>
         ...
     </dependencies>
