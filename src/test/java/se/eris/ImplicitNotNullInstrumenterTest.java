@@ -108,16 +108,22 @@ public class ImplicitNotNullInstrumenterTest {
     public void annotatedReturn_shouldNotValidate() throws Exception {
         final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
         final Method notNullReturnMethod = c.getMethod("annotatedReturn", String.class);
-        ReflectionUtil.simulateMethodCall(notNullReturnMethod, (String)null);
+        ReflectionUtil.simulateMethodCall(notNullReturnMethod, (String) null);
     }
 
     @Test
     public void innerClassWithoutConstructor_shouldWork() throws Exception {
+        boolean syntheticConstructorFound = false;
         final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull$Inner");
-        for (final Constructor<?> constructor : c.getConstructors()) {
-            constructor.isSynthetic();
-            System.out.println("constructor.isSynthetic() = " + constructor.isSynthetic());
+        for (final Constructor<?> constructor : c.getDeclaredConstructors()) {
+            final boolean isSynthetic = constructor.isSynthetic();
+            if (isSynthetic) {
+                syntheticConstructorFound = true;
+                constructor.setAccessible(true);
+                constructor.newInstance(constructor.getGenericParameterTypes()[0].getClass().cast(null));
+            }
         }
+        assertThat(syntheticConstructorFound, is(true));
     }
 
     @NotNull

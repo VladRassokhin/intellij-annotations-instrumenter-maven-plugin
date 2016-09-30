@@ -48,7 +48,7 @@ public class TestNotNull {
         return new Inner().s;
     }
 
-    public static final class Inner {
+    private static final class Inner {
         private String s = "synthetic";
     }
 

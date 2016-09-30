@@ -66,15 +66,15 @@ public class NotNullInstrumenter {
     }
 
     private int instrumentFile(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, final NotNullConfiguration configuration) {
-        logger.debug("Adding @NotNull assertions to " + file.getPath());
+        logger.debug("Adding NotNull assertions to " + file.getPath());
         try {
             return instrumentClass(file, finder, configuration) ? 1 : 0;
         }
         catch (final IOException e) {
-            logger.warn("Failed to instrument @NotNull assertion for " + file.getPath() + ": " + e.getMessage());
+            logger.warn("Failed to instrument NotNull assertion for " + file.getPath() + ": " + e.getMessage());
         }
         catch (final RuntimeException e) {
-            throw new InstrumenterExecutionException("@NotNull instrumentation failed for " + file.getPath() + ": " + e.toString(), e);
+            throw new InstrumenterExecutionException("NotNull instrumentation failed for " + file.getPath() + ": " + e.toString(), e);
         }
         return 0;
     }
