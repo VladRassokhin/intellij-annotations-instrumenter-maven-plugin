@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
-  <component name="FindBugs-IDEA">
-    <detectors>
-      <detector name="InefficientIndexOf" enabled="true" />
-      <detector name="InefficientInitializationInsideLoop" enabled="true" />
-      <detector name="InefficientToArray" enabled="true" />
-    </detectors>
-  </component>
+<module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" version="4">
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_7" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />

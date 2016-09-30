@@ -15,6 +15,7 @@
  */
 package com.intellij.compiler.notNullVerification;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.*;
@@ -28,10 +29,16 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     private final Set<String> nullableAnnotations;
 
     ImplicitThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> nullableAnnotations) {
-        super(Opcodes.ASM5, methodVisitor, argumentTypes, returnType, access, methodName, className);
+        super(Opcodes.ASM5, methodVisitor, argumentTypes, returnType, access, methodName, className, true);
         this.nullableAnnotations = nullableAnnotations;
-        addImplicitNotNulls();
-        returnIsNotNull = true;
+        if (!isSynthetic()) {
+            addImplicitNotNulls();
+        }
+    }
+
+    @Contract(pure = true)
+    private boolean isSynthetic() {
+        return (this.access | Opcodes.ACC_SYNTHETIC) == Opcodes.ACC_SYNTHETIC;
     }
 
     private void addImplicitNotNulls() {
@@ -49,6 +56,7 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
      * <p>
      * {@inheritDoc}
      */
+    @Override
     public AnnotationVisitor visitParameterAnnotation(final int parameter, final String annotation, final boolean visible) {
         final AnnotationVisitor av = mv.visitParameterAnnotation(parameter, annotation, visible);
         if (AsmUtils.isReferenceType(argumentTypes[parameter])) {
@@ -68,6 +76,7 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
      * <p>
      * {@inheritDoc}
      */
+    @Override
     public AnnotationVisitor visitAnnotation(final String annotation, final boolean visible) {
         final AnnotationVisitor av = mv.visitAnnotation(annotation, visible);
         if (AsmUtils.isReferenceType(returnType) && isNullableAnnotation(annotation)) {
@@ -80,6 +89,7 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     /**
      * Starts the visit of the method's code, if any (ie non abstract method).
      */
+    @Override
     public void visitCode() {
         if (!notNullParams.isEmpty()) {
             startGeneratedCodeLabel = new Label();
@@ -104,12 +114,14 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
      * <p>
      * {@inheritDoc}
      */
+    @Override
     public void visitLocalVariable(final String name, final String description, final String signature, final Label start, final Label end, final int index) {
         final boolean isStatic = (access & Opcodes.ACC_STATIC) != 0;
         final boolean isParameter = isStatic ? index < argumentTypes.length : index <= argumentTypes.length;
         mv.visitLocalVariable(name, description, signature, (isParameter && startGeneratedCodeLabel != null) ? startGeneratedCodeLabel : start, end, index);
     }
 
+    @Override
     public void visitMaxs(final int maxStack, final int maxLocals) {
         try {
             super.visitMaxs(maxStack, maxLocals);

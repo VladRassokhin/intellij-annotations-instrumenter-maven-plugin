@@ -44,4 +44,12 @@ public class TestNotNull {
         return s;
     }
 
+    public static String createInner() {
+        return new Inner().s;
+    }
+
+    private static final class Inner {
+        private String s = "synthetic";
+    }
+
 }

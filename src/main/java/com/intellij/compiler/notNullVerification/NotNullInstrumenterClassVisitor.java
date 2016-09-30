@@ -33,7 +33,7 @@ import java.util.Set;
  * @author Vladislav.Rassokhin
  * noinspection HardCodedStringLiteral
  */
-public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcodes {
+public class NotNullInstrumenterClassVisitor extends ClassVisitor {
 
     private final Set<String> annotations;
     private final List<ThrowOnNullMethodVisitor> methodVisitors = new ArrayList<>();
@@ -42,7 +42,7 @@ public class NotNullVerifyingInstrumenter extends ClassVisitor implements Opcode
     @NotNull
     private NotNullConfiguration configuration;
 
-    public NotNullVerifyingInstrumenter(@NotNull final ClassVisitor classVisitor, @NotNull final NotNullConfiguration configuration) {
+    public NotNullInstrumenterClassVisitor(@NotNull final ClassVisitor classVisitor, @NotNull final NotNullConfiguration configuration) {
         super(Opcodes.ASM5, classVisitor);
         this.configuration = configuration;
         this.annotations = convertToClassName(configuration);
