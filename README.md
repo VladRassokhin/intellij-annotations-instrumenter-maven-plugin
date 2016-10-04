@@ -108,7 +108,29 @@ If you don't like to have @NotNull on 99.99% of your parameters and methods turn
         </plugins>
     </build>
 
-Will instrument all parameters and return values with NotNull unless annotated with @Nullable (org.jetbrains.annotations.Nullable). 
+Will instrument all parameters and return values with NotNull unless annotated with @Nullable (org.jetbrains.annotations.Nullable). Ie:
+
+    public String add(String a, String b) {
+        if (a.equals(b)) {
+            return null;
+        }
+        return a + b;
+    }
+
+will throw an IllegalArgumentException if either the a or b parameter is null, and will throw an 
+IllegalStateException if a equals b (since it is not allowed to return null). To allow nulls you would 
+have to annotate the parameters/return value like this:
+
+    @Nullable
+    public String add(@Nullable String a, @Nullable String b) {
+        if (a.equals(b)) {
+            return null;
+        }
+        return a + b;
+    }
+
+which would throw a NullPointerException if a is null, return null if a equals b, and otherwise append the 
+Strings (or a + null if b is null).
 
 **Note** that when using implicit you need to specify the Nullable annotation (not NotNull).
 
