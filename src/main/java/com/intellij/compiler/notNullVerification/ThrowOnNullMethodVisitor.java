@@ -28,7 +28,7 @@ import java.util.List;
 public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
 
     static final String LJAVA_LANG_SYNTHETIC_ANNO = "Ljava/lang/Synthetic;";
-    static final String IAE_CLASS_NAME = "java/lang/IllegalArgumentException";
+    private static final String IAE_CLASS_NAME = "java/lang/IllegalArgumentException";
     private static final String ISE_CLASS_NAME = "java/lang/IllegalStateException";
     private static final String CONSTRUCTOR_NAME = "<init>";
 
