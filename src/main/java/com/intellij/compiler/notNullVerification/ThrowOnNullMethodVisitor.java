@@ -77,7 +77,42 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
         mv.visitInsn(opcode);
     }
 
-    void generateThrow(@NotNull final String exceptionClass, @NotNull final String description, @NotNull final Label end) {
+    boolean hasInstrumented() {
+        return instrumented;
+    }
+
+    private boolean isStatic() {
+        return (access & Opcodes.ACC_STATIC) != 0;
+    }
+
+    boolean isParameter(int index) {
+        return isStatic() ? index < argumentTypes.length : index <= argumentTypes.length;
+    }
+
+    /**
+     * Starts the visit of the method's code, if any (ie non abstract method).
+     */
+    @Override
+    public void visitCode() {
+        if (!notNullParams.isEmpty()) {
+            startGeneratedCodeLabel = new Label();
+            mv.visitLabel(startGeneratedCodeLabel);
+        }
+        for (final Integer notNullParam : notNullParams) {
+            int var = ((access & Opcodes.ACC_STATIC) == 0) ? 1 : 0;
+            for (int i = 0; i < notNullParam; ++i) {
+                var += argumentTypes[i].getSize();
+            }
+            mv.visitVarInsn(Opcodes.ALOAD, var);
+
+            final Label end = new Label();
+            mv.visitJumpInsn(Opcodes.IFNONNULL, end);
+
+            generateThrow(IAE_CLASS_NAME, getThrowMessage(notNullParam), end);
+        }
+    }
+
+    private void generateThrow(@NotNull final String exceptionClass, @NotNull final String description, @NotNull final Label end) {
         final String exceptionParamClass = "(" + LangUtils.convertToJavaClassName(String.class.getName()) + ")V";
         mv.visitTypeInsn(Opcodes.NEW, exceptionClass);
         mv.visitInsn(Opcodes.DUP);
@@ -89,8 +124,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
         setInstrumented();
     }
 
-    boolean hasInstrumented() {
-        return instrumented;
-    }
+    @NotNull
+    protected abstract String getThrowMessage(int parameterNumber);
 
 }
