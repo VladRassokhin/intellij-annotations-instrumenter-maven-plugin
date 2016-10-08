@@ -21,7 +21,6 @@ import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.*;
 import se.eris.asm.AsmUtils;
 
-import java.util.Collections;
 import java.util.Set;
 
 class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
@@ -59,16 +58,21 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     @Override
     public AnnotationVisitor visitParameterAnnotation(final int parameter, final String annotation, final boolean visible) {
         final AnnotationVisitor av = mv.visitParameterAnnotation(parameter, annotation, visible);
-        if (AsmUtils.isReferenceType(argumentTypes[parameter])) {
+        if (isParameterReferenceType(parameter)) {
             if (isNullableAnnotation(annotation)) {
-                notNullParams.removeAll(Collections.singleton(parameter));
+                setNullable(parameter);
             }
         } else if (annotation.equals(LJAVA_LANG_SYNTHETIC_ANNO)) {
             // See asm r1278 for what we do this,
             // http://forge.objectweb.org/tracker/index.php?func=detail&aid=307392&group_id=23&atid=100023
-            syntheticCount++;
+            increaseSyntheticCount();
+            setNullable(parameter);
         }
         return av;
+    }
+
+    private boolean setNullable(int parameter) {
+        return notNullParams.remove((Integer)parameter);
     }
 
     /**
@@ -79,8 +83,8 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     @Override
     public AnnotationVisitor visitAnnotation(final String annotation, final boolean visible) {
         final AnnotationVisitor av = mv.visitAnnotation(annotation, visible);
-        if (AsmUtils.isReferenceType(returnType) && isNullableAnnotation(annotation)) {
-            returnIsNotNull = false;
+        if (isReturnReferenceType() && isNullableAnnotation(annotation)) {
+            isReturnNotNull = false;
         }
 
         return av;
@@ -89,7 +93,7 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     @Override
     @NotNull
     protected String getThrowMessage(int parameterNumber) {
-        return "Argument " + (parameterNumber - syntheticCount) + " for implicit 'NotNull' parameter of " + className + "." + methodName + " must not be null";
+        return "Argument " + getSourceCodeParameterNumber(parameterNumber) + " for implicit 'NotNull' parameter of " + className + "." + methodName + " must not be null";
     }
 
     /**
@@ -106,8 +110,7 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     public void visitMaxs(final int maxStack, final int maxLocals) {
         try {
             super.visitMaxs(maxStack, maxLocals);
-        }
-        catch (final ArrayIndexOutOfBoundsException e) {
+        } catch (final ArrayIndexOutOfBoundsException e) {
             throw new ArrayIndexOutOfBoundsException("visitMaxs processing failed for method " + methodName + ": " + e.getMessage());
         }
     }

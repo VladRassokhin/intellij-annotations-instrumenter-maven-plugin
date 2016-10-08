@@ -18,7 +18,6 @@ package com.intellij.compiler.notNullVerification;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.*;
-import se.eris.asm.AsmUtils;
 
 import java.util.Set;
 
@@ -36,16 +35,17 @@ class AnnotationThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
      * <p>
      * {@inheritDoc}
      */
+    @Override
     public AnnotationVisitor visitParameterAnnotation(final int parameter, final String annotation, final boolean visible) {
         final AnnotationVisitor av = mv.visitParameterAnnotation(parameter, annotation, visible);
-        if (AsmUtils.isReferenceType(argumentTypes[parameter])) {
+        if (isParameterReferenceType(parameter)) {
             if (isNotNullAnnotation(annotation)) {
                 notNullParams.add(parameter);
             }
         } else if (annotation.equals(LJAVA_LANG_SYNTHETIC_ANNO)) {
             // See asm r1278 for what we do this,
             // http://forge.objectweb.org/tracker/index.php?func=detail&aid=307392&group_id=23&atid=100023
-            syntheticCount++;
+            increaseSyntheticCount();
         }
         return av;
     }
@@ -55,10 +55,11 @@ class AnnotationThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
      * <p>
      * {@inheritDoc}
      */
+    @Override
     public AnnotationVisitor visitAnnotation(final String annotation, final boolean visible) {
         final AnnotationVisitor av = mv.visitAnnotation(annotation, visible);
-        if (AsmUtils.isReferenceType(returnType) && isNotNullAnnotation(annotation)) {
-            returnIsNotNull = true;
+        if (isReturnReferenceType() && isNotNullAnnotation(annotation)) {
+            isReturnNotNull = true;
         }
 
         return av;
@@ -67,7 +68,7 @@ class AnnotationThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     @Override
     @NotNull
     protected String getThrowMessage(int notNullParam) {
-        return "Argument " + (notNullParam - syntheticCount) + " for @NotNull parameter of " + className + "." + methodName + " must not be null";
+        return "Argument " + getSourceCodeParameterNumber(notNullParam) + " for @NotNull parameter of " + className + "." + methodName + " must not be null";
     }
 
     /**
@@ -82,8 +83,7 @@ class AnnotationThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     public void visitMaxs(final int maxStack, final int maxLocals) {
         try {
             super.visitMaxs(maxStack, maxLocals);
-        }
-        catch (final ArrayIndexOutOfBoundsException e) {
+        } catch (final ArrayIndexOutOfBoundsException e) {
             throw new ArrayIndexOutOfBoundsException("visitMaxs processing failed for method " + methodName + ": " + e.getMessage());
         }
     }
