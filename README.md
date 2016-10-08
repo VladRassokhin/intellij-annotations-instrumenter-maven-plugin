@@ -110,7 +110,7 @@ If you don't like to have @NotNull on 99.99% of your parameters and methods turn
 
 Will instrument all parameters and return values with NotNull unless annotated with @Nullable (org.jetbrains.annotations.Nullable). Ie:
 
-    public String add(String a, String b) {
+    public String implicit(String a, String b) {
         if (a.equals(b)) {
             return null;
         }
@@ -122,7 +122,7 @@ IllegalStateException if a equals b (since it is not allowed to return null). To
 have to annotate the parameters/return value like this:
 
     @Nullable
-    public String add(@Nullable String a, @Nullable String b) {
+    public String implicit(@Nullable String a, @Nullable String b) {
         if (a.equals(b)) {
             return null;
         }
