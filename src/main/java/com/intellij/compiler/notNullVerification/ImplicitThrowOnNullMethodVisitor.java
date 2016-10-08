@@ -21,7 +21,6 @@ import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.*;
 import se.eris.asm.AsmUtils;
 
-import java.util.Collections;
 import java.util.Set;
 
 class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
@@ -59,16 +58,21 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     @Override
     public AnnotationVisitor visitParameterAnnotation(final int parameter, final String annotation, final boolean visible) {
         final AnnotationVisitor av = mv.visitParameterAnnotation(parameter, annotation, visible);
-        if (AsmUtils.isReferenceType(argumentTypes[parameter])) {
+        if (isParameterReferenceType(parameter)) {
             if (isNullableAnnotation(annotation)) {
-                notNullParams.removeAll(Collections.singleton(parameter));
+                setNullable(parameter);
             }
         } else if (annotation.equals(LJAVA_LANG_SYNTHETIC_ANNO)) {
             // See asm r1278 for what we do this,
             // http://forge.objectweb.org/tracker/index.php?func=detail&aid=307392&group_id=23&atid=100023
-            syntheticCount++;
+            increaseSyntheticCount();
+            setNullable(parameter);
         }
         return av;
+    }
+
+    private boolean setNullable(int parameter) {
+        return notNullParams.remove((Integer)parameter);
     }
 
     /**
@@ -79,34 +83,17 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     @Override
     public AnnotationVisitor visitAnnotation(final String annotation, final boolean visible) {
         final AnnotationVisitor av = mv.visitAnnotation(annotation, visible);
-        if (AsmUtils.isReferenceType(returnType) && isNullableAnnotation(annotation)) {
-            returnIsNotNull = false;
+        if (isReturnReferenceType() && isNullableAnnotation(annotation)) {
+            isReturnNotNull = false;
         }
 
         return av;
     }
 
-    /**
-     * Starts the visit of the method's code, if any (ie non abstract method).
-     */
     @Override
-    public void visitCode() {
-        if (!notNullParams.isEmpty()) {
-            startGeneratedCodeLabel = new Label();
-            mv.visitLabel(startGeneratedCodeLabel);
-        }
-        for (final Integer notNullParam : notNullParams) {
-            int var = ((access & Opcodes.ACC_STATIC) == 0) ? 1 : 0;
-            for (int i = 0; i < notNullParam; ++i) {
-                var += argumentTypes[i].getSize();
-            }
-            mv.visitVarInsn(Opcodes.ALOAD, var);
-
-            final Label end = new Label();
-            mv.visitJumpInsn(Opcodes.IFNONNULL, end);
-
-            generateThrow(IAE_CLASS_NAME, "Argument " + (notNullParam - syntheticCount) + " for implicit 'NotNull' parameter of " + className + "." + methodName + " must not be null", end);
-        }
+    @NotNull
+    protected String getThrowMessage(int parameterNumber) {
+        return "Argument " + getSourceCodeParameterNumber(parameterNumber) + " for implicit 'NotNull' parameter of " + className + "." + methodName + " must not be null";
     }
 
     /**
@@ -116,17 +103,14 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
      */
     @Override
     public void visitLocalVariable(final String name, final String description, final String signature, final Label start, final Label end, final int index) {
-        final boolean isStatic = (access & Opcodes.ACC_STATIC) != 0;
-        final boolean isParameter = isStatic ? index < argumentTypes.length : index <= argumentTypes.length;
-        mv.visitLocalVariable(name, description, signature, (isParameter && startGeneratedCodeLabel != null) ? startGeneratedCodeLabel : start, end, index);
+        mv.visitLocalVariable(name, description, signature, (isParameter(index) && startGeneratedCodeLabel != null) ? startGeneratedCodeLabel : start, end, index);
     }
 
     @Override
     public void visitMaxs(final int maxStack, final int maxLocals) {
         try {
             super.visitMaxs(maxStack, maxLocals);
-        }
-        catch (final ArrayIndexOutOfBoundsException e) {
+        } catch (final ArrayIndexOutOfBoundsException e) {
             throw new ArrayIndexOutOfBoundsException("visitMaxs processing failed for method " + methodName + ": " + e.getMessage());
         }
     }

@@ -20,6 +20,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import se.eris.asm.AsmUtils;
 import se.eris.lang.LangUtils;
 
 import java.util.ArrayList;
@@ -28,29 +29,29 @@ import java.util.List;
 public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
 
     static final String LJAVA_LANG_SYNTHETIC_ANNO = "Ljava/lang/Synthetic;";
-    static final String IAE_CLASS_NAME = "java/lang/IllegalArgumentException";
+    private static final String IAE_CLASS_NAME = "java/lang/IllegalArgumentException";
     private static final String ISE_CLASS_NAME = "java/lang/IllegalStateException";
     private static final String CONSTRUCTOR_NAME = "<init>";
 
     final Type[] argumentTypes;
-    final Type returnType;
-    boolean returnIsNotNull;
+    private final Type returnType;
+    boolean isReturnNotNull;
     private boolean instrumented = false;
-    int syntheticCount;
+    private int syntheticCount;
     final int access;
     final String methodName;
     final String className;
     final List<Integer> notNullParams;
     Label startGeneratedCodeLabel;
 
-    ThrowOnNullMethodVisitor(final int api, final MethodVisitor mv, @NotNull final Type[] argumentTypes, final Type returnType, final int access, final String methodName, final String className, final boolean returnIsNotNull) {
+    ThrowOnNullMethodVisitor(final int api, final MethodVisitor mv, @NotNull final Type[] argumentTypes, final Type returnType, final int access, final String methodName, final String className, final boolean isReturnNotNull) {
         super(api, mv);
         this.argumentTypes = argumentTypes;
         this.returnType = returnType;
         this.access = access;
         this.methodName = methodName;
         this.className = className;
-        this.returnIsNotNull = returnIsNotNull;
+        this.isReturnNotNull = isReturnNotNull;
         syntheticCount = 0;
         notNullParams = new ArrayList<>();
     }
@@ -66,7 +67,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
      */
     public void visitInsn(final int opcode) {
         if (opcode == Opcodes.ARETURN) {
-            if (returnIsNotNull) {
+            if (isReturnNotNull) {
                 mv.visitInsn(Opcodes.DUP);
                 final Label skipLabel = new Label();
                 mv.visitJumpInsn(Opcodes.IFNONNULL, skipLabel);
@@ -77,7 +78,42 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
         mv.visitInsn(opcode);
     }
 
-    void generateThrow(@NotNull final String exceptionClass, @NotNull final String description, @NotNull final Label end) {
+    boolean hasInstrumented() {
+        return instrumented;
+    }
+
+    private boolean isStatic() {
+        return (access & Opcodes.ACC_STATIC) != 0;
+    }
+
+    boolean isParameter(int index) {
+        return isStatic() ? index < argumentTypes.length : index <= argumentTypes.length;
+    }
+
+    /**
+     * Starts the visit of the method's code, if any (ie non abstract method).
+     */
+    @Override
+    public void visitCode() {
+        if (!notNullParams.isEmpty()) {
+            startGeneratedCodeLabel = new Label();
+            mv.visitLabel(startGeneratedCodeLabel);
+        }
+        for (final Integer notNullParam : notNullParams) {
+            int var = ((access & Opcodes.ACC_STATIC) == 0) ? 1 : 0;
+            for (int i = 0; i < notNullParam; ++i) {
+                var += argumentTypes[i].getSize();
+            }
+            mv.visitVarInsn(Opcodes.ALOAD, var);
+
+            final Label end = new Label();
+            mv.visitJumpInsn(Opcodes.IFNONNULL, end);
+
+            generateThrow(IAE_CLASS_NAME, getThrowMessage(notNullParam), end);
+        }
+    }
+
+    private void generateThrow(@NotNull final String exceptionClass, @NotNull final String description, @NotNull final Label end) {
         final String exceptionParamClass = "(" + LangUtils.convertToJavaClassName(String.class.getName()) + ")V";
         mv.visitTypeInsn(Opcodes.NEW, exceptionClass);
         mv.visitInsn(Opcodes.DUP);
@@ -89,8 +125,23 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
         setInstrumented();
     }
 
-    boolean hasInstrumented() {
-        return instrumented;
+    boolean isReturnReferenceType() {
+        return AsmUtils.isReferenceType(this.returnType);
+    }
+
+    boolean isParameterReferenceType(int parameter) {
+        return AsmUtils.isReferenceType(argumentTypes[parameter]);
+    }
+
+    @NotNull
+    protected abstract String getThrowMessage(int parameterNumber);
+
+    int increaseSyntheticCount() {
+        return syntheticCount++;
+    }
+
+    int getSourceCodeParameterNumber(int parameterNumber) {
+        return parameterNumber - syntheticCount;
     }
 
 }
