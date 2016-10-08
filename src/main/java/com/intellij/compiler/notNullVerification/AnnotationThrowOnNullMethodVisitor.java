@@ -64,26 +64,10 @@ class AnnotationThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
         return av;
     }
 
-    /**
-     * Starts the visit of the method's code, if any (ie non abstract method).
-     */
-    public void visitCode() {
-        if (!notNullParams.isEmpty()) {
-            startGeneratedCodeLabel = new Label();
-            mv.visitLabel(startGeneratedCodeLabel);
-        }
-        for (final Integer notNullParam : notNullParams) {
-            int var = ((access & Opcodes.ACC_STATIC) == 0) ? 1 : 0;
-            for (int i = 0; i < notNullParam; ++i) {
-                var += argumentTypes[i].getSize();
-            }
-            mv.visitVarInsn(Opcodes.ALOAD, var);
-
-            final Label end = new Label();
-            mv.visitJumpInsn(Opcodes.IFNONNULL, end);
-
-            generateThrow(IAE_CLASS_NAME, "Argument " + (notNullParam - syntheticCount) + " for @NotNull parameter of " + className + "." + methodName + " must not be null", end);
-        }
+    @Override
+    @NotNull
+    protected String getThrowMessage(int notNullParam) {
+        return "Argument " + (notNullParam - syntheticCount) + " for @NotNull parameter of " + className + "." + methodName + " must not be null";
     }
 
     /**
@@ -92,9 +76,7 @@ class AnnotationThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
      * {@inheritDoc}
      */
     public void visitLocalVariable(final String name, final String description, final String signature, final Label start, final Label end, final int index) {
-        final boolean isStatic = (access & Opcodes.ACC_STATIC) != 0;
-        final boolean isParameter = isStatic ? index < argumentTypes.length : index <= argumentTypes.length;
-        mv.visitLocalVariable(name, description, signature, (isParameter && startGeneratedCodeLabel != null) ? startGeneratedCodeLabel : start, end, index);
+        mv.visitLocalVariable(name, description, signature, (isParameter(index) && startGeneratedCodeLabel != null) ? startGeneratedCodeLabel : start, end, index);
     }
 
     public void visitMaxs(final int maxStack, final int maxLocals) {
