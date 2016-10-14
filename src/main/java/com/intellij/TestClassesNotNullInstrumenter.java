@@ -33,6 +33,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
         requiresDependencyResolution = ResolutionScope.TEST)
 public class TestClassesNotNullInstrumenter extends AbstractNotNullInstrumenterTask {
 
+    @Override
     public void execute() throws MojoExecutionException {
         try {
             instrument(project.getBuild().getTestOutputDirectory(), project.getTestClasspathElements());

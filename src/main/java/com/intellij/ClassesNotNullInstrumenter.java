@@ -33,6 +33,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
         requiresDependencyResolution = ResolutionScope.COMPILE)
 public class ClassesNotNullInstrumenter extends AbstractNotNullInstrumenterTask {
 
+    @Override
     public void execute() throws MojoExecutionException {
         try {
             instrument(project.getBuild().getOutputDirectory(), project.getCompileClasspathElements());

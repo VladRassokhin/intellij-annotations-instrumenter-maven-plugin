@@ -46,11 +46,15 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     private List<String> annotations;
     @Parameter
     private boolean implicit;
-    @Parameter(property = "se.eris.instrument")
+    @Parameter(property = "notnull.instrument", defaultValue = "true")
+    private boolean instrument;
 
     private final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new MavenLogWrapper(getLog()));
 
     void instrument(@NotNull final String classesDirectory, @NotNull final Iterable<String> classpathElements) throws MojoExecutionException {
+        if (!instrument) {
+            return;
+        }
         final NotNullConfiguration configuration = getConfiguration();
         logAnnotations(configuration);
         final List<URL> urls = new ArrayList<>();
