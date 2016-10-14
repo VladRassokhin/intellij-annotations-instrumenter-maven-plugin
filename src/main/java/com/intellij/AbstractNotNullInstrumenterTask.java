@@ -46,10 +46,11 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     private List<String> annotations;
     @Parameter
     private boolean implicit;
+    @Parameter(property = "se.eris.instrument")
 
     private final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new MavenLogWrapper(getLog()));
 
-    void instrument(@NotNull final String classesDirectory, @NotNull final List<String> classpathElements) throws MojoExecutionException {
+    void instrument(@NotNull final String classesDirectory, @NotNull final Iterable<String> classpathElements) throws MojoExecutionException {
         final NotNullConfiguration configuration = getConfiguration();
         logAnnotations(configuration);
         final List<URL> urls = new ArrayList<>();
@@ -62,10 +63,11 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
             throw new MojoExecutionException("Cannot convert classpath element into URL", e);
         }
         catch (final RuntimeException e) {
+            //noinspection ThrowInsideCatchBlockWhichIgnoresCaughtException
             throw new MojoExecutionException(e.getMessage(), e.getCause());
         }
         final int instrumented = instrumenter.addNotNullAnnotations(classesDirectory, configuration, urls);
-        getLog().info("Added @NotNull assertions to " + instrumented + " files");
+        getLog().info("Instrumented " + instrumented + " files with NotNull assertions");
     }
 
     private NotNullConfiguration getConfiguration() {
@@ -82,7 +84,8 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     }
 
     private void logAnnotations(@NotNull final NotNullConfiguration configuration) {
-        getLog().info("Using the following NotNull annotations:");
+        final String message = configuration.isImplicit() ? "Using the following Nullable annotations:" : "Using the following NotNull annotations:";
+        getLog().info(message);
         for (final String notNullAnnotation : configuration.getAnnotations()) {
             getLog().info("  " + notNullAnnotation);
         }
