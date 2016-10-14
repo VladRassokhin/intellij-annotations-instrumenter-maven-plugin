@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2016 Eris IT AB
+ * Copyright 2013-2015 Eris IT AB
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.eris;
+package se.eris.notnull;
 
 import com.intellij.NotNullInstrumenter;
 import org.jetbrains.annotations.NotNull;
@@ -39,7 +39,7 @@ import java.util.Set;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class ImplicitNotNullInstrumenterTest {
+public class AnnotationNotNullInstrumenterTest {
 
     private static final File SRC_DIR = new File("src/test/data");
     private static final File TARGET_DIR = new File("src/test/data");
@@ -48,11 +48,11 @@ public class ImplicitNotNullInstrumenterTest {
     public ExpectedException exception = ExpectedException.none();
 
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeClass() {
         final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/test/TestNotNull.java");
         compile(fileToCompile);
 
-        final NotNullConfiguration configuration = new NotNullConfiguration(true, annotations());
+        final NotNullConfiguration configuration = new NotNullConfiguration(false, annotations());
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
         final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", configuration, Collections.<URL>emptyList());
 
@@ -62,52 +62,39 @@ public class ImplicitNotNullInstrumenterTest {
     @NotNull
     private static Set<String> annotations() {
         final Set<String> annotations = new HashSet<>();
-        annotations.add("org.jetbrains.annotations.Nullable");
+        annotations.add("org.jetbrains.annotations.NotNull");
         annotations.add("java.lang.Deprecated");
         return annotations;
     }
 
     @Test
-    public void notNullAnnotatedParameter_shouldValidate() throws Exception {
+    public void annotatedParameter_shouldValidate() throws Exception {
         final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, "should work");
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/test/TestNotNull.notNullParameter must not be null");
+        exception.expectMessage("Argument 0 for @NotNull parameter of se/eris/test/TestNotNull.notNullParameter must not be null");
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
 
     @Test
-    public void implicitParameter_shouldValidate() throws Exception {
+    public void notnullReturn_shouldValidate() throws Exception {
         final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
-        final Method implicitParameterMethod = c.getMethod("implicitParameter", String.class);
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/test/TestNotNull.implicitParameter must not be null");
-        ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null});
-    }
-
-    @Test
-    public void nullableAnnotatedParameter_shouldNotValidate() throws Exception {
-        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
-        final Method implicitParameterMethod = c.getMethod("nullableParameter", String.class);
-        ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null});
-    }
-
-    @Test
-    public void implicitReturn_shouldValidate() throws Exception {
-        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
-        final Method notNullReturnMethod = c.getMethod("implicitReturn", String.class);
+        final Method notNullReturnMethod = c.getMethod("notNullReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
         exception.expect(IllegalStateException.class);
-        exception.expectMessage("NotNull method se/eris/test/TestNotNull.implicitReturn must not return null");
+        exception.expectMessage("NotNull method se/eris/test/TestNotNull.notNullReturn must not return null");
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null});
     }
 
     @Test
-    public void annotatedReturn_shouldNotValidate() throws Exception {
+    public void annotatedReturn_shouldValidate() throws Exception {
         final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
         final Method notNullReturnMethod = c.getMethod("annotatedReturn", String.class);
-        ReflectionUtil.simulateMethodCall(notNullReturnMethod, (String)null);
+        ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage("NotNull method se/eris/test/TestNotNull.annotatedReturn must not return null");
+        ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null});
     }
 
     @NotNull

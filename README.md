@@ -19,7 +19,7 @@ Just update your pom.xml with following:
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>15.0</version>
+            <version>13.0</version>
         </dependency>
         ...
     </dependencies>
@@ -29,7 +29,7 @@ Just update your pom.xml with following:
             <plugin>
                 <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.4.1</version>
+                <version>0.4.2</version>
                 <executions>
                     <execution>
                         <goals>
@@ -53,7 +53,7 @@ want to one or more other annotations add them to configuration, for example:
             <plugin>
                 <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.4.1</version>
+                <version>0.4.2</version>
                 <executions>
                     <execution>
                         <id>instrument</id>
@@ -88,7 +88,7 @@ If you don't like to have @NotNull on 99.99% of your parameters and methods turn
             <plugin>
                 <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.4.1</version>
+                <version>0.4.2</version>
                 <executions>
                     <execution>
                         <id>instrument</id>
@@ -108,7 +108,29 @@ If you don't like to have @NotNull on 99.99% of your parameters and methods turn
         </plugins>
     </build>
 
-Will instrument all parameters and return values with NotNull unless annotated with @Nullable (org.jetbrains.annotations.Nullable). 
+Will instrument all parameters and return values with NotNull unless annotated with @Nullable (org.jetbrains.annotations.Nullable). Ie:
+
+    public String implicit(String a, String b) {
+        if (a.equals(b)) {
+            return null;
+        }
+        return a + b;
+    }
+
+will throw an IllegalArgumentException if either the a or b parameter is null, and will throw an 
+IllegalStateException if a equals b (since it is not allowed to return null). To allow nulls you would 
+have to annotate the parameters/return value like this:
+
+    @Nullable
+    public String implicit(@Nullable String a, @Nullable String b) {
+        if (a.equals(b)) {
+            return null;
+        }
+        return a + b;
+    }
+
+which would throw a NullPointerException if a is null, return null if a equals b, and otherwise append the 
+Strings (or a + null if b is null).
 
 **Note** that when using implicit you need to specify the Nullable annotation (not NotNull).
 

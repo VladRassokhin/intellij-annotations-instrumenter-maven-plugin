@@ -63,14 +63,6 @@ final class PseudoClass {
         return result;
     }
 
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        //noinspection SimplifiableIfStatement
-        if (o == null || getClass() != o.getClass()) return false;
-
-        return getName().equals(((PseudoClass) o).getName());
-    }
-
     private boolean isSubclassOf(final PseudoClass x) throws IOException, ClassNotFoundException {
         for (PseudoClass c = this; c != null; c = c.getSuperClass()) {
             final PseudoClass superClass = c.getSuperClass();
@@ -112,4 +104,25 @@ final class PseudoClass {
         return false;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PseudoClass that = (PseudoClass) o;
+
+        return getName().equals(that.getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return getName().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "PseudoClass{" +
+                "classInfo=" + classInfo +
+                '}';
+    }
 }

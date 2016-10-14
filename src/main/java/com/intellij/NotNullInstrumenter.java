@@ -17,7 +17,7 @@ package com.intellij;
 
 import com.intellij.compiler.instrumentation.InstrumentationClassFinder;
 import com.intellij.compiler.instrumentation.InstrumenterClassWriter;
-import com.intellij.compiler.notNullVerification.NotNullVerifyingInstrumenter;
+import com.intellij.compiler.notNullVerification.NotNullInstrumenterClassVisitor;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -66,15 +66,15 @@ public class NotNullInstrumenter {
     }
 
     private int instrumentFile(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, final NotNullConfiguration configuration) {
-        logger.debug("Adding @NotNull assertions to " + file.getPath());
+        logger.debug("Adding NotNull assertions to " + file.getPath());
         try {
             return instrumentClass(file, finder, configuration) ? 1 : 0;
         }
         catch (final IOException e) {
-            logger.warn("Failed to instrument @NotNull assertion for " + file.getPath() + ": " + e.getMessage());
+            logger.warn("Failed to instrument NotNull assertion for " + file.getPath() + ": " + e.getMessage());
         }
         catch (final RuntimeException e) {
-            throw new InstrumenterExecutionException("@NotNull instrumentation failed for " + file.getPath() + ": " + e.toString(), e);
+            throw new InstrumenterExecutionException("NotNull instrumentation failed for " + file.getPath() + ": " + e.toString(), e);
         }
         return 0;
     }
@@ -88,7 +88,7 @@ public class NotNullInstrumenter {
             if (AsmUtils.javaVersionSupportsAnnotations(fileVersion)) {
                 final ClassWriter writer = new InstrumenterClassWriter(getAsmClassWriterFlags(fileVersion), finder);
 
-                final NotNullVerifyingInstrumenter instrumentingVisitor = new NotNullVerifyingInstrumenter(writer, configuration);
+                final NotNullInstrumenterClassVisitor instrumentingVisitor = new NotNullInstrumenterClassVisitor(writer, configuration);
                 classReader.accept(instrumentingVisitor, NO_FLAGS);
                 if (instrumentingVisitor.hasInstrumented()) {
                     try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
