@@ -46,7 +46,7 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     private List<String> annotations;
     @Parameter
     private boolean implicit;
-    @Parameter(property = "notnull.instrument", defaultValue = "true")
+    @Parameter(property = "se.eris.notnull.instrument", defaultValue = "true")
     private boolean instrument;
 
     private final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new MavenLogWrapper(getLog()));
