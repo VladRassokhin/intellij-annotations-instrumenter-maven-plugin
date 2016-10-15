@@ -22,7 +22,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import se.eris.maven.NopLogWrapper;
-import se.eris.notnull.NotNullConfiguration;
 import se.eris.util.ReflectionUtil;
 
 import javax.tools.JavaCompiler;

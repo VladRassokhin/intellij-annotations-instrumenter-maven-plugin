@@ -41,11 +41,13 @@ public class ClassFileUtils {
     }
 
     private static class ClassFileCollector extends SimpleFileVisitor<Path> {
+        private static final String CLASS_FILE_EXTENSION = ".class";
+
         private final Set<File> classFiles = new HashSet<>();
 
         @Override
         public FileVisitResult visitFile(@NotNull final Path path, @NotNull final BasicFileAttributes attrs) throws IOException {
-            if (attrs.isRegularFile() && path.toFile().getName().endsWith(".class")) {
+            if (attrs.isRegularFile() && path.toFile().getName().endsWith(CLASS_FILE_EXTENSION)) {
                 classFiles.add(path.toFile());
             }
             return FileVisitResult.CONTINUE;
@@ -57,7 +59,7 @@ public class ClassFileUtils {
         }
 
         @NotNull
-        public Set<File> getClassFiles() {
+        private Set<File> getClassFiles() {
             return classFiles;
         }
     }

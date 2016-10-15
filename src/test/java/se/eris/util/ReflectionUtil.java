@@ -29,8 +29,9 @@ public class ReflectionUtil {
         try {
             return method.invoke(null, params);
         } catch (final InvocationTargetException e) {
-            if (e.getCause() instanceof RuntimeException) {
-                throw RuntimeException.class.cast(e.getCause());
+            Throwable cause = e.getCause();
+            if (cause instanceof RuntimeException) {
+                throw RuntimeException.class.cast(cause);
             } else {
                 throw e;
             }

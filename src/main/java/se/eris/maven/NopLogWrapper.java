@@ -20,6 +20,26 @@ import org.jetbrains.annotations.NotNull;
 public class NopLogWrapper implements LogWrapper {
 
     @Override
+    public boolean isDebugEnabled() {
+        return false;
+    }
+
+    @Override
+    public boolean isInfoEnabled() {
+        return false;
+    }
+
+    @Override
+    public boolean isWarnEnabled() {
+        return false;
+    }
+
+    @Override
+    public boolean isErrorEnabled() {
+        return false;
+    }
+
+    @Override
     public void debug(@NotNull final String message) {
     }
 

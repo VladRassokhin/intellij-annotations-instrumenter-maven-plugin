@@ -20,6 +20,8 @@ import org.objectweb.asm.Type;
 
 public final class AsmUtils {
 
+    public static final int JAVA_VERSION_6 = 6;
+
     private AsmUtils() {
     }
 

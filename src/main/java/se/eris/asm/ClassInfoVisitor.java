@@ -16,6 +16,7 @@
 package se.eris.asm;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -30,7 +31,7 @@ public class ClassInfoVisitor extends ClassVisitor {
         super(Opcodes.ASM5);
     }
 
-    public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
+    public void visit(final int version, final int access, @NotNull final String name, final String signature, @Nullable final String superName, @Nullable final String[] interfaces) {
         classInfo = new ClassInfo(version, access, name, signature, superName, interfaces);
     }
 

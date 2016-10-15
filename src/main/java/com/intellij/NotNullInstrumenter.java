@@ -66,12 +66,16 @@ public class NotNullInstrumenter {
     }
 
     private int instrumentFile(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, final NotNullConfiguration configuration) {
-        logger.debug("Adding NotNull assertions to " + file.getPath());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Adding NotNull assertions to " + file.getPath());
+        }
         try {
             return instrumentClass(file, finder, configuration) ? 1 : 0;
         }
         catch (final IOException e) {
-            logger.warn("Failed to instrument NotNull assertion for " + file.getPath() + ": " + e.getMessage());
+            if (logger.isWarnEnabled()) {
+                logger.warn("Failed to instrument NotNull assertion for " + file.getPath() + ": " + e.getMessage());
+            }
         }
         catch (final RuntimeException e) {
             throw new InstrumenterExecutionException("NotNull instrumentation failed for " + file.getPath() + ": " + e.toString(), e);
@@ -105,7 +109,7 @@ public class NotNullInstrumenter {
      * @return the flags for class writer
      */
     private static int getAsmClassWriterFlags(final int version) {
-        return AsmUtils.asmOpcodeToJavaVersion(version) >= 6 ? ClassWriter.COMPUTE_FRAMES : ClassWriter.COMPUTE_MAXS;
+        return AsmUtils.asmOpcodeToJavaVersion(version) >= AsmUtils.JAVA_VERSION_6 ? ClassWriter.COMPUTE_FRAMES : ClassWriter.COMPUTE_MAXS;
     }
 
     private static int getClassFileVersion(@NotNull final ClassReader reader) {
@@ -114,7 +118,7 @@ public class NotNullInstrumenter {
             public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
                 classFileVersion[0] = version;
             }
-        }, 0);
+        }, NO_FLAGS);
         return classFileVersion[0];
     }
 }

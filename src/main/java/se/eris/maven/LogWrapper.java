@@ -19,6 +19,11 @@ import org.jetbrains.annotations.NotNull;
 
 public interface LogWrapper {
 
+    boolean isDebugEnabled();
+    boolean isInfoEnabled();
+    boolean isWarnEnabled();
+    boolean isErrorEnabled();
+
     void debug(@NotNull String message);
     void info(@NotNull String message);
     void warn(@NotNull String message);
