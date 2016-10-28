@@ -26,6 +26,8 @@ import java.util.Arrays;
 */
 public class ClassInfo {
 
+    private static final String[] EMPTY_ARRAY = new String[0];
+
     private final int version;
     private final int access;
     @NotNull
@@ -43,7 +45,7 @@ public class ClassInfo {
         this.name = name;
         this.signature = signature;
         this.superName = superName;
-        this.interfaces = interfaces == null ? new String[0] : interfaces;
+        this.interfaces = (interfaces == null) ? EMPTY_ARRAY : interfaces;
     }
 
     public int getVersion() {

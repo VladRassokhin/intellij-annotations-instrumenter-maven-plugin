@@ -20,6 +20,7 @@ import org.objectweb.asm.Type;
 
 public final class AsmUtils {
 
+    public static final int JAVA_VERSION_5 = 5;
     public static final int JAVA_VERSION_6 = 6;
 
     private AsmUtils() {
@@ -31,7 +32,7 @@ public final class AsmUtils {
     }
 
     public static boolean javaVersionSupportsAnnotations(final int opcodeVersion) {
-        return asmOpcodeToJavaVersion(opcodeVersion) >= 5;
+        return asmOpcodeToJavaVersion(opcodeVersion) >= JAVA_VERSION_5;
     }
 
     /**
