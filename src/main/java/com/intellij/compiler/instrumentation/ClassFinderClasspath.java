@@ -219,7 +219,7 @@ class ClassFinderClasspath {
             return null;
         }
 
-        private class FileResource extends Resource {
+        private static class FileResource extends Resource {
             private final File file;
 
             FileResource(final File file, final boolean willLoadBytes) throws IOException {
