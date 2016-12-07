@@ -10,6 +10,7 @@ significant changes have been made:
 * Added basic unit and functional tests
 * Isolated Maven plugin dependencies to allow usage without Maven
 * Added implicit NotNull option
+* Added flag to turn instrumentation of
 
 Usage
 ==============================================
@@ -135,25 +136,11 @@ Strings (or a + null if b is null).
 **Note** that when using implicit you need to specify the Nullable annotation (not NotNull).
 
 
-License Information
+Turn of Instrumentation
 ==============================================
-Copyright 2013-2016 Eris IT AB
 
-Licensed under the Apache License, Version 2.0
+The property `se.eris.notnull.instrument=true/false` turns on/off the instrumentation. This may seem like a 
+stupid feature but it is really useful when you have multiple maven profiles and only one of them, eg Sonar/Findbugs, 
+should build without instrumentation since it messes up the statistics (branch coverage, complexity, etc).
 
-
-Original License:
-
-Copyright 2000-2012 JetBrains s.r.o.
-
-Licensed under the Apache License, Version 2.0
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+`mvn clean install -Dse.eris.notnull.instrument=false`
