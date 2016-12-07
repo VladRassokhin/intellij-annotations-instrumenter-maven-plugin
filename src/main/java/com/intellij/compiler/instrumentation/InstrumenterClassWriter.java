@@ -40,14 +40,13 @@ public class InstrumenterClassWriter extends ClassWriter {
                 return cls2.getName();
             }
             if (cls1.isInterface() || cls2.isInterface()) {
-                return "java/lang/Object";
+                return PseudoClass.JAVA_LANG_OBJECT;
             } else {
-                PseudoClass c = cls1;
+                PseudoClass pseudoClass = cls1;
                 do {
-                    c = c.getSuperClass();
-                }
-                while (!c.isAssignableFrom(cls2));
-                return c.getName();
+                    pseudoClass = pseudoClass.getSuperClass();
+                } while (!pseudoClass.isAssignableFrom(cls2));
+                return pseudoClass.getName();
             }
         } catch (final Exception e) {
             throw new RuntimeException(e.toString(), e);

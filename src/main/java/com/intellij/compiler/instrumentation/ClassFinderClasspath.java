@@ -15,6 +15,7 @@
  */
 package com.intellij.compiler.instrumentation;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import se.eris.notnull.instrumentation.Resource;
@@ -45,18 +46,18 @@ class ClassFinderClasspath {
         if (s.indexOf('%') == -1) {
             return s;
         }
-        final StringBuilder decoded = new StringBuilder();
         final int len = s.length();
+        final StringBuilder decoded = new StringBuilder(len);
         int i = 0;
         while (i < len) {
             final char c = s.charAt(i);
             if (c == '%') {
                 final List<Integer> bytes = new ArrayList<>();
-                while (i + 2 < len && s.charAt(i) == '%') {
+                while ((s.charAt(i) == '%') && ((i + 2) < len)) {
                     final int d1 = decode(s.charAt(i + 1));
                     final int d2 = decode(s.charAt(i + 2));
-                    if (d1 != -1 && d2 != -1) {
-                        bytes.add(((d1 & 0xf) << 4 | d2 & 0xf));
+                    if ((d1 != -1) && (d2 != -1)) {
+                        bytes.add((d1 << 4) | d2);
                         i += 3;
                     } else {
                         break;
@@ -70,8 +71,7 @@ class ClassFinderClasspath {
                     try {
                         decoded.append(new String(bytesArray, "UTF-8"));
                         continue;
-                    }
-                    catch (final UnsupportedEncodingException ignored) {
+                    } catch (final UnsupportedEncodingException ignored) {
                     }
                 }
             }
@@ -82,19 +82,25 @@ class ClassFinderClasspath {
         return decoded.toString();
     }
 
+    /**
+     * @param c a hexadecimal character
+     * @return the hexadecimal character as an int
+     */
+    @Contract(pure = true)
     private static int decode(final char c) {
         if ((c >= '0') && (c <= '9')) {
             return c - '0';
         }
         if ((c >= 'a') && (c <= 'f')) {
-            return c - 'a' + 10;
+            return (c - 'a') + 10;
         }
         if ((c >= 'A') && (c <= 'F')) {
-            return c - 'A' + 10;
+            return (c - 'A') + 10;
         }
         return -1;
     }
 
+    @Nullable
     Resource getResource(final String s) {
         int i = 0;
         for (Loader loader; (loader = getLoader(i)) != null; i++) {
@@ -107,8 +113,9 @@ class ClassFinderClasspath {
         return null;
     }
 
+    @Nullable
     private synchronized Loader getLoader(final int i) {
-        while (myLoaders.size() < i + 1) {
+        while (myLoaders.size() < (i + 1)) {
             final URL url;
             synchronized (myUrls) {
                 if (myUrls.empty()) {
@@ -127,8 +134,7 @@ class ClassFinderClasspath {
                 if (loader == null) {
                     continue;
                 }
-            }
-            catch (final IOException ioexception) {
+            } catch (final IOException ioexception) {
                 continue;
             }
 
@@ -139,18 +145,18 @@ class ClassFinderClasspath {
         return myLoaders.get(i);
     }
 
+    @Nullable
     private Loader getLoader(final URL url) throws IOException {
         String s;
         try {
             s = url.toURI().getSchemeSpecificPart();
-        }
-        catch (final URISyntaxException thisShouldNotHappen) {
+        } catch (final URISyntaxException thisShouldNotHappen) {
             thisShouldNotHappen.printStackTrace();
             s = url.getFile();
         }
 
         Loader loader = null;
-        if (s != null && new File(s).isDirectory()) {
+        if ((s != null) && new File(s).isDirectory()) {
             if (FILE_PROTOCOL.equals(url.getProtocol())) {
                 loader = new FileLoader(url);
             }
@@ -186,13 +192,14 @@ class ClassFinderClasspath {
         FileLoader(final URL url) {
             super(url);
             if (!FILE_PROTOCOL.equals(url.getProtocol())) {
-                throw new IllegalArgumentException("url");
+                throw new IllegalArgumentException(this.getClass().getSimpleName() + " requires the " + FILE_PROTOCOL + " protocol. (url: " + url +")");
             } else {
                 final String s = unescapePercentSequences(url.getFile().replace('/', File.separatorChar));
                 rootDir = new File(s);
             }
         }
 
+        @Nullable
         public Resource getResource(final String name) {
             final URL url;
             File file = null;
@@ -206,20 +213,18 @@ class ClassFinderClasspath {
                 file = new File(rootDir, name.replace('/', File.separatorChar));
                 // check means we load or process resource so we check its existence via old way
                 return new FileLoader.FileResource(file, true);
-            }
-            catch (final Exception exception) {
-                if (file != null && file.exists()) {
+            } catch (final Exception exception) {
+                if ((file != null) && file.exists()) {
                     try {   // we can not open the file if it is directory, Resource still can be created
                         return new FileLoader.FileResource(file, false);
-                    }
-                    catch (final IOException ignored) {
+                    } catch (final IOException ignored) {
                     }
                 }
             }
             return null;
         }
 
-        private class FileResource extends Resource {
+        private static class FileResource extends Resource {
             private final File file;
 
             FileResource(final File file, final boolean willLoadBytes) throws IOException {
@@ -253,6 +258,7 @@ class ClassFinderClasspath {
             myURL = url;
         }
 
+        @Nullable
         private ZipFile acquireZipFile() throws IOException {
             ZipFile zipFile = myZipFile;
             if (zipFile == null) {
@@ -262,6 +268,7 @@ class ClassFinderClasspath {
             return zipFile;
         }
 
+        @Nullable
         private ZipFile doGetZipFile() throws IOException {
             if (FILE_PROTOCOL.equals(myURL.getProtocol())) {
                 final String s = unescapePercentSequences(myURL.getFile().replace('/', File.separatorChar));
@@ -275,6 +282,7 @@ class ClassFinderClasspath {
             return null;
         }
 
+        @Nullable
         public Resource getResource(final String name) {
             try {
                 final ZipFile file = acquireZipFile();
@@ -284,8 +292,7 @@ class ClassFinderClasspath {
                         return new JarLoader.JarResource(entry);
                     }
                 }
-            }
-            catch (final Exception e) {
+            } catch (final Exception e) {
                 return null;
             }
             return null;
@@ -312,8 +319,7 @@ class ClassFinderClasspath {
                     }
                     return new FilterInputStream(inputStream) {
                     };
-                }
-                catch (final IOException e) {
+                } catch (final IOException e) {
                     e.printStackTrace();
                     return null;
                 }

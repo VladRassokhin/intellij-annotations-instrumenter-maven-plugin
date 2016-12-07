@@ -57,6 +57,13 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
         }
         final NotNullConfiguration configuration = getConfiguration();
         logAnnotations(configuration);
+        final List<URL> classpathUrls = getClasspathUrls(classpathElements);
+        final int instrumented = instrumenter.addNotNullAnnotations(classesDirectory, configuration, classpathUrls);
+        getLog().info("Instrumented " + instrumented + " files with NotNull assertions");
+    }
+
+    @NotNull
+    private List<URL> getClasspathUrls(@NotNull final Iterable<String> classpathElements) throws MojoExecutionException {
         final List<URL> urls = new ArrayList<>();
         try {
             for (final String cp : classpathElements) {
@@ -70,8 +77,7 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
             //noinspection ThrowInsideCatchBlockWhichIgnoresCaughtException
             throw new MojoExecutionException(e.getMessage(), e.getCause());
         }
-        final int instrumented = instrumenter.addNotNullAnnotations(classesDirectory, configuration, urls);
-        getLog().info("Instrumented " + instrumented + " files with NotNull assertions");
+        return urls;
     }
 
     private NotNullConfiguration getConfiguration() {
