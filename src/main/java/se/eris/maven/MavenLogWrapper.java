@@ -49,21 +49,29 @@ public class MavenLogWrapper implements LogWrapper {
 
     @Override
     public void debug(@NotNull final String message) {
-        logger.debug(message);
+        if (logger.isDebugEnabled()) {
+            logger.debug(message);
+        }
     }
 
     @Override
     public void info(@NotNull final String message) {
-        logger.info(message);
+        if (logger.isInfoEnabled()) {
+            logger.info(message);
+        }
     }
 
     @Override
     public void warn(@NotNull final String message) {
-        logger.warn(message);
+        if (logger.isWarnEnabled()) {
+            logger.warn(message);
+        }
     }
 
     @Override
     public void error(@NotNull final String message) {
-        logger.error(message);
+        if (logger.isErrorEnabled()) {
+            logger.error(message);
+        }
     }
 }

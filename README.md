@@ -1,5 +1,4 @@
-intellij-annotations-instrumenter-maven-plugin
-==============================================
+#intellij-annotations-instrumenter-maven-plugin
 
 IntelliJ IDEA annotations instrumenter maven plugin
 
@@ -12,8 +11,8 @@ significant changes have been made:
 * Added implicit NotNull option
 * Added flag to turn instrumentation of
 
-Usage
-==============================================
+##Usage
+
 Just update your pom.xml with following: 
 
     <dependencies>
@@ -44,8 +43,8 @@ Just update your pom.xml with following:
         </plugins>
     </build>
 
-Use other and/or multiple annotations
-==============================================
+##Use other and/or multiple annotations
+
 By default only the annotation org.jetbrains.annotations.NotNull is supported if you
 want to one or more other annotations add them to configuration, for example:
 
@@ -80,8 +79,8 @@ Note that configuration will replace the default annotations, so org.jetbrains.a
 no longer be included by default thus it must be added again if used (as in the above example).
 
 
-Implicit NotNull instrumentation
-==============================================
+##Implicit NotNull instrumentation
+
 If you don't like to have @NotNull on 99.99% of your parameters and methods turn on the implicit instrumentation:
 
     <build>
@@ -136,8 +135,7 @@ Strings (or a + null if b is null).
 **Note** that when using implicit you need to specify the Nullable annotation (not NotNull).
 
 
-Turn of Instrumentation
-==============================================
+##Turn of Instrumentation
 
 The property `se.eris.notnull.instrument=true/false` turns on/off the instrumentation. This may seem like a 
 stupid feature but it is really useful when you have multiple maven profiles and only one of them, eg Sonar/Findbugs, 

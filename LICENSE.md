@@ -1,5 +1,5 @@
-License Information
-==============================================
+#License Information
+
 Copyright 2013-2016 Eris IT AB
 
 Licensed under the Apache License, Version 2.0

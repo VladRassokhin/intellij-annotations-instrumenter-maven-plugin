@@ -44,12 +44,19 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Parameter
     private List<String> annotations;
+
     @Parameter
     private boolean implicit;
     @Parameter(property = "se.eris.notnull.instrument", defaultValue = "true")
     private boolean instrument;
 
-    private final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new MavenLogWrapper(getLog()));
+    private final NotNullInstrumenter instrumenter;
+
+    private final MavenLogWrapper logger = new MavenLogWrapper(getLog());
+
+    public AbstractNotNullInstrumenterTask() {
+        instrumenter = new NotNullInstrumenter(logger);
+    }
 
     void instrument(@NotNull final String classesDirectory, @NotNull final Iterable<String> classpathElements) throws MojoExecutionException {
         if (!instrument) {
@@ -59,7 +66,7 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
         logAnnotations(configuration);
         final List<URL> classpathUrls = getClasspathUrls(classpathElements);
         final int instrumented = instrumenter.addNotNullAnnotations(classesDirectory, configuration, classpathUrls);
-        getLog().info("Instrumented " + instrumented + " files with NotNull assertions");
+        logger.info("Instrumented " + instrumented + " files with NotNull assertions");
     }
 
     @NotNull
@@ -95,14 +102,14 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
 
     private void logAnnotations(@NotNull final NotNullConfiguration configuration) {
         final String message = configuration.isImplicit() ? "Using the following Nullable annotations:" : "Using the following NotNull annotations:";
-        getLog().info(message);
+        logger.info(message);
         for (final String notNullAnnotation : configuration.getAnnotations()) {
-            getLog().info("  " + notNullAnnotation);
+            logger.info("  " + notNullAnnotation);
         }
     }
 
     private boolean isConfigurationOverrideAnnotations() {
-        return annotations != null && !annotations.isEmpty();
+        return (annotations != null) && !annotations.isEmpty();
     }
 
 }
