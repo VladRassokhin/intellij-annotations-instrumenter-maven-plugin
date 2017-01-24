@@ -18,6 +18,7 @@ package se.eris.notnull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,14 +28,39 @@ public class NotNullConfiguration {
     private final boolean implicit;
     @NotNull
     private final Set<String> annotations;
+    @NotNull
+    private final Set<String> nullable;
 
-    public NotNullConfiguration(final boolean implicit, @NotNull final Set<String> annotations) {
+    @SuppressWarnings("BooleanParameter")
+    public NotNullConfiguration(
+            final boolean implicit,
+            @NotNull final Set<String> annotations,
+            @NotNull final Set<String> nullable)
+    {
         this.implicit = implicit;
-        if (annotations.isEmpty()) {
-            this.annotations = Collections.singleton(implicit ? Nullable.class.getName() : NotNull.class.getName());
+        if (implicit) {
+            if (annotations.isEmpty() && nullable.isEmpty()) {
+                this.nullable = Collections.singleton(Nullable.class.getName());
+            } else {
+                this.nullable = Collections.unmodifiableSet(join(annotations, nullable));
+            }
+            this.annotations = Collections.emptySet();
         } else {
-            this.annotations = Collections.unmodifiableSet(new HashSet<>(annotations));
+            if (annotations.isEmpty()) {
+                this.annotations = Collections.singleton(NotNull.class.getName());
+            } else {
+                this.annotations = Collections.unmodifiableSet(new HashSet<>(annotations));
+            }
+            this.nullable = Collections.unmodifiableSet(new HashSet<>(nullable));
         }
+    }
+
+    @NotNull
+    private Set<String> join(@NotNull final Collection<String> c1, @NotNull final Collection<String> c2) {
+        final Set<String> all = new HashSet<>(c1.size() + c2.size());
+        all.addAll(c1);
+        all.addAll(c2);
+        return all;
     }
 
     public boolean isImplicit() {
@@ -44,6 +70,16 @@ public class NotNullConfiguration {
     @NotNull
     public Set<String> getAnnotations() {
         return annotations;
+    }
+
+    @NotNull
+    public Set<String> getNotNullAnnotations() {
+        return annotations;
+    }
+
+    @NotNull
+    public Set<String> getNullableAnnotations() {
+        return nullable;
     }
 
 }

@@ -35,7 +35,8 @@ import java.util.Set;
  */
 public class NotNullInstrumenterClassVisitor extends ClassVisitor {
 
-    private final Set<String> annotations;
+    private final Set<String> notnull;
+    private final Set<String> nullable;
     private final List<ThrowOnNullMethodVisitor> methodVisitors = new ArrayList<>();
 
     private String className;
@@ -45,16 +46,17 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
     public NotNullInstrumenterClassVisitor(@NotNull final ClassVisitor classVisitor, @NotNull final NotNullConfiguration configuration) {
         super(Opcodes.ASM5, classVisitor);
         this.configuration = configuration;
-        this.annotations = convertToClassName(configuration);
+        this.notnull = convertToClassName(configuration.getNotNullAnnotations());
+        this.nullable = convertToClassName(configuration.getNullableAnnotations());
     }
 
     @NotNull
-    private Set<String> convertToClassName(@NotNull final NotNullConfiguration configuration) {
-        final Set<String> annotations = new HashSet<>();
-        for (@NotNull final String annotation : configuration.getAnnotations()) {
-            annotations.add(LangUtils.convertToJavaClassName(annotation));
+    private Set<String> convertToClassName(@NotNull final Iterable<String> annotations) {
+        final Set<String> converted = new HashSet<>();
+        for (@NotNull final String annotation : annotations) {
+            converted.add(LangUtils.convertToJavaClassName(annotation));
         }
-        return annotations;
+        return converted;
     }
 
     public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
@@ -69,9 +71,9 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
         final MethodVisitor methodVisitor = cv.visitMethod(access, name, desc, signature, exceptions);
         final ThrowOnNullMethodVisitor visitor;
         if (configuration.isImplicit()) {
-            visitor = new ImplicitThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, annotations);
+            visitor = new ImplicitThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, nullable);
         } else {
-            visitor = new AnnotationThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, annotations);
+            visitor = new AnnotationThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, notnull);
         }
         methodVisitors.add(visitor);
         return visitor;

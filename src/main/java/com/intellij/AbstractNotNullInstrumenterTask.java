@@ -27,10 +27,7 @@ import se.eris.notnull.NotNullConfiguration;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Vladislav.Rassokhin
@@ -44,6 +41,10 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Parameter
     private List<String> annotations;
+
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    @Parameter
+    private List<String> nullable;
 
     @Parameter
     private boolean implicit;
@@ -88,7 +89,7 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     }
 
     private NotNullConfiguration getConfiguration() {
-        return new NotNullConfiguration(implicit, getAnnotations());
+        return new NotNullConfiguration(implicit, getAnnotations(), Collections.<String>emptySet());
     }
 
     @NotNull
@@ -101,10 +102,17 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     }
 
     private void logAnnotations(@NotNull final NotNullConfiguration configuration) {
-        final String message = configuration.isImplicit() ? "Using the following Nullable annotations:" : "Using the following NotNull annotations:";
-        logger.info(message);
-        for (final String notNullAnnotation : configuration.getAnnotations()) {
-            logger.info("  " + notNullAnnotation);
+        if (!configuration.getNotNullAnnotations().isEmpty()) {
+            logger.info("Using the following NotNull annotations:");
+            for (final String notNullAnnotation : configuration.getNotNullAnnotations()) {
+                logger.info("  " + notNullAnnotation);
+            }
+        }
+        if (!configuration.getNullableAnnotations().isEmpty()) {
+            logger.info("Using the following Nullable annotations:");
+            for (final String nullableAnnotation : configuration.getNullableAnnotations()) {
+                logger.info("  " + nullableAnnotation);
+            }
         }
     }
 
