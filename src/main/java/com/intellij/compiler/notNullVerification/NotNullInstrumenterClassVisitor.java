@@ -16,32 +16,30 @@
 package com.intellij.compiler.notNullVerification;
 
 import org.jetbrains.annotations.NotNull;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import org.objectweb.asm.*;
 import se.eris.lang.LangUtils;
 import se.eris.notnull.NotNullConfiguration;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
  * @author ven
  * @author Vladislav.Rassokhin
+ * @author Olle Sundblad
  * noinspection HardCodedStringLiteral
  */
 public class NotNullInstrumenterClassVisitor extends ClassVisitor {
 
     private final Set<String> notnull;
     private final Set<String> nullable;
-    private final List<ThrowOnNullMethodVisitor> methodVisitors = new ArrayList<>();
+    private final Collection<ThrowOnNullMethodVisitor> methodVisitors = new ArrayList<>();
 
     private String className;
     @NotNull
-    private NotNullConfiguration configuration;
+    private final NotNullConfiguration configuration;
 
     public NotNullInstrumenterClassVisitor(@NotNull final ClassVisitor classVisitor, @NotNull final NotNullConfiguration configuration) {
         super(Opcodes.ASM5, classVisitor);
@@ -77,6 +75,11 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
         }
         methodVisitors.add(visitor);
         return visitor;
+    }
+
+    @Override
+    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+        return super.visitAnnotation(desc, visible);
     }
 
     public boolean hasInstrumented() {

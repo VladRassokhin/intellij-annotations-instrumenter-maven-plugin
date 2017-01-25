@@ -6,11 +6,8 @@ import se.eris.notnull.ImplicitNotNull;
 @ImplicitNotNull
 public class TestClassImplicit {
 
-    public String implicitReturn(@Nullable final String s) {
+    public static String implicitReturn(@Nullable final String s) {
         return s;
-    }
-
-    public void implicitArgument(final String s) {
     }
 
 }

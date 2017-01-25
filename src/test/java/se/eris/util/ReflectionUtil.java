@@ -16,6 +16,7 @@
 package se.eris.util;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -26,10 +27,14 @@ import java.lang.reflect.Method;
 public class ReflectionUtil {
 
     public static Object simulateMethodCall(@NotNull final Method method, @NotNull final Object... params) throws IllegalAccessException, InvocationTargetException {
+        return simulateMethodCall(null, method, params);
+    }
+
+    public static Object simulateMethodCall(@Nullable final Class<?> cls, @NotNull final Method method, @NotNull final Object... params) throws IllegalAccessException, InvocationTargetException {
         try {
-            return method.invoke(null, params);
+            return method.invoke(cls, params);
         } catch (final InvocationTargetException e) {
-            Throwable cause = e.getCause();
+            final Throwable cause = e.getCause();
             if (cause instanceof RuntimeException) {
                 throw RuntimeException.class.cast(cause);
             } else {
