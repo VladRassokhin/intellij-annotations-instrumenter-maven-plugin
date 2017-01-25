@@ -37,6 +37,7 @@ import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 
 public class AnnotationNotNullInstrumenterTest {
 
@@ -55,7 +56,7 @@ public class AnnotationNotNullInstrumenterTest {
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
         final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", configuration, Collections.<URL>emptyList());
 
-        assertThat(numberOfInstrumentedFiles, is(1));
+        assertThat(numberOfInstrumentedFiles, greaterThan(0));
     }
 
     @NotNull
