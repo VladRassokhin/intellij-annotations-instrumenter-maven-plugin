@@ -10,4 +10,7 @@ public class TestClassImplicit {
         return s;
     }
 
+    public static void implicitParameter(final String s) {
+    }
+
 }

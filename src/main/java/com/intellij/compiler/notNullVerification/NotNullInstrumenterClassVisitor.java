@@ -18,6 +18,7 @@ package com.intellij.compiler.notNullVerification;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.*;
 import se.eris.lang.LangUtils;
+import se.eris.notnull.ImplicitNotNull;
 import se.eris.notnull.NotNullConfiguration;
 
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
     private String className;
     @NotNull
     private final NotNullConfiguration configuration;
+    private boolean classAnnotatedImplicit = false;
 
     public NotNullInstrumenterClassVisitor(@NotNull final ClassVisitor classVisitor, @NotNull final NotNullConfiguration configuration) {
         super(Opcodes.ASM5, classVisitor);
@@ -68,7 +70,7 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
         final Type returnType = Type.getReturnType(desc);
         final MethodVisitor methodVisitor = cv.visitMethod(access, name, desc, signature, exceptions);
         final ThrowOnNullMethodVisitor visitor;
-        if (configuration.isImplicit()) {
+        if (classAnnotatedImplicit || configuration.isImplicit()) {
             visitor = new ImplicitThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, nullable);
         } else {
             visitor = new AnnotationThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, notnull);
@@ -78,7 +80,10 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
     }
 
     @Override
-    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+    public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
+        if (LangUtils.convertToJavaClassName(ImplicitNotNull.class.getName()).equals(desc)) {
+            classAnnotatedImplicit = true;
+        }
         return super.visitAnnotation(desc, visible);
     }
 
