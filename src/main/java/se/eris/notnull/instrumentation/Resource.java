@@ -16,32 +16,13 @@
 package se.eris.notnull.instrumentation;
 
 import org.jetbrains.annotations.Nullable;
-import sun.nio.ByteBuffered;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 
 public abstract class Resource {
 
-    private InputStream inputStream;
-
     @Nullable
     public abstract InputStream getInputStream() throws IOException;
-
-    @Nullable
-    protected ByteBuffer getByteBuffer() throws IOException {
-        final InputStream is = this.cachedInputStream();
-        return is instanceof ByteBuffered ? ((ByteBuffered) is).getByteBuffer() : null;
-    }
-
-    @Nullable
-    private synchronized InputStream cachedInputStream() throws IOException {
-        if (this.inputStream == null) {
-            this.inputStream = this.getInputStream();
-        }
-
-        return this.inputStream;
-    }
 
 }

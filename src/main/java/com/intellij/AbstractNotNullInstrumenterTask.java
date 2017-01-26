@@ -40,11 +40,11 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Parameter
-    private List<String> annotations;
+    private Set<String> notNull;
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Parameter
-    private List<String> nullable;
+    private Set<String> nullable;
 
     @Parameter
     private boolean implicit;
@@ -89,16 +89,11 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     }
 
     private NotNullConfiguration getConfiguration() {
-        return new NotNullConfiguration(implicit, getAnnotations(), Collections.<String>emptySet());
+        return new NotNullConfiguration(implicit, nullToEmpty(notNull), nullToEmpty(nullable));
     }
 
-    @NotNull
-    private Set<String> getAnnotations() {
-        final Set<String> annotations = new HashSet<>();
-        if (isConfigurationOverrideAnnotations()) {
-            annotations.addAll(this.annotations);
-        }
-        return annotations;
+    private Set<String> nullToEmpty(final Set<String> set) {
+        return (set != null) ? set : Collections.<String>emptySet();
     }
 
     private void logAnnotations(@NotNull final NotNullConfiguration configuration) {
@@ -114,10 +109,6 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
                 logger.info("  " + nullableAnnotation);
             }
         }
-    }
-
-    private boolean isConfigurationOverrideAnnotations() {
-        return (annotations != null) && !annotations.isEmpty();
     }
 
 }

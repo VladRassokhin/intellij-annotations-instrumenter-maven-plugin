@@ -30,18 +30,13 @@ public class NotNullConfigurationTest {
     private static final String SE_ERIS_NULLABLE = "se.eris.Nullable";
 
     @Test
-    public void getAnnotations_default() {
-        assertThat(new NotNullConfiguration(false, Collections.<String>emptySet(), Collections.<String>emptySet()).getNotNullAnnotations().iterator().next(), is(ORG_JETBRAINS_ANNOTATIONS_NOT_NULL));
+    public void getAnnotations_defaultNotNull() {
+        assertThat(new NotNullConfiguration(false, Collections.<String>emptySet(), Collections.<String>emptySet()).getNotNullAnnotations(), containsInAnyOrder(ORG_JETBRAINS_ANNOTATIONS_NOT_NULL));
     }
 
     @Test
-    public void getAnnotations_defaultImplicit() {
-        assertThat(new NotNullConfiguration(true, Collections.<String>emptySet(), Collections.<String>emptySet()).getNullableAnnotations().iterator().next(), is(ORG_JETBRAINS_ANNOTATIONS_NULLABLE));
-    }
-
-    @Test
-    public void getAnnotations_implicit_shouldMergeLists() {
-        assertThat(new NotNullConfiguration(true, Collections.singleton(SE_ERIS_NULLABLE), Collections.singleton(ORG_JETBRAINS_ANNOTATIONS_NULLABLE)).getNullableAnnotations(), containsInAnyOrder(SE_ERIS_NULLABLE, ORG_JETBRAINS_ANNOTATIONS_NULLABLE));
+    public void getAnnotations_defaultNullable() {
+        assertThat(new NotNullConfiguration(true, Collections.<String>emptySet(), Collections.<String>emptySet()).getNullableAnnotations(), containsInAnyOrder(ORG_JETBRAINS_ANNOTATIONS_NULLABLE));
     }
 
 }

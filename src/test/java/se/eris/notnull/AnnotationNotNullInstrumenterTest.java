@@ -52,7 +52,7 @@ public class AnnotationNotNullInstrumenterTest {
         final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/test/TestNotNull.java");
         compile(fileToCompile);
 
-        final NotNullConfiguration configuration = new NotNullConfiguration(false, annotations(), Collections.<String>emptySet());
+        final NotNullConfiguration configuration = new NotNullConfiguration(false, notNull(), Collections.<String>emptySet());
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
         final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", configuration, Collections.<URL>emptyList());
 
@@ -60,7 +60,7 @@ public class AnnotationNotNullInstrumenterTest {
     }
 
     @NotNull
-    private static Set<String> annotations() {
+    private static Set<String> notNull() {
         final Set<String> annotations = new HashSet<>();
         annotations.add("org.jetbrains.annotations.NotNull");
         annotations.add("java.lang.Deprecated");

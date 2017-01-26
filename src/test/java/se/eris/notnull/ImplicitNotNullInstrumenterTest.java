@@ -53,7 +53,7 @@ public class ImplicitNotNullInstrumenterTest {
         final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/test/TestNotNull.java");
         compile(fileToCompile);
 
-        final NotNullConfiguration configuration = new NotNullConfiguration(true, annotations(), Collections.<String>emptySet());
+        final NotNullConfiguration configuration = new NotNullConfiguration(true, Collections.<String>emptySet(), nullable());
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
         final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", configuration, Collections.<URL>emptyList());
 
@@ -61,7 +61,7 @@ public class ImplicitNotNullInstrumenterTest {
     }
 
     @NotNull
-    private static Set<String> annotations() {
+    private static Set<String> nullable() {
         final Set<String> annotations = new HashSet<>();
         annotations.add("org.jetbrains.annotations.Nullable");
         annotations.add("java.lang.Deprecated");
