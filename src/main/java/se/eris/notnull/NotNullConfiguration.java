@@ -18,23 +18,35 @@ package se.eris.notnull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 public class NotNullConfiguration {
 
     private final boolean implicit;
     @NotNull
-    private final Set<String> annotations;
+    private final Set<String> notNull;
+    @NotNull
+    private final Set<String> nullable;
 
-    public NotNullConfiguration(final boolean implicit, @NotNull final Set<String> annotations) {
+    @SuppressWarnings("BooleanParameter")
+    public NotNullConfiguration(
+            final boolean implicit,
+            @NotNull final Set<String> notNull,
+            @NotNull final Set<String> nullable) {
         this.implicit = implicit;
-        if (annotations.isEmpty()) {
-            this.annotations = Collections.singleton(implicit ? Nullable.class.getName() : NotNull.class.getName());
+        if (isAnnotationsConfigured(notNull, nullable)) {
+            this.nullable = nullable;
+            this.notNull = notNull;
         } else {
-            this.annotations = Collections.unmodifiableSet(new HashSet<>(annotations));
+            this.nullable = Collections.singleton(Nullable.class.getName());
+            this.notNull = Collections.singleton(NotNull.class.getName());
         }
+    }
+
+    private boolean isAnnotationsConfigured(@NotNull final Collection<String> notNull, @NotNull final Collection<String> nullable) {
+        return !notNull.isEmpty() || !nullable.isEmpty();
     }
 
     public boolean isImplicit() {
@@ -42,8 +54,13 @@ public class NotNullConfiguration {
     }
 
     @NotNull
-    public Set<String> getAnnotations() {
-        return annotations;
+    public Set<String> getNotNullAnnotations() {
+        return notNull;
+    }
+
+    @NotNull
+    public Set<String> getNullableAnnotations() {
+        return nullable;
     }
 
 }

@@ -27,10 +27,7 @@ import se.eris.notnull.NotNullConfiguration;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Vladislav.Rassokhin
@@ -43,7 +40,11 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Parameter
-    private List<String> annotations;
+    private Set<String> notNull;
+
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    @Parameter
+    private Set<String> nullable;
 
     @Parameter
     private boolean implicit;
@@ -88,28 +89,26 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     }
 
     private NotNullConfiguration getConfiguration() {
-        return new NotNullConfiguration(implicit, getAnnotations());
+        return new NotNullConfiguration(implicit, nullToEmpty(notNull), nullToEmpty(nullable));
     }
 
-    @NotNull
-    private Set<String> getAnnotations() {
-        final Set<String> annotations = new HashSet<>();
-        if (isConfigurationOverrideAnnotations()) {
-            annotations.addAll(this.annotations);
-        }
-        return annotations;
+    private Set<String> nullToEmpty(final Set<String> set) {
+        return (set != null) ? set : Collections.<String>emptySet();
     }
 
     private void logAnnotations(@NotNull final NotNullConfiguration configuration) {
-        final String message = configuration.isImplicit() ? "Using the following Nullable annotations:" : "Using the following NotNull annotations:";
-        logger.info(message);
-        for (final String notNullAnnotation : configuration.getAnnotations()) {
-            logger.info("  " + notNullAnnotation);
+        if (!configuration.getNotNullAnnotations().isEmpty()) {
+            logger.info("Using the following NotNull annotations:");
+            for (final String notNullAnnotation : configuration.getNotNullAnnotations()) {
+                logger.info("  " + notNullAnnotation);
+            }
         }
-    }
-
-    private boolean isConfigurationOverrideAnnotations() {
-        return (annotations != null) && !annotations.isEmpty();
+        if (!configuration.getNullableAnnotations().isEmpty()) {
+            logger.info("Using the following Nullable annotations:");
+            for (final String nullableAnnotation : configuration.getNullableAnnotations()) {
+                logger.info("  " + nullableAnnotation);
+            }
+        }
     }
 
 }

@@ -229,9 +229,6 @@ class ClassFinderClasspath {
 
             FileResource(final File file, final boolean willLoadBytes) throws IOException {
                 this.file = file;
-                if (willLoadBytes) {
-                    getByteBuffer(); // check for existence by creating cached file input stream
-                }
             }
 
             @NotNull

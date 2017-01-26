@@ -16,45 +16,47 @@
 package com.intellij.compiler.notNullVerification;
 
 import org.jetbrains.annotations.NotNull;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import org.objectweb.asm.*;
 import se.eris.lang.LangUtils;
+import se.eris.notnull.ImplicitNotNull;
 import se.eris.notnull.NotNullConfiguration;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
  * @author ven
  * @author Vladislav.Rassokhin
+ * @author Olle Sundblad
  * noinspection HardCodedStringLiteral
  */
 public class NotNullInstrumenterClassVisitor extends ClassVisitor {
 
-    private final Set<String> annotations;
-    private final List<ThrowOnNullMethodVisitor> methodVisitors = new ArrayList<>();
+    private final Set<String> notnull;
+    private final Set<String> nullable;
+    private final Collection<ThrowOnNullMethodVisitor> methodVisitors = new ArrayList<>();
 
     private String className;
     @NotNull
-    private NotNullConfiguration configuration;
+    private final NotNullConfiguration configuration;
+    private boolean classAnnotatedImplicit = false;
 
     public NotNullInstrumenterClassVisitor(@NotNull final ClassVisitor classVisitor, @NotNull final NotNullConfiguration configuration) {
         super(Opcodes.ASM5, classVisitor);
         this.configuration = configuration;
-        this.annotations = convertToClassName(configuration);
+        this.notnull = convertToClassName(configuration.getNotNullAnnotations());
+        this.nullable = convertToClassName(configuration.getNullableAnnotations());
     }
 
     @NotNull
-    private Set<String> convertToClassName(@NotNull final NotNullConfiguration configuration) {
-        final Set<String> annotations = new HashSet<>();
-        for (@NotNull final String annotation : configuration.getAnnotations()) {
-            annotations.add(LangUtils.convertToJavaClassName(annotation));
+    private Set<String> convertToClassName(@NotNull final Iterable<String> annotations) {
+        final Set<String> converted = new HashSet<>();
+        for (@NotNull final String annotation : annotations) {
+            converted.add(LangUtils.convertToJavaClassName(annotation));
         }
-        return annotations;
+        return converted;
     }
 
     public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
@@ -68,13 +70,21 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
         final Type returnType = Type.getReturnType(desc);
         final MethodVisitor methodVisitor = cv.visitMethod(access, name, desc, signature, exceptions);
         final ThrowOnNullMethodVisitor visitor;
-        if (configuration.isImplicit()) {
-            visitor = new ImplicitThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, annotations);
+        if (classAnnotatedImplicit || configuration.isImplicit()) {
+            visitor = new ImplicitThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, nullable);
         } else {
-            visitor = new AnnotationThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, annotations);
+            visitor = new AnnotationThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, notnull);
         }
         methodVisitors.add(visitor);
         return visitor;
+    }
+
+    @Override
+    public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
+        if (LangUtils.convertToJavaClassName(ImplicitNotNull.class.getName()).equals(desc)) {
+            classAnnotatedImplicit = true;
+        }
+        return super.visitAnnotation(desc, visible);
     }
 
     public boolean hasInstrumented() {
