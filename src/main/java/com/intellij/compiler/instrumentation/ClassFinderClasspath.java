@@ -192,7 +192,7 @@ class ClassFinderClasspath {
         FileLoader(final URL url) {
             super(url);
             if (!FILE_PROTOCOL.equals(url.getProtocol())) {
-                throw new IllegalArgumentException(this.getClass().getSimpleName() + " requires the " + FILE_PROTOCOL + " protocol. (url: " + url +")");
+                throw new IllegalArgumentException(this.getClass().getSimpleName() + " requires the " + FILE_PROTOCOL + " protocol. (url: " + url + ")");
             } else {
                 final String s = unescapePercentSequences(url.getFile().replace('/', File.separatorChar));
                 rootDir = new File(s);
@@ -201,25 +201,19 @@ class ClassFinderClasspath {
 
         @Nullable
         public Resource getResource(final String name) {
-            final URL url;
-            File file = null;
 
             try {
-                url = new URL(getBaseURL(), name);
+                final URL url = new URL(getBaseURL(), name);
                 if (!url.getFile().startsWith(getBaseURL().getFile())) {
                     return null;
                 }
+            } catch (final Exception ignored) {
+            }
 
-                file = new File(rootDir, name.replace('/', File.separatorChar));
-                // check means we load or process resource so we check its existence via old way
-                return new FileLoader.FileResource(file, true);
-            } catch (final Exception exception) {
-                if ((file != null) && file.exists()) {
-                    try {   // we can not open the file if it is directory, Resource still can be created
-                        return new FileLoader.FileResource(file, false);
-                    } catch (final IOException ignored) {
-                    }
-                }
+            // check means we load or process resource so we check its existence via old way
+            final File file = new File(rootDir, name.replace('/', File.separatorChar));
+            if (file.exists()) {
+                return new FileResource(file);
             }
             return null;
         }
@@ -227,7 +221,7 @@ class ClassFinderClasspath {
         private static class FileResource extends Resource {
             private final File file;
 
-            FileResource(final File file, final boolean willLoadBytes) throws IOException {
+            FileResource(final File file) {
                 this.file = file;
             }
 
