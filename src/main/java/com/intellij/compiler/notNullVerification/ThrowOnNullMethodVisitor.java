@@ -16,6 +16,7 @@
 package com.intellij.compiler.notNullVerification;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -44,7 +45,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     final List<Integer> notNullParams;
     Label startGeneratedCodeLabel;
 
-    ThrowOnNullMethodVisitor(final int api, final MethodVisitor mv, @NotNull final Type[] argumentTypes, final Type returnType, final int access, final String methodName, final String className, final boolean isReturnNotNull) {
+    ThrowOnNullMethodVisitor(final int api, @Nullable final MethodVisitor mv, @NotNull final Type[] argumentTypes, final Type returnType, final int access, final String methodName, final String className, final boolean isReturnNotNull) {
         super(api, mv);
         this.argumentTypes = argumentTypes;
         this.returnType = returnType;

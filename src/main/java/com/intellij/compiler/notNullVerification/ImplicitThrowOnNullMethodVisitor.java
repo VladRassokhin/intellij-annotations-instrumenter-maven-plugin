@@ -37,7 +37,7 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
 
     @Contract(pure = true)
     private boolean isSynthetic() {
-        return (this.access | Opcodes.ACC_SYNTHETIC) == Opcodes.ACC_SYNTHETIC;
+        return (this.access & Opcodes.ACC_SYNTHETIC) == Opcodes.ACC_SYNTHETIC;
     }
 
     private void addImplicitNotNulls() {
@@ -71,7 +71,7 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
         return av;
     }
 
-    private boolean setNullable(int parameter) {
+    private boolean setNullable(final int parameter) {
         return notNullParams.remove((Integer)parameter);
     }
 
@@ -92,7 +92,7 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
 
     @Override
     @NotNull
-    protected String getThrowMessage(int parameterNumber) {
+    protected String getThrowMessage(final int parameterNumber) {
         return "Argument " + getSourceCodeParameterNumber(parameterNumber) + " for implicit 'NotNull' parameter of " + className + "." + methodName + " must not be null";
     }
 
@@ -111,6 +111,7 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
         try {
             super.visitMaxs(maxStack, maxLocals);
         } catch (final ArrayIndexOutOfBoundsException e) {
+            //noinspection ThrowInsideCatchBlockWhichIgnoresCaughtException
             throw new ArrayIndexOutOfBoundsException("visitMaxs processing failed for method " + methodName + ": " + e.getMessage());
         }
     }
