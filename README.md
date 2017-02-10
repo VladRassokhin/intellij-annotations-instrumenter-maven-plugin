@@ -29,7 +29,7 @@ Just update your pom.xml with following:
             <plugin>
                 <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.4.2</version>
+                <version>0.6.2</version>
                 <executions>
                     <execution>
                         <goals>
@@ -53,7 +53,7 @@ want to one or more other annotations add them to configuration, for example:
             <plugin>
                 <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.4.2</version>
+                <version>0.6.2</version>
                 <executions>
                     <execution>
                         <id>instrument</id>
@@ -64,10 +64,10 @@ want to one or more other annotations add them to configuration, for example:
                     </execution>
                 </executions>
                 <configuration>
-                    <annotations>
+                    <notNull>
                         <param>org.jetbrains.annotations.NotNull</param>
                         <param>javax.validation.constraints.NotNull</param>
-                    </annotations>
+                    </notNull>
                 </configuration>
             </plugin>
         </plugins>
@@ -88,7 +88,7 @@ If you don't like to have @NotNull on 99.99% of your parameters and methods turn
             <plugin>
                 <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.4.2</version>
+                <version>0.6.2</version>
                 <executions>
                     <execution>
                         <id>instrument</id>
@@ -100,9 +100,9 @@ If you don't like to have @NotNull on 99.99% of your parameters and methods turn
                 </executions>
                 <configuration>
                     <implicit>true</implicit>
-                    <annotations>
+                    <nullable>
                         <param>org.jetbrains.annotations.Nullable</param>
-                    </annotations>
+                    </nullable>
                 </configuration>
             </plugin>
         </plugins>
