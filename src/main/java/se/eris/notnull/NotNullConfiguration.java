@@ -16,10 +16,10 @@
 package se.eris.notnull;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 public class NotNullConfiguration {
@@ -40,9 +40,25 @@ public class NotNullConfiguration {
             this.nullable = nullable;
             this.notNull = notNull;
         } else {
-            this.nullable = Collections.singleton(Nullable.class.getName());
-            this.notNull = Collections.singleton(NotNull.class.getName());
+            this.nullable = getDefaultNullable();
+            this.notNull = getDefaultNotNull();
         }
+    }
+
+    @NotNull
+    private Set<String> getDefaultNotNull() {
+        return new HashSet<>(Arrays.asList(
+                org.jetbrains.annotations.NotNull.class.getName(),
+                se.eris.notnull.NotNull.class.getName())
+        );
+    }
+
+    @NotNull
+    private Set<String> getDefaultNullable() {
+        return new HashSet<>(Arrays.asList(
+                org.jetbrains.annotations.Nullable.class.getName(),
+                se.eris.notnull.Nullable.class.getName())
+        );
     }
 
     private boolean isAnnotationsConfigured(@NotNull final Collection<String> notNull, @NotNull final Collection<String> nullable) {
