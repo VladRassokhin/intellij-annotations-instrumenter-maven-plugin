@@ -19,24 +19,34 @@ import org.junit.Test;
 
 import java.util.Collections;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 public class NotNullConfigurationTest {
 
-    private static final String ORG_JETBRAINS_ANNOTATIONS_NOT_NULL = "org.jetbrains.annotations.NotNull";
-    private static final String ORG_JETBRAINS_ANNOTATIONS_NULLABLE = "org.jetbrains.annotations.Nullable";
-    private static final String SE_ERIS_NULLABLE = "se.eris.Nullable";
+    private static final String ORG_JETBRAINS_ANNOTATIONS_NOT_NULL = org.jetbrains.annotations.NotNull.class.getName();
+    private static final String ORG_JETBRAINS_ANNOTATIONS_NULLABLE = org.jetbrains.annotations.Nullable.class.getName();
+
+    private static final String SE_ERIS_NOT_NULL = se.eris.notnull.NotNull.class.getName();
+    private static final String SE_ERIS_NULLABLE = se.eris.notnull.Nullable.class.getName();
 
     @Test
     public void getAnnotations_defaultNotNull() {
-        assertThat(new NotNullConfiguration(false, Collections.<String>emptySet(), Collections.<String>emptySet()).getNotNullAnnotations(), containsInAnyOrder(ORG_JETBRAINS_ANNOTATIONS_NOT_NULL));
+        NotNullConfiguration configuration = getDefaultNotNullConfiguration(false);
+        assertThat(configuration.getNotNullAnnotations(), containsInAnyOrder(ORG_JETBRAINS_ANNOTATIONS_NOT_NULL, SE_ERIS_NOT_NULL));
+        assertThat(configuration.isImplicit(), is(false));
     }
 
     @Test
     public void getAnnotations_defaultNullable() {
-        assertThat(new NotNullConfiguration(true, Collections.<String>emptySet(), Collections.<String>emptySet()).getNullableAnnotations(), containsInAnyOrder(ORG_JETBRAINS_ANNOTATIONS_NULLABLE));
+        NotNullConfiguration configuration = getDefaultNotNullConfiguration(true);
+        assertThat(configuration.getNullableAnnotations(), containsInAnyOrder(ORG_JETBRAINS_ANNOTATIONS_NULLABLE, SE_ERIS_NULLABLE));
+        assertThat(configuration.isImplicit(), is(true));
+    }
+
+    private NotNullConfiguration getDefaultNotNullConfiguration(boolean implicit) {
+        return new NotNullConfiguration(implicit, Collections.<String>emptySet(), Collections.<String>emptySet());
     }
 
 }
