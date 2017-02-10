@@ -23,6 +23,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 
 /**
  * @author Vladislav.Rassokhin
+ * @author Olle Sundblad
  */
 @SuppressWarnings({"UnusedDeclaration", "DefaultAnnotationParam"})
 @Mojo(
@@ -30,7 +31,8 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
         defaultPhase = LifecyclePhase.PROCESS_CLASSES,
         requiresOnline = false,
         requiresProject = true,
-        requiresDependencyResolution = ResolutionScope.COMPILE)
+        requiresDependencyResolution = ResolutionScope.COMPILE,
+        threadSafe = true)
 public class ClassesNotNullInstrumenter extends AbstractNotNullInstrumenterTask {
 
     @Override
