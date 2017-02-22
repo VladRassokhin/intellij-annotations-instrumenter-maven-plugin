@@ -23,7 +23,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 
-public class NotNullConfigurationTest {
+public class ConfigurationTest {
 
     private static final String ORG_JETBRAINS_ANNOTATIONS_NOT_NULL = org.jetbrains.annotations.NotNull.class.getName();
     private static final String ORG_JETBRAINS_ANNOTATIONS_NULLABLE = org.jetbrains.annotations.Nullable.class.getName();
@@ -33,20 +33,20 @@ public class NotNullConfigurationTest {
 
     @Test
     public void getAnnotations_defaultNotNull() {
-        NotNullConfiguration configuration = getDefaultNotNullConfiguration(false);
+        Configuration configuration = getDefaultNotNullConfiguration(false);
         assertThat(configuration.getNotNullAnnotations(), containsInAnyOrder(ORG_JETBRAINS_ANNOTATIONS_NOT_NULL, SE_ERIS_NOT_NULL));
         assertThat(configuration.isImplicit(), is(false));
     }
 
     @Test
     public void getAnnotations_defaultNullable() {
-        NotNullConfiguration configuration = getDefaultNotNullConfiguration(true);
+        Configuration configuration = getDefaultNotNullConfiguration(true);
         assertThat(configuration.getNullableAnnotations(), containsInAnyOrder(ORG_JETBRAINS_ANNOTATIONS_NULLABLE, SE_ERIS_NULLABLE));
         assertThat(configuration.isImplicit(), is(true));
     }
 
-    private NotNullConfiguration getDefaultNotNullConfiguration(boolean implicit) {
-        return new NotNullConfiguration(implicit, Collections.<String>emptySet(), Collections.<String>emptySet());
+    private Configuration getDefaultNotNullConfiguration(boolean implicit) {
+        return new Configuration(implicit, new AnnotationConfiguration(Collections.<String>emptySet(), Collections.<String>emptySet()));
     }
 
 }

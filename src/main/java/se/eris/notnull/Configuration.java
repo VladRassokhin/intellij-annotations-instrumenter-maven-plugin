@@ -16,33 +16,31 @@
 package se.eris.notnull;
 
 import org.jetbrains.annotations.NotNull;
+import se.eris.notnull.instrumentation.PackageMatcher;
 
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class NotNullConfiguration {
+public class Configuration {
 
     private final boolean implicit;
     @NotNull
-    private final Set<String> notNull;
+    private final AnnotationConfiguration annotationConfiguration;
     @NotNull
-    private final Set<String> nullable;
+    private final PackageConfiguration packageConfiguration;
 
     @SuppressWarnings("BooleanParameter")
-    public NotNullConfiguration(
-            final boolean implicit,
-            @NotNull final Set<String> notNull,
-            @NotNull final Set<String> nullable) {
+    public Configuration(
+            final boolean implicit, @NotNull final AnnotationConfiguration annotationConfiguration) {
         this.implicit = implicit;
-        if (isAnnotationsConfigured(notNull, nullable)) {
-            this.nullable = nullable;
-            this.notNull = notNull;
+        if (annotationConfiguration.isAnnotationsConfigured()) {
+            this.annotationConfiguration = annotationConfiguration;
         } else {
-            this.nullable = getDefaultNullable();
-            this.notNull = getDefaultNotNull();
+            this.annotationConfiguration = new AnnotationConfiguration(getDefaultNotNull(), getDefaultNullable());
         }
+        packageConfiguration = new PackageConfiguration(Collections.<PackageMatcher>emptySet());
     }
 
     @NotNull
@@ -61,22 +59,21 @@ public class NotNullConfiguration {
         );
     }
 
-    private boolean isAnnotationsConfigured(@NotNull final Collection<String> notNull, @NotNull final Collection<String> nullable) {
-        return !notNull.isEmpty() || !nullable.isEmpty();
-    }
-
     public boolean isImplicit() {
         return implicit;
     }
 
     @NotNull
     public Set<String> getNotNullAnnotations() {
-        return notNull;
+        return annotationConfiguration.getNotNull();
     }
 
     @NotNull
     public Set<String> getNullableAnnotations() {
-        return nullable;
+        return annotationConfiguration.getNullable();
     }
 
+    public boolean isImplicitInstrumentation(final String className) {
+        return implicit && packageConfiguration.isPackageImplicitInstrumentation(className);
+    }
 }

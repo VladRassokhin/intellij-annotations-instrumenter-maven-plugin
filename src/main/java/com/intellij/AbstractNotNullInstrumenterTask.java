@@ -22,7 +22,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.jetbrains.annotations.NotNull;
 import se.eris.maven.MavenLogWrapper;
-import se.eris.notnull.NotNullConfiguration;
+import se.eris.notnull.AnnotationConfiguration;
+import se.eris.notnull.Configuration;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -64,7 +65,7 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
         if (!instrument) {
             return;
         }
-        final NotNullConfiguration configuration = getConfiguration();
+        final Configuration configuration = getConfiguration();
         logAnnotations(configuration);
         final List<URL> classpathUrls = getClasspathUrls(classpathElements);
         final int instrumented = instrumenter.addNotNullAnnotations(classesDirectory, configuration, classpathUrls);
@@ -89,15 +90,15 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
         return urls;
     }
 
-    private NotNullConfiguration getConfiguration() {
-        return new NotNullConfiguration(implicit, nullToEmpty(notNull), nullToEmpty(nullable));
+    private Configuration getConfiguration() {
+        return new Configuration(implicit, new AnnotationConfiguration(nullToEmpty(notNull), nullToEmpty(nullable)));
     }
 
     private Set<String> nullToEmpty(final Set<String> set) {
         return (set != null) ? set : Collections.<String>emptySet();
     }
 
-    private void logAnnotations(@NotNull final NotNullConfiguration configuration) {
+    private void logAnnotations(@NotNull final Configuration configuration) {
         if (!configuration.getNotNullAnnotations().isEmpty()) {
             logger.info("Using the following NotNull annotations:");
             for (final String notNullAnnotation : configuration.getNotNullAnnotations()) {

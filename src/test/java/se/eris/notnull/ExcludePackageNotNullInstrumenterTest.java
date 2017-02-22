@@ -32,8 +32,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -46,44 +44,57 @@ public class ExcludePackageNotNullInstrumenterTest {
 
     private static final File SRC_DIR = new File("src/test/data");
     private static final File TARGET_DIR = new File("src/test/data");
+    private static final String TEST_CLASS = "TestExcludePackage";
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @BeforeClass
     public static void beforeClass() {
-        final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/exclude/TestExcludePackage.java");
+        final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/exclude/" + TEST_CLASS + ".java");
         compile(fileToCompile);
 
-        final NotNullConfiguration configuration = new NotNullConfiguration(false, notNull(), Collections.<String>emptySet());
+        final Configuration configuration = new Configuration(true, new AnnotationConfiguration());
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
         final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/exclude", configuration, Collections.<URL>emptyList());
 
         assertThat(numberOfInstrumentedFiles, greaterThan(0));
     }
 
-    @NotNull
-    private static Set<String> notNull() {
-        final Set<String> annotations = new HashSet<>();
-        annotations.add("org.jetbrains.annotations.NotNull");
-        annotations.add("java.lang.Deprecated");
-        return annotations;
+    @Test
+    public void annotatedParameter_shouldValidate() throws Exception {
+        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.exclude." + TEST_CLASS);
+        final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
+
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Argument 0 for @NotNull parameter of se/eris/exclude/" + TEST_CLASS + ".notNullParameter must not be null");
+        ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
 
     @Test
-    public void annotatedParameter_shouldNotValidate() throws Exception {
-        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
-        final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
+    public void unAnnotatedParameter_shouldNotValidate() throws Exception {
+        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.exclude." + TEST_CLASS);
+        final Method notNullParameterMethod = c.getMethod("unAnnotatedParameter", String.class);
 
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
 
     @Test
     public void notnullReturn_shouldNotValidate() throws Exception {
-        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.exclude." + TEST_CLASS);
         final Method notNullReturnMethod = c.getMethod("notNullReturn", String.class);
 
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage("NotNull method se/eris/exclude/" + TEST_CLASS + ".notNullReturn must not return null");
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null});
+    }
+
+    @Test
+    public void unAnnotatedReturn_shouldNotValidate() throws Exception {
+        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.exclude." + TEST_CLASS);
+        final Method notNullParameterMethod = c.getMethod("unAnnotatedReturn", String.class);
+
+        ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
 
     @NotNull
@@ -94,8 +105,8 @@ public class ExcludePackageNotNullInstrumenterTest {
     }
 
     @NotNull
-    private static String getSrcFile(@NotNull final File srcDir, @NotNull final String file) {
-        return new File(srcDir, file).toString().replace("/", File.separator);
+    private static String getSrcFile(@NotNull final File dir, @NotNull final String file) {
+        return new File(dir, file).toString().replace("/", File.separator);
     }
 
     private static void compile(@NotNull final String... filesToCompile) {

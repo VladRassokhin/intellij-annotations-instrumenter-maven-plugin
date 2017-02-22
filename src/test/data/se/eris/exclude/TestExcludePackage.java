@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.eris.test;
+package se.eris.exclude;
 
 import java.util.Arrays;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +24,7 @@ public class TestExcludePackage {
     public static void notNullParameter(@NotNull final String s) {
     }
 
-    public static void implicitParameter(final String s) {
+    public static void unAnnotatedParameter(final String s) {
     }
 
     @NotNull
@@ -32,7 +32,7 @@ public class TestExcludePackage {
         return s;
     }
 
-    public static String implicitReturn(@Nullable final String s) {
+    public static String unAnnotatedReturn(@Nullable final String s) {
         return s;
     }
 

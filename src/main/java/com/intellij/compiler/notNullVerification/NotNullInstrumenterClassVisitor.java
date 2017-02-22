@@ -18,8 +18,8 @@ package com.intellij.compiler.notNullVerification;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.*;
 import se.eris.lang.LangUtils;
+import se.eris.notnull.Configuration;
 import se.eris.notnull.ImplicitNotNull;
-import se.eris.notnull.NotNullConfiguration;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +30,7 @@ import java.util.Set;
  * @author ven
  * @author Vladislav.Rassokhin
  * @author Olle Sundblad
- * noinspection HardCodedStringLiteral
+ *         noinspection HardCodedStringLiteral
  */
 public class NotNullInstrumenterClassVisitor extends ClassVisitor {
 
@@ -40,10 +40,10 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
 
     private String className;
     @NotNull
-    private final NotNullConfiguration configuration;
+    private final Configuration configuration;
     private boolean classAnnotatedImplicit = false;
 
-    public NotNullInstrumenterClassVisitor(@NotNull final ClassVisitor classVisitor, @NotNull final NotNullConfiguration configuration) {
+    public NotNullInstrumenterClassVisitor(@NotNull final ClassVisitor classVisitor, @NotNull final Configuration configuration) {
         super(Opcodes.ASM5, classVisitor);
         this.configuration = configuration;
         this.notnull = convertToClassName(configuration.getNotNullAnnotations());
@@ -70,7 +70,7 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
         final Type returnType = Type.getReturnType(desc);
         final MethodVisitor methodVisitor = cv.visitMethod(access, name, desc, signature, exceptions);
         final ThrowOnNullMethodVisitor visitor;
-        if (classAnnotatedImplicit || configuration.isImplicit()) {
+        if (classAnnotatedImplicit || configuration.isImplicitInstrumentation(className)) {
             visitor = new ImplicitThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, nullable);
         } else {
             visitor = new AnnotationThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, notnull);
