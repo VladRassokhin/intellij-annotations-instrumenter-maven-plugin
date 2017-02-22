@@ -24,6 +24,8 @@ import org.jetbrains.annotations.NotNull;
 import se.eris.maven.MavenLogWrapper;
 import se.eris.notnull.AnnotationConfiguration;
 import se.eris.notnull.Configuration;
+import se.eris.notnull.PackageConfiguration;
+import se.eris.notnull.instrumentation.PackageMatcher;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -91,7 +93,7 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     }
 
     private Configuration getConfiguration() {
-        return new Configuration(implicit, new AnnotationConfiguration(nullToEmpty(notNull), nullToEmpty(nullable)));
+        return new Configuration(implicit, new AnnotationConfiguration(nullToEmpty(notNull), nullToEmpty(nullable)), new PackageConfiguration(Collections.<PackageMatcher>emptySet()));
     }
 
     private Set<String> nullToEmpty(final Set<String> set) {

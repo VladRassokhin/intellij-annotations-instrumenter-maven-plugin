@@ -22,6 +22,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import se.eris.maven.NopLogWrapper;
+import se.eris.notnull.instrumentation.PackageMatcher;
 import se.eris.util.ReflectionUtil;
 
 import javax.tools.JavaCompiler;
@@ -54,7 +55,8 @@ public class ExcludePackageNotNullInstrumenterTest {
         final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/exclude/" + TEST_CLASS + ".java");
         compile(fileToCompile);
 
-        final Configuration configuration = new Configuration(true, new AnnotationConfiguration());
+        PackageConfiguration packageConfiguration = new PackageConfiguration(Collections.singleton(PackageMatcher.fromPackage("se.eris.exclude")));
+        final Configuration configuration = new Configuration(true, new AnnotationConfiguration(), packageConfiguration);
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
         final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/exclude", configuration, Collections.<URL>emptyList());
 

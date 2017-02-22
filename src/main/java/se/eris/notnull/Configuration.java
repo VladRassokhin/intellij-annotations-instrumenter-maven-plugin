@@ -16,10 +16,8 @@
 package se.eris.notnull;
 
 import org.jetbrains.annotations.NotNull;
-import se.eris.notnull.instrumentation.PackageMatcher;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,14 +31,16 @@ public class Configuration {
 
     @SuppressWarnings("BooleanParameter")
     public Configuration(
-            final boolean implicit, @NotNull final AnnotationConfiguration annotationConfiguration) {
+            final boolean implicit,
+            @NotNull final AnnotationConfiguration annotationConfiguration,
+            @NotNull final PackageConfiguration packageConfiguration) {
         this.implicit = implicit;
         if (annotationConfiguration.isAnnotationsConfigured()) {
             this.annotationConfiguration = annotationConfiguration;
         } else {
             this.annotationConfiguration = new AnnotationConfiguration(getDefaultNotNull(), getDefaultNullable());
         }
-        packageConfiguration = new PackageConfiguration(Collections.<PackageMatcher>emptySet());
+        this.packageConfiguration = packageConfiguration;
     }
 
     @NotNull
@@ -73,7 +73,7 @@ public class Configuration {
         return annotationConfiguration.getNullable();
     }
 
-    public boolean isImplicitInstrumentation(final String className) {
-        return implicit && packageConfiguration.isPackageImplicitInstrumentation(className);
+    public boolean isImplicitInstrumentation(final String packageName) {
+        return implicit && packageConfiguration.isPackageImplicitInstrumentation(packageName);
     }
 }

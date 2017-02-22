@@ -70,13 +70,19 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
         final Type returnType = Type.getReturnType(desc);
         final MethodVisitor methodVisitor = cv.visitMethod(access, name, desc, signature, exceptions);
         final ThrowOnNullMethodVisitor visitor;
-        if (classAnnotatedImplicit || configuration.isImplicitInstrumentation(className)) {
+        if (classAnnotatedImplicit || configuration.isImplicitInstrumentation(getPackage(className))) {
             visitor = new ImplicitThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, nullable);
         } else {
             visitor = new AnnotationThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, notnull);
         }
         methodVisitors.add(visitor);
         return visitor;
+    }
+
+    @NotNull
+    private String getPackage(final String className) {
+        String packageClass = className.replace('/', '.');
+        return packageClass.substring(0, packageClass.lastIndexOf('.'));
     }
 
     @Override
