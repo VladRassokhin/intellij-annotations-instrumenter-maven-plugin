@@ -9,11 +9,16 @@ public class PackageMatcher {
     @NotNull
     private final Pattern pattern;
 
+    @NotNull
     public static PackageMatcher fromPackage(@NotNull final String aPackage) {
-        return new PackageMatcher(Pattern.compile("^"+aPackage.replace(".", "\\.") + "$"));
+        return new PackageMatcher(Pattern.compile("^"+aPackage
+                .replace(".", "\\.")
+                .replaceAll("([^\\*])\\*", "$1[^\\.]*")
+                .replace("**", ".*")
+                + "$"));
     }
 
-    private PackageMatcher(Pattern pattern) {
+    private PackageMatcher(@NotNull final Pattern pattern) {
         this.pattern = pattern;
     }
 
@@ -33,7 +38,7 @@ public class PackageMatcher {
         return pattern.hashCode();
     }
 
-    public boolean matches(String packageName) {
+    public boolean matches(final String packageName) {
         return pattern.matcher(packageName).matches();
     }
 }
