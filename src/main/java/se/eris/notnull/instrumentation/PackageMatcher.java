@@ -14,7 +14,7 @@ public class PackageMatcher {
         return new PackageMatcher(Pattern.compile("^"+aPackage
                 .replace(".", "\\.")
                 .replaceAll("([^\\*])\\*", "$1[^\\.]*")
-                .replace("**", ".*")
+                .replaceAll("\\*\\*+", ".*")
                 + "$"));
     }
 
