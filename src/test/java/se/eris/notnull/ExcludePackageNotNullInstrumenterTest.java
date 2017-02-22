@@ -39,7 +39,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 
-public class AnnotationNotNullInstrumenterTest {
+/**
+ * Tests to verify that package exclusion works.
+ */
+public class ExcludePackageNotNullInstrumenterTest {
 
     private static final File SRC_DIR = new File("src/test/data");
     private static final File TARGET_DIR = new File("src/test/data");
@@ -49,12 +52,12 @@ public class AnnotationNotNullInstrumenterTest {
 
     @BeforeClass
     public static void beforeClass() {
-        final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/test/TestNotNull.java");
+        final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/exclude/TestExcludePackage.java");
         compile(fileToCompile);
 
         final NotNullConfiguration configuration = new NotNullConfiguration(false, notNull(), Collections.<String>emptySet());
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
-        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", configuration, Collections.<URL>emptyList());
+        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/exclude", configuration, Collections.<URL>emptyList());
 
         assertThat(numberOfInstrumentedFiles, greaterThan(0));
     }
@@ -68,35 +71,18 @@ public class AnnotationNotNullInstrumenterTest {
     }
 
     @Test
-    public void annotatedParameter_shouldValidate() throws Exception {
+    public void annotatedParameter_shouldNotValidate() throws Exception {
         final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
-        ReflectionUtil.simulateMethodCall(notNullParameterMethod, "should work");
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for @NotNull parameter of se/eris/test/TestNotNull.notNullParameter must not be null");
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
 
     @Test
-    public void notnullReturn_shouldValidate() throws Exception {
+    public void notnullReturn_shouldNotValidate() throws Exception {
         final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
         final Method notNullReturnMethod = c.getMethod("notNullReturn", String.class);
-        ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
 
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("NotNull method se/eris/test/TestNotNull.notNullReturn must not return null");
-        ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null});
-    }
-
-    @Test
-    public void annotatedReturn_shouldValidate() throws Exception {
-        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
-        final Method notNullReturnMethod = c.getMethod("annotatedReturn", String.class);
-        ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
-
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("NotNull method se/eris/test/TestNotNull.annotatedReturn must not return null");
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null});
     }
 
