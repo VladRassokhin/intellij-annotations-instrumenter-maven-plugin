@@ -30,10 +30,7 @@ import se.eris.notnull.instrumentation.PackageMatcher;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Vladislav.Rassokhin
@@ -49,6 +46,9 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
 
     @Parameter
     private Set<String> nullable;
+
+    @Parameter
+    private Set<String> excludes;
 
     @Parameter
     private boolean implicit;
@@ -93,7 +93,21 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     }
 
     private Configuration getConfiguration() {
-        return new Configuration(implicit, new AnnotationConfiguration(nullToEmpty(notNull), nullToEmpty(nullable)), new PackageConfiguration(Collections.<PackageMatcher>emptySet()));
+        return new Configuration(implicit,
+                getAnnotationConfiguration(notNull, nullable),
+                getPackageConfiguration(excludes));
+    }
+
+    private AnnotationConfiguration getAnnotationConfiguration(final Set<String> notNull, final Set<String> nullable) {
+        return new AnnotationConfiguration(nullToEmpty(notNull), nullToEmpty(nullable));
+    }
+
+    private PackageConfiguration getPackageConfiguration(final Set<String> excludes) {
+        final Set<PackageMatcher> matchers = new HashSet<>();
+        for (final String exclude : excludes) {
+            matchers.add(PackageMatcher.fromPackage(exclude));
+        }
+        return new PackageConfiguration(matchers);
     }
 
     private Set<String> nullToEmpty(final Set<String> set) {
