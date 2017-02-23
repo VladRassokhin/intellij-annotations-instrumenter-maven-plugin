@@ -11,11 +11,31 @@ public class PackageMatcher {
 
     @NotNull
     public static PackageMatcher fromPackage(@NotNull final String aPackage) {
-        return new PackageMatcher(Pattern.compile("^"+aPackage
-                .replace(".", "\\.")
-                .replaceAll("([^\\*])\\*", "$1[^\\.]*")
-                .replaceAll("\\*\\*+", ".*")
-                + "$"));
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < aPackage.length(); i++) {
+            final char charAtI = aPackage.charAt(i);
+            if (charAtI == '.') {
+                sb.append("\\.");
+            } else if (charAtI == '*') {
+                if (isNextCharWildcard(aPackage, i)) {
+                    sb.append(".*");
+                    i++;
+                } else {
+                    sb.append("[^\\.]*");
+                }
+            } else {
+                sb.append(charAtI);
+            }
+        }
+        return new PackageMatcher(Pattern.compile("^" + sb.toString() + "$"));
+    }
+
+    private static boolean isNextCharWildcard(@NotNull final String s, final int i) {
+        return hasCharsAfter(s, i) && s.charAt(i + 1) == '*';
+    }
+
+    private static boolean hasCharsAfter(@NotNull final String s, final int i) {
+        return i + 1 < s.length();
     }
 
     private PackageMatcher(@NotNull final Pattern pattern) {

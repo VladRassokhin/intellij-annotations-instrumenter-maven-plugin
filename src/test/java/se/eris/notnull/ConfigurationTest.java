@@ -34,19 +34,19 @@ public class ConfigurationTest {
 
     @Test
     public void getAnnotations_defaultNotNull() {
-        Configuration configuration = getDefaultNotNullConfiguration(false);
+        final Configuration configuration = getDefaultNotNullConfiguration(false);
         assertThat(configuration.getNotNullAnnotations(), containsInAnyOrder(ORG_JETBRAINS_ANNOTATIONS_NOT_NULL, SE_ERIS_NOT_NULL));
         assertThat(configuration.isImplicit(), is(false));
     }
 
     @Test
     public void getAnnotations_defaultNullable() {
-        Configuration configuration = getDefaultNotNullConfiguration(true);
+        final Configuration configuration = getDefaultNotNullConfiguration(true);
         assertThat(configuration.getNullableAnnotations(), containsInAnyOrder(ORG_JETBRAINS_ANNOTATIONS_NULLABLE, SE_ERIS_NULLABLE));
         assertThat(configuration.isImplicit(), is(true));
     }
 
-    private Configuration getDefaultNotNullConfiguration(boolean implicit) {
+    private Configuration getDefaultNotNullConfiguration(final boolean implicit) {
         return new Configuration(implicit, new AnnotationConfiguration(Collections.<String>emptySet(), Collections.<String>emptySet()), new PackageConfiguration(Collections.<PackageMatcher>emptySet()));
     }
 
