@@ -11,31 +11,24 @@ public class PackageMatcher {
 
     @NotNull
     public static PackageMatcher fromPackage(@NotNull final String aPackage) {
+        final StringWorker worker = new StringWorker(aPackage);
         final StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < aPackage.length(); i++) {
-            final char charAtI = aPackage.charAt(i);
-            if (charAtI == '.') {
+        for (int i = 0; i < worker.length(); i++) {
+            if (worker.isString(i, ".**")) {
+                sb.append("(\\.[^\\.]*)*");
+                i += 2;
+            } else if (worker.isChar(i, '.')) {
                 sb.append("\\.");
-            } else if (charAtI == '*') {
-                if (isNextCharWildcard(aPackage, i)) {
-                    sb.append(".*");
-                    i++;
-                } else {
+            } else if (worker.isString(i, "**")) {
+                sb.append(".*");
+                i += 1;
+            } else if (worker.isChar(i, '*')) {
                     sb.append("[^\\.]*");
-                }
             } else {
-                sb.append(charAtI);
+                sb.append(aPackage.charAt(i));
             }
         }
         return new PackageMatcher(Pattern.compile("^" + sb.toString() + "$"));
-    }
-
-    private static boolean isNextCharWildcard(@NotNull final String s, final int i) {
-        return hasCharsAfter(s, i) && s.charAt(i + 1) == '*';
-    }
-
-    private static boolean hasCharsAfter(@NotNull final String s, final int i) {
-        return i + 1 < s.length();
     }
 
     private PackageMatcher(@NotNull final Pattern pattern) {
