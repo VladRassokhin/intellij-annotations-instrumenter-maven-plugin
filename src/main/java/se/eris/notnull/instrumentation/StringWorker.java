@@ -14,8 +14,8 @@ public class StringWorker {
         return s.length();
     }
 
-    public boolean isChar(final int i, final char c) {
-        return hasChar(i) && s.charAt(i) == c;
+    public boolean isChar(final int offset, final char c) {
+        return hasChar(offset) && s.charAt(offset) == c;
     }
 
     public boolean isString(final int offset, final String s) {
@@ -28,7 +28,7 @@ public class StringWorker {
     }
 
     @Contract(pure = true)
-    private boolean hasChar(final int i) {
-        return i >= 0 && i < s.length();
+    private boolean hasChar(final int offset) {
+        return offset >= 0 && offset < s.length();
     }
 }
