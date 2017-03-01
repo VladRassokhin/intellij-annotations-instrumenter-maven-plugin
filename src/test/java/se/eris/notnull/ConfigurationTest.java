@@ -16,7 +16,7 @@
 package se.eris.notnull;
 
 import org.junit.Test;
-import se.eris.notnull.instrumentation.PackageMatcher;
+import se.eris.notnull.instrumentation.ClassMatcher;
 
 import java.util.Collections;
 
@@ -47,7 +47,7 @@ public class ConfigurationTest {
     }
 
     private Configuration getDefaultNotNullConfiguration(final boolean implicit) {
-        return new Configuration(implicit, new AnnotationConfiguration(Collections.<String>emptySet(), Collections.<String>emptySet()), new PackageConfiguration(Collections.<PackageMatcher>emptySet()));
+        return new Configuration(implicit, new AnnotationConfiguration(Collections.<String>emptySet(), Collections.<String>emptySet()), new PackageConfiguration(Collections.<ClassMatcher>emptySet()));
     }
 
 }

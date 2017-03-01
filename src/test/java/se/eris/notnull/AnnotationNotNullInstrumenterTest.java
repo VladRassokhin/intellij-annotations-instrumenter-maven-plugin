@@ -22,7 +22,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import se.eris.maven.NopLogWrapper;
-import se.eris.notnull.instrumentation.PackageMatcher;
+import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
 
 import javax.tools.JavaCompiler;
@@ -53,7 +53,7 @@ public class AnnotationNotNullInstrumenterTest {
         final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/test/TestNotNull.java");
         compile(fileToCompile);
 
-        final Configuration configuration = new Configuration(false, new AnnotationConfiguration(notNull(), Collections.<String>emptySet()), new PackageConfiguration(Collections.<PackageMatcher>emptySet()));
+        final Configuration configuration = new Configuration(false, new AnnotationConfiguration(notNull(), Collections.<String>emptySet()), new PackageConfiguration(Collections.<ClassMatcher>emptySet()));
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
         final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", configuration, Collections.<URL>emptyList());
 

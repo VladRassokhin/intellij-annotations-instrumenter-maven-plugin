@@ -25,7 +25,7 @@ import se.eris.maven.MavenLogWrapper;
 import se.eris.notnull.AnnotationConfiguration;
 import se.eris.notnull.Configuration;
 import se.eris.notnull.PackageConfiguration;
-import se.eris.notnull.instrumentation.PackageMatcher;
+import se.eris.notnull.instrumentation.ClassMatcher;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -103,9 +103,9 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     }
 
     private PackageConfiguration getPackageConfiguration(final Set<String> excludes) {
-        final Set<PackageMatcher> matchers = new HashSet<>();
+        final Set<ClassMatcher> matchers = new HashSet<>();
         for (final String exclude : excludes) {
-            matchers.add(PackageMatcher.fromPackage(exclude));
+            matchers.add(ClassMatcher.namePattern(exclude));
         }
         return new PackageConfiguration(matchers);
     }

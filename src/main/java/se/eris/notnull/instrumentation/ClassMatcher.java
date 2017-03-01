@@ -4,14 +4,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Pattern;
 
-public class PackageMatcher {
+public final class ClassMatcher {
 
     @NotNull
     private final Pattern pattern;
 
     @NotNull
-    public static PackageMatcher fromPackage(@NotNull final String aPackage) {
-        final StringWorker worker = new StringWorker(aPackage);
+    public static ClassMatcher namePattern(@NotNull final String classNamePattern) {
+        final StringWorker worker = new StringWorker(classNamePattern);
         final StringBuilder sb = new StringBuilder();
         for (int i = 0; i < worker.length(); i++) {
             if (worker.isString(i, ".**")) {
@@ -25,13 +25,13 @@ public class PackageMatcher {
             } else if (worker.isChar(i, '*')) {
                     sb.append("[^\\.]*");
             } else {
-                sb.append(aPackage.charAt(i));
+                sb.append(classNamePattern.charAt(i));
             }
         }
-        return new PackageMatcher(Pattern.compile("^" + sb.toString() + "$"));
+        return new ClassMatcher(Pattern.compile("^" + sb.toString() + "$"));
     }
 
-    private PackageMatcher(@NotNull final Pattern pattern) {
+    private ClassMatcher(@NotNull final Pattern pattern) {
         this.pattern = pattern;
     }
 
@@ -41,9 +41,9 @@ public class PackageMatcher {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        final PackageMatcher aPackageMatcher = (PackageMatcher) o;
+        final ClassMatcher aClassMatcher = (ClassMatcher) o;
 
-        return pattern.equals(aPackageMatcher.pattern);
+        return pattern.equals(aClassMatcher.pattern);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class PackageMatcher {
         return pattern.hashCode();
     }
 
-    public boolean matches(final String packageName) {
-        return pattern.matcher(packageName).matches();
+    public boolean matches(final CharSequence classFileName) {
+        return pattern.matcher(classFileName).matches();
     }
 }
