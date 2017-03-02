@@ -54,7 +54,7 @@ public class ImplicitClassNotNullInstrumenterTest {
         final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/test/" + TEST_CLASS + ".java");
         compile(fileToCompile);
 
-        final Configuration configuration = new Configuration(false, new AnnotationConfiguration(notnull(), nullable()), new PackageConfiguration(Collections.<ClassMatcher>emptySet()));
+        final Configuration configuration = new Configuration(false, new AnnotationConfiguration(notnull(), nullable()), new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
         final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", configuration, Collections.<URL>emptyList());
 

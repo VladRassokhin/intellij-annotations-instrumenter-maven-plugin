@@ -41,11 +41,11 @@ import static org.hamcrest.Matchers.greaterThan;
 /**
  * Tests to verify that package exclusion works.
  */
-public class ExcludePackageNotNullInstrumenterTest {
+public class ExcludeClassesNotNullInstrumenterTest {
 
     private static final File SRC_DIR = new File("src/test/data");
     private static final File TARGET_DIR = new File("src/test/data");
-    private static final String TEST_CLASS = "TestExcludePackage";
+    private static final String TEST_CLASS = "TestExclude";
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -55,8 +55,8 @@ public class ExcludePackageNotNullInstrumenterTest {
         final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/exclude/" + TEST_CLASS + ".java");
         compile(fileToCompile);
 
-        final PackageConfiguration packageConfiguration = new PackageConfiguration(Collections.singleton(ClassMatcher.namePattern("se.eris.exclude.*")));
-        final Configuration configuration = new Configuration(true, new AnnotationConfiguration(), packageConfiguration);
+        final ExcludeConfiguration excludeConfiguration = new ExcludeConfiguration(Collections.singleton(ClassMatcher.namePattern("se.eris.exclude.*")));
+        final Configuration configuration = new Configuration(true, new AnnotationConfiguration(), excludeConfiguration);
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
         final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/exclude", configuration, Collections.<URL>emptyList());
 

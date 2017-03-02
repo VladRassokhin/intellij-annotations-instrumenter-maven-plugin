@@ -27,20 +27,20 @@ public class Configuration {
     @NotNull
     private final AnnotationConfiguration annotationConfiguration;
     @NotNull
-    private final PackageConfiguration packageConfiguration;
+    private final ExcludeConfiguration excludeConfiguration;
 
     @SuppressWarnings("BooleanParameter")
     public Configuration(
             final boolean implicit,
             @NotNull final AnnotationConfiguration annotationConfiguration,
-            @NotNull final PackageConfiguration packageConfiguration) {
+            @NotNull final ExcludeConfiguration excludeConfiguration) {
         this.implicit = implicit;
         if (annotationConfiguration.isAnnotationsConfigured()) {
             this.annotationConfiguration = annotationConfiguration;
         } else {
             this.annotationConfiguration = new AnnotationConfiguration(getDefaultNotNull(), getDefaultNullable());
         }
-        this.packageConfiguration = packageConfiguration;
+        this.excludeConfiguration = excludeConfiguration;
     }
 
     @NotNull
@@ -73,7 +73,7 @@ public class Configuration {
         return annotationConfiguration.getNullable();
     }
 
-    public boolean isImplicitInstrumentation(final String packageName) {
-        return implicit && packageConfiguration.isPackageImplicitInstrumentation(packageName);
+    public boolean isImplicitInstrumentation(final String className) {
+        return implicit && excludeConfiguration.isClassImplicitInstrumentation(className);
     }
 }

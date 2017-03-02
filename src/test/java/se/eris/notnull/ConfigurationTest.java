@@ -47,7 +47,7 @@ public class ConfigurationTest {
     }
 
     private Configuration getDefaultNotNullConfiguration(final boolean implicit) {
-        return new Configuration(implicit, new AnnotationConfiguration(Collections.<String>emptySet(), Collections.<String>emptySet()), new PackageConfiguration(Collections.<ClassMatcher>emptySet()));
+        return new Configuration(implicit, new AnnotationConfiguration(Collections.<String>emptySet(), Collections.<String>emptySet()), new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
     }
 
 }

@@ -19,7 +19,7 @@ import java.util.Arrays;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class TestExcludePackage {
+public class TestExclude {
 
     public static void notNullParameter(@NotNull final String s) {
     }

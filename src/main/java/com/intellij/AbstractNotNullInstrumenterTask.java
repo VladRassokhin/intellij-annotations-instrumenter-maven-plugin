@@ -24,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import se.eris.maven.MavenLogWrapper;
 import se.eris.notnull.AnnotationConfiguration;
 import se.eris.notnull.Configuration;
-import se.eris.notnull.PackageConfiguration;
+import se.eris.notnull.ExcludeConfiguration;
 import se.eris.notnull.instrumentation.ClassMatcher;
 
 import java.io.File;
@@ -95,19 +95,19 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     private Configuration getConfiguration() {
         return new Configuration(implicit,
                 getAnnotationConfiguration(notNull, nullable),
-                getPackageConfiguration(excludes));
+                getExcludeConfiguration(excludes));
     }
 
     private AnnotationConfiguration getAnnotationConfiguration(final Set<String> notNull, final Set<String> nullable) {
         return new AnnotationConfiguration(nullToEmpty(notNull), nullToEmpty(nullable));
     }
 
-    private PackageConfiguration getPackageConfiguration(final Set<String> excludes) {
+    private ExcludeConfiguration getExcludeConfiguration(final Set<String> excludes) {
         final Set<ClassMatcher> matchers = new HashSet<>();
         for (final String exclude : excludes) {
             matchers.add(ClassMatcher.namePattern(exclude));
         }
-        return new PackageConfiguration(matchers);
+        return new ExcludeConfiguration(matchers);
     }
 
     private Set<String> nullToEmpty(final Set<String> set) {

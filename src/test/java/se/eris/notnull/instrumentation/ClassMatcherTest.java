@@ -8,7 +8,7 @@ import static org.junit.Assert.assertThat;
 public class ClassMatcherTest {
 
     @Test
-    public void fromPlainPackage() {
+    public void fromPlainMarcher() {
         final ClassMatcher matcher = ClassMatcher.namePattern("se.eris.A");
         assertThat(matcher.matches("se.A"), is(false));
         assertThat(matcher.matches("se.eris.A"), is(true));
@@ -17,7 +17,7 @@ public class ClassMatcherTest {
     }
 
     @Test
-    public void fromSingleWildcardPackage() {
+    public void fromSingleWildcard() {
         final ClassMatcher matcher = ClassMatcher.namePattern("se.*");
         assertThat(matcher.matches("se.A"), is(true));
         assertThat(matcher.matches("se.eris.A"), is(false));
@@ -26,8 +26,8 @@ public class ClassMatcherTest {
     }
 
     @Test
-    public void fromDoubleWildcardAtEndPackage() {
-        final ClassMatcher matcher = ClassMatcher.namePattern("se.**"); // should this include the se package
+    public void fromDoubleWildcardAtEnd() {
+        final ClassMatcher matcher = ClassMatcher.namePattern("se.**");
         assertThat(matcher.matches("se"), is(true));
         assertThat(matcher.matches("se.eris"), is(true));
         assertThat(matcher.matches("se.eris.Test"), is(true));
@@ -36,8 +36,8 @@ public class ClassMatcherTest {
     }
 
     @Test
-    public void fromDoubleWildcardPackage() {
-        final ClassMatcher matcher = ClassMatcher.namePattern("se.**.Test"); // should this include the se package
+    public void fromDoubleWildcard() {
+        final ClassMatcher matcher = ClassMatcher.namePattern("se.**.Test");
         assertThat(matcher.matches("se"), is(false));
         assertThat(matcher.matches("se.eris"), is(false));
         assertThat(matcher.matches("se.Test"), is(true));
@@ -48,7 +48,7 @@ public class ClassMatcherTest {
     }
 
     @Test
-    public void fromWildcardFirstPackage() {
+    public void fromWildcardFirst() {
         final ClassMatcher matcher = ClassMatcher.namePattern("*.Test");
         assertThat(matcher.matches("se"), is(false));
         assertThat(matcher.matches("se.Test"), is(true));
@@ -56,7 +56,7 @@ public class ClassMatcherTest {
     }
 
     @Test
-    public void fromDoubleWildcardFirstPackage() {
+    public void fromDoubleWildcardFirst() {
         final ClassMatcher matcher = ClassMatcher.namePattern("**.Test");
         assertThat(matcher.matches("se"), is(false));
         assertThat(matcher.matches("se.Test"), is(true));
