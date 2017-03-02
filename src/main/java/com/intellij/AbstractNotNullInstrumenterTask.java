@@ -22,15 +22,15 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.jetbrains.annotations.NotNull;
 import se.eris.maven.MavenLogWrapper;
-import se.eris.notnull.NotNullConfiguration;
+import se.eris.notnull.AnnotationConfiguration;
+import se.eris.notnull.Configuration;
+import se.eris.notnull.ExcludeConfiguration;
+import se.eris.notnull.instrumentation.ClassMatcher;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Vladislav.Rassokhin
@@ -46,6 +46,9 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
 
     @Parameter
     private Set<String> nullable;
+
+    @Parameter
+    private Set<String> excludes;
 
     @Parameter
     private boolean implicit;
@@ -64,7 +67,7 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
         if (!instrument) {
             return;
         }
-        final NotNullConfiguration configuration = getConfiguration();
+        final Configuration configuration = getConfiguration();
         logAnnotations(configuration);
         final List<URL> classpathUrls = getClasspathUrls(classpathElements);
         final int instrumented = instrumenter.addNotNullAnnotations(classesDirectory, configuration, classpathUrls);
@@ -89,15 +92,29 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
         return urls;
     }
 
-    private NotNullConfiguration getConfiguration() {
-        return new NotNullConfiguration(implicit, nullToEmpty(notNull), nullToEmpty(nullable));
+    private Configuration getConfiguration() {
+        return new Configuration(implicit,
+                getAnnotationConfiguration(notNull, nullable),
+                getExcludeConfiguration(excludes));
+    }
+
+    private AnnotationConfiguration getAnnotationConfiguration(final Set<String> notNull, final Set<String> nullable) {
+        return new AnnotationConfiguration(nullToEmpty(notNull), nullToEmpty(nullable));
+    }
+
+    private ExcludeConfiguration getExcludeConfiguration(final Set<String> excludes) {
+        final Set<ClassMatcher> matchers = new HashSet<>();
+        for (final String exclude : excludes) {
+            matchers.add(ClassMatcher.namePattern(exclude));
+        }
+        return new ExcludeConfiguration(matchers);
     }
 
     private Set<String> nullToEmpty(final Set<String> set) {
         return (set != null) ? set : Collections.<String>emptySet();
     }
 
-    private void logAnnotations(@NotNull final NotNullConfiguration configuration) {
+    private void logAnnotations(@NotNull final Configuration configuration) {
         if (!configuration.getNotNullAnnotations().isEmpty()) {
             logger.info("Using the following NotNull annotations:");
             for (final String notNullAnnotation : configuration.getNotNullAnnotations()) {

@@ -25,8 +25,8 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import se.eris.asm.AsmUtils;
 import se.eris.maven.LogWrapper;
+import se.eris.notnull.Configuration;
 import se.eris.notnull.InstrumenterExecutionException;
-import se.eris.notnull.NotNullConfiguration;
 import se.eris.util.ClassFileUtils;
 
 import java.io.File;
@@ -51,12 +51,12 @@ public class NotNullInstrumenter {
         logger = logWrapper;
     }
 
-    public int addNotNullAnnotations(@NotNull final String classesDirectory, final NotNullConfiguration configuration, @NotNull final List<URL> urls) {
+    public int addNotNullAnnotations(@NotNull final String classesDirectory, final Configuration configuration, @NotNull final List<URL> urls) {
         final InstrumentationClassFinder finder = new InstrumentationClassFinder(urls.toArray(new URL[urls.size()]));
         return instrumentDirectoryRecursive(new File(classesDirectory), finder, configuration);
     }
 
-    private int instrumentDirectoryRecursive(@NotNull final File classesDirectory, @NotNull final InstrumentationClassFinder finder, final NotNullConfiguration configuration) {
+    private int instrumentDirectoryRecursive(@NotNull final File classesDirectory, @NotNull final InstrumentationClassFinder finder, final Configuration configuration) {
         int instrumentedCounter = 0;
         final Collection<File> classes = ClassFileUtils.getClassFiles(classesDirectory.toPath());
         for (@NotNull final File file : classes) {
@@ -65,7 +65,7 @@ public class NotNullInstrumenter {
         return instrumentedCounter;
     }
 
-    private int instrumentFile(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, final NotNullConfiguration configuration) {
+    private int instrumentFile(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, final Configuration configuration) {
         logger.debug("Adding NotNull assertions to " + file.getPath());
         try {
             return instrumentClass(file, finder, configuration) ? 1 : 0;
@@ -77,7 +77,7 @@ public class NotNullInstrumenter {
         return 0;
     }
 
-    private static boolean instrumentClass(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, final NotNullConfiguration configuration) throws IOException {
+    private static boolean instrumentClass(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, final Configuration configuration) throws IOException {
         try (FileInputStream inputStream = new FileInputStream(file)) {
             final ClassReader classReader = new ClassReader(inputStream);
 
