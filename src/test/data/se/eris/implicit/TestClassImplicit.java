@@ -13,4 +13,12 @@ public class TestClassImplicit {
     public static void implicitParameter(final String s) {
     }
 
+    public static void anonymousClassNullable() {
+        new Abstract((String) null) {}; // anonymous class - no way to annotate constructor parameters
+    }
+
+    public static void anonymousClassNotNull() {
+        new Abstract((Integer) null) {}; // anonymous class - no way to annotate constructor parameters
+    }
+
 }

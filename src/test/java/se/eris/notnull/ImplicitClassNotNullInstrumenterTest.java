@@ -49,6 +49,7 @@ public class ImplicitClassNotNullInstrumenterTest {
 
     private static final File SRC_DIR = new File("src/test/data/");
     private static final String FULL_TEST_FILE = "se/eris/implicit/" + CLASS_NAME + ".java";
+    private static final String ABSTRACT_TEST_FILE = "se/eris/implicit/Abstract.java";
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -56,7 +57,8 @@ public class ImplicitClassNotNullInstrumenterTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         final String fileToCompile = getSrcFile(SRC_DIR, FULL_TEST_FILE);
-        compile(fileToCompile);
+        final String abstractClass = getSrcFile(SRC_DIR, ABSTRACT_TEST_FILE);
+        compile(fileToCompile, abstractClass);
 
         final Configuration configuration = new Configuration(false,
                 new AnnotationConfiguration(notnull(), nullable()),
@@ -100,6 +102,17 @@ public class ImplicitClassNotNullInstrumenterTest {
         ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null});
     }
 
+    @Test
+    public void anonymousClassConstructor_shouldFollowParentAnnotation() throws Exception {
+        final Class<?> c = getCompiledClass(CLASSES_DIR, FULL_TEST_CLASS);
+        final Method anonymousClassNullable = c.getMethod("anonymousClassNullable");
+        ReflectionUtil.simulateMethodCall(anonymousClassNullable);
+
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/implicit/Abstract.<init> must not be null");
+        final Method anonymousClassNotNull = c.getMethod("anonymousClassNotNull");
+        ReflectionUtil.simulateMethodCall(anonymousClassNotNull);
+    }
 
     @NotNull
     private Class<?> getCompiledClass(@NotNull final File targetDir, @NotNull final String className) throws MalformedURLException, ClassNotFoundException {
