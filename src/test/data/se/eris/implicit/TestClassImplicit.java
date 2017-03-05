@@ -1,4 +1,4 @@
-package se.eris.test;
+package se.eris.implicit;
 
 import org.jetbrains.annotations.Nullable;
 import se.eris.notnull.ImplicitNotNull;

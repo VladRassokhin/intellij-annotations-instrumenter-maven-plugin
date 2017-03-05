@@ -42,21 +42,27 @@ import static org.hamcrest.Matchers.greaterThan;
 
 public class ImplicitClassNotNullInstrumenterTest {
 
-    private static final File SRC_DIR = new File("src/test/data");
-    private static final File TARGET_DIR = new File("src/test/data");
-    private static final String TEST_CLASS = "TestClassImplicit";
+    private static final String CLASS_NAME = "TestClassImplicit";
+
+    private static final File CLASSES_DIR = new File("src/test/data/");
+    private static final String FULL_TEST_CLASS = "se.eris.implicit." + CLASS_NAME;
+
+    private static final File SRC_DIR = new File("src/test/data/");
+    private static final String FULL_TEST_FILE = "se/eris/implicit/" + CLASS_NAME + ".java";
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/test/" + TEST_CLASS + ".java");
+        final String fileToCompile = getSrcFile(SRC_DIR, FULL_TEST_FILE);
         compile(fileToCompile);
 
-        final Configuration configuration = new Configuration(false, new AnnotationConfiguration(notnull(), nullable()), new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
+        final Configuration configuration = new Configuration(false,
+                new AnnotationConfiguration(notnull(), nullable()),
+                new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
-        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", configuration, Collections.<URL>emptyList());
+        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations(new File(CLASSES_DIR, "se/eris/implicit").toString(), configuration, Collections.<URL>emptyList());
 
         assertThat(numberOfInstrumentedFiles, greaterThan(0));
     }
@@ -77,20 +83,20 @@ public class ImplicitClassNotNullInstrumenterTest {
 
     @Test
     public void notNullAnnotatedParameter_shouldValidate() throws Exception {
-        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test." + TEST_CLASS);
+        final Class<?> c = getCompiledClass(CLASSES_DIR,  FULL_TEST_CLASS);
         final Method implicitReturn = c.getMethod("implicitReturn", String.class);
         ReflectionUtil.simulateMethodCall(implicitReturn, "should work");
         exception.expect(IllegalStateException.class);
-        exception.expectMessage("NotNull method se/eris/test/" + TEST_CLASS + ".implicitReturn must not return null");
+        exception.expectMessage("NotNull method se/eris/implicit/" + CLASS_NAME + ".implicitReturn must not return null");
         ReflectionUtil.simulateMethodCall(implicitReturn, new Object[]{null});
     }
 
     @Test
     public void implicitParameter_shouldValidate() throws Exception {
-        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test." + TEST_CLASS);
+        final Class<?> c = getCompiledClass(CLASSES_DIR, FULL_TEST_CLASS);
         final Method implicitParameterMethod = c.getMethod("implicitParameter", String.class);
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/test/" + TEST_CLASS + ".implicitParameter must not be null");
+        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/implicit/" + CLASS_NAME + ".implicitParameter must not be null");
         ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null});
     }
 
