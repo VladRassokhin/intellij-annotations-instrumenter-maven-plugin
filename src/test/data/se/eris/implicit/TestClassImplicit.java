@@ -14,11 +14,19 @@ public class TestClassImplicit {
     }
 
     public static void anonymousClassNullable() {
-        new Abstract((String) null) {}; // anonymous class - no way to annotate constructor parameters
+        new Foo((String) null) {}; // anonymous class - no way to annotate constructor parameters
     }
 
     public static void anonymousClassNotNull() {
-        new Abstract((Integer) null) {}; // anonymous class - no way to annotate constructor parameters
+        new Foo((Integer) null) {}; // anonymous class - no way to annotate constructor parameters
+    }
+
+    private static class Foo {
+
+        Foo(@Nullable String s) {}
+
+        Foo(Integer i) {}
+
     }
 
 }
