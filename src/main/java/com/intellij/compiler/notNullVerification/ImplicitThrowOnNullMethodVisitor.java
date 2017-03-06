@@ -30,16 +30,16 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     ImplicitThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> nullableAnnotations) {
         super(Opcodes.ASM5, methodVisitor, argumentTypes, returnType, access, methodName, className, true);
         this.nullableAnnotations = nullableAnnotations;
-        if (!isSynthetic() && !isAbstractInnerClassConstructor()) {
+        if (!isSynthetic() && !isAnonymousClassConstructor()) {
             addImplicitNotNulls();
         }
     }
 
-    private boolean isAbstractInnerClassConstructor() {
-        return isInnerClass() && isConstructor();
+    private boolean isAnonymousClassConstructor() {
+        return isAnonymousClass() && isConstructor();
     }
 
-    private boolean isInnerClass() {
+    private boolean isAnonymousClass() {
         return this.className.matches(".*\\$[0-9]+$");
     }
 
