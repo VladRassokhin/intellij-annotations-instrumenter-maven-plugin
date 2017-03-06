@@ -73,7 +73,7 @@ public class ImplicitInnerClassNullableInstrumenterTest {
         ReflectionUtil.simulateMethodCall(anonymousClassNullable);
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/implicit/Abstract.<init> must not be null");
+        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/implicit/TestClassImplicit$Foo.<init> must not be null");
         final Method anonymousClassNotNull = c.getMethod("anonymousClassNotNull");
         ReflectionUtil.simulateMethodCall(anonymousClassNotNull);
     }
