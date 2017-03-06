@@ -135,7 +135,7 @@ have to annotate the parameters/return value like this:
 which would throw a NullPointerException if a is null, return null if a equals b, and otherwise append the 
 Strings (or a + null if b is null).
 
-**Note** that when using implicit you need to specify the Nullable annotation (not the NotNull).
+**Note** that when using implicit you need to specify the Nullable annotations (not the NotNull).
 
 
 ##Turn off Instrumentation
@@ -174,5 +174,5 @@ com.UnitTest.
 
 Things I am thinking about (want feedback):
 
-* Automatically adding the (\\$[0-9]+)? regexp to the end, to match anonymous inner classes.
+* Automatically adding the (\\$[0-9]+)? regexp to the end, to match anonymous classes.
 * Allow full regexp.
