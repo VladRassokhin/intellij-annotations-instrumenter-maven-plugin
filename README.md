@@ -168,8 +168,8 @@ Example:
         </excludes>
     </configuration>
 
-Would exclude all files which have wsdl in any package part and classes with names ending in Test under 
-com.&lt;exactlyonepackagelevel&gt; for example com.a.UnitTest but not further down ie not com.a.b.UnitTest or 
+Would exclude all files which have wsdl in any package part and classes with names ending 
+in Test under com.&lt;package&gt; for example com.a.UnitTest but not com.a.b.UnitTest or 
 com.UnitTest.
 
 Things I am thinking about (want feedback):
