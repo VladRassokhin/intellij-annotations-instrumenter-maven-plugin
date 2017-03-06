@@ -29,7 +29,7 @@ Just update your pom.xml with following:
             <plugin>
                 <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.6.2</version>
+                <version>0.6.3</version>
                 <executions>
                     <execution>
                         <goals>
@@ -53,7 +53,7 @@ want to one or more other annotations add them to configuration, for example:
             <plugin>
                 <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.6.2</version>
+                <version>0.6.3</version>
                 <executions>
                     <execution>
                         <id>instrument</id>
@@ -88,7 +88,7 @@ If you don't like to have @NotNull on 99.99% of your parameters and methods turn
             <plugin>
                 <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.6.2</version>
+                <version>0.6.3</version>
                 <executions>
                     <execution>
                         <id>instrument</id>
@@ -132,13 +132,44 @@ have to annotate the parameters/return value like this:
 which would throw a NullPointerException if a is null, return null if a equals b, and otherwise append the 
 Strings (or a + null if b is null).
 
-**Note** that when using implicit you need to specify the Nullable annotation (not NotNull).
+**Note** that when using implicit you need to specify the Nullable annotation (not the NotNull).
 
 
-##Turn of Instrumentation
+##Turn off Instrumentation
 
 The property `se.eris.notnull.instrument=true/false` turns on/off the instrumentation. This may seem like a 
 stupid feature but it is really useful when you have multiple maven profiles and only one of them, eg Sonar/Findbugs, 
 should build without instrumentation since it messes up the statistics (branch coverage, complexity, etc).
 
 `mvn clean install -Dse.eris.notnull.instrument=false`
+
+##Exclusion
+
+To ease migration to implicit it is now possible to exclude certain class files from instrumentation. This 
+is still a bit experimental the exclusion rules might change (depending on feedback).
+
+There are three patterns
+
+* . matching package boundary
+* * matching anything except package boundaries
+* ** matching anything (including package boundaries)
+* .** matching any number of package levels
+
+Example:
+
+    <configuration>
+        <implicit>true</implicit>
+        <excludes>
+            <classes>**.wsdl.**</classes>
+            <classes>com.*.*Test</classes>
+        </excludes>
+    </configuration>
+
+Would exclude all files which have wsdl in any package part and classes with names ending in Test under 
+com.&lt;exactlyonepackagelevel&gt; for example com.a.UnitTest but not further down ie not com.a.b.UnitTest or 
+com.UnitTest.
+
+Things I am thinking about (want feedback):
+
+* Automatically adding the (\\$[0-9]+)? regexp to the end, to match anonymous inner classes.
+* Allow full regexp.

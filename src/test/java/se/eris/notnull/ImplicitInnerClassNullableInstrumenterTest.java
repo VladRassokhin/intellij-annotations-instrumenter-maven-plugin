@@ -33,14 +33,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 
-public class ImplicitClassNotNullInstrumenterTest {
+public class ImplicitInnerClassNullableInstrumenterTest {
 
     private static final String CLASS_NAME = "TestClassImplicit";
 
@@ -49,6 +47,7 @@ public class ImplicitClassNotNullInstrumenterTest {
 
     private static final File SRC_DIR = new File("src/test/data/");
     private static final String FULL_TEST_FILE = "se/eris/implicit/" + CLASS_NAME + ".java";
+    private static final String ABSTRACT_TEST_FILE = "se/eris/implicit/Abstract.java";
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -58,8 +57,8 @@ public class ImplicitClassNotNullInstrumenterTest {
         final String fileToCompile = getSrcFile(SRC_DIR, FULL_TEST_FILE);
         compile(fileToCompile);
 
-        final Configuration configuration = new Configuration(false,
-                new AnnotationConfiguration(notnull(), nullable()),
+        final Configuration configuration = new Configuration(true,
+                new AnnotationConfiguration(),
                 new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
         final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations(new File(CLASSES_DIR, "se/eris/implicit").toString(), configuration, Collections.<URL>emptyList());
@@ -67,45 +66,14 @@ public class ImplicitClassNotNullInstrumenterTest {
         assertThat(numberOfInstrumentedFiles, greaterThan(0));
     }
 
-    @NotNull
-    private static Set<String> nullable() {
-        final Set<String> annotations = new HashSet<>();
-        annotations.add("org.jetbrains.annotations.Nullable");
-        return annotations;
-    }
-
-    @NotNull
-    private static Set<String> notnull() {
-        final Set<String> annotations = new HashSet<>();
-        annotations.add("org.jetbrains.annotations.NotNull");
-        return annotations;
-    }
-
     @Test
-    public void notNullAnnotatedParameter_shouldValidate() throws Exception {
-        final Class<?> c = getCompiledClass(CLASSES_DIR,  FULL_TEST_CLASS);
-        final Method implicitReturn = c.getMethod("implicitReturn", String.class);
-        ReflectionUtil.simulateMethodCall(implicitReturn, "should work");
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("NotNull method se/eris/implicit/" + CLASS_NAME + ".implicitReturn must not return null");
-        ReflectionUtil.simulateMethodCall(implicitReturn, new Object[]{null});
-    }
-
-    @Test
-    public void implicitParameter_shouldValidate() throws Exception {
-        final Class<?> c = getCompiledClass(CLASSES_DIR, FULL_TEST_CLASS);
-        final Method implicitParameterMethod = c.getMethod("implicitParameter", String.class);
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/implicit/" + CLASS_NAME + ".implicitParameter must not be null");
-        ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null});
-    }
-
-    @Test
-    public void innerClassConstructor_shouldNotBeInstrumented() throws Exception {
+    public void anonymousClassConstructor_shouldFollowParentAnnotation() throws Exception {
         final Class<?> c = getCompiledClass(CLASSES_DIR, FULL_TEST_CLASS);
         final Method anonymousClassNullable = c.getMethod("anonymousClassNullable");
         ReflectionUtil.simulateMethodCall(anonymousClassNullable);
 
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/implicit/TestClassImplicit$Foo.<init> must not be null");
         final Method anonymousClassNotNull = c.getMethod("anonymousClassNotNull");
         ReflectionUtil.simulateMethodCall(anonymousClassNotNull);
     }
