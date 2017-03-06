@@ -19,7 +19,7 @@ Just update your pom.xml with following:
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>13.0</version>
+            <version>15.0</version>
         </dependency>
         ...
     </dependencies>
@@ -29,7 +29,7 @@ Just update your pom.xml with following:
             <plugin>
                 <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.6.3</version>
+                <version>0.6.5</version>
                 <executions>
                     <execution>
                         <goals>
@@ -43,6 +43,9 @@ Just update your pom.xml with following:
         </plugins>
     </build>
 
+And start adding @NotNull/@Nullable annotations to your code.
+
+
 ##Use other and/or multiple annotations
 
 By default only the annotation org.jetbrains.annotations.NotNull is supported if you
@@ -53,7 +56,7 @@ want to one or more other annotations add them to configuration, for example:
             <plugin>
                 <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.6.3</version>
+                <version>0.6.5</version>
                 <executions>
                     <execution>
                         <id>instrument</id>
@@ -88,7 +91,7 @@ If you don't like to have @NotNull on 99.99% of your parameters and methods turn
             <plugin>
                 <groupId>se.eris</groupId>
                 <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.6.3</version>
+                <version>0.6.5</version>
                 <executions>
                     <execution>
                         <id>instrument</id>

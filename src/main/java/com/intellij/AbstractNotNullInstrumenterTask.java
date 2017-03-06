@@ -104,7 +104,7 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
 
     private ExcludeConfiguration getExcludeConfiguration(final Set<String> excludes) {
         final Set<ClassMatcher> matchers = new HashSet<>();
-        for (final String exclude : excludes) {
+        for (final String exclude : nullToEmpty(excludes)) {
             matchers.add(ClassMatcher.namePattern(exclude));
         }
         return new ExcludeConfiguration(matchers);
