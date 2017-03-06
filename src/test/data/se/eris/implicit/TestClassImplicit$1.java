@@ -4,7 +4,7 @@ import org.jetbrains.annotations.Nullable;
 import se.eris.notnull.ImplicitNotNull;
 
 @ImplicitNotNull
-public class TestClassImplicit {
+public class TestClassImplicit$1 {
 
     public static String implicitReturn(@Nullable final String s) {
         return s;
@@ -27,6 +27,9 @@ public class TestClassImplicit {
 
         Foo(Integer i) {}
 
+    }
+
+    public TestClassImplicit$1(String s) {
     }
 
 }

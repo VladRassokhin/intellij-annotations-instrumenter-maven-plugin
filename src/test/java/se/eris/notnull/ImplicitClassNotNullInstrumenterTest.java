@@ -28,6 +28,7 @@ import se.eris.util.ReflectionUtil;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -42,7 +43,7 @@ import static org.hamcrest.Matchers.greaterThan;
 
 public class ImplicitClassNotNullInstrumenterTest {
 
-    private static final String CLASS_NAME = "TestClassImplicit";
+    private static final String CLASS_NAME = "TestClassImplicit$1";
 
     private static final File CLASSES_DIR = new File("src/test/data/");
     private static final String FULL_TEST_CLASS = "se.eris.implicit." + CLASS_NAME;
@@ -98,6 +99,15 @@ public class ImplicitClassNotNullInstrumenterTest {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/implicit/" + CLASS_NAME + ".implicitParameter must not be null");
         ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null});
+    }
+
+    @Test
+    public void implicitConstructorParameter_shouldValidate() throws Exception {
+        final Class<?> c = getCompiledClass(CLASSES_DIR, FULL_TEST_CLASS);
+        final Constructor<?> implicitParameterConstructor = c.getConstructor(String.class);
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/implicit/" + CLASS_NAME + ".<init> must not be null");
+        ReflectionUtil.simulateConstructorCall(implicitParameterConstructor, new Object[]{null});
     }
 
     @Test

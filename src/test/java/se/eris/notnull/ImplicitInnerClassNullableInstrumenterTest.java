@@ -40,7 +40,7 @@ import static org.hamcrest.Matchers.greaterThan;
 
 public class ImplicitInnerClassNullableInstrumenterTest {
 
-    private static final String CLASS_NAME = "TestClassImplicit";
+    private static final String CLASS_NAME = "TestClassImplicit$1";
 
     private static final File CLASSES_DIR = new File("src/test/data/");
     private static final String FULL_TEST_CLASS = "se.eris.implicit." + CLASS_NAME;
@@ -73,7 +73,7 @@ public class ImplicitInnerClassNullableInstrumenterTest {
         ReflectionUtil.simulateMethodCall(anonymousClassNullable);
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/implicit/TestClassImplicit$Foo.<init> must not be null");
+        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/implicit/" + CLASS_NAME + "$Foo.<init> must not be null");
         final Method anonymousClassNotNull = c.getMethod("anonymousClassNotNull");
         ReflectionUtil.simulateMethodCall(anonymousClassNotNull);
     }

@@ -18,6 +18,7 @@ package se.eris.util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -34,6 +35,19 @@ public class ReflectionUtil {
         try {
             return method.invoke(cls, params);
         } catch (final InvocationTargetException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof RuntimeException) {
+                throw RuntimeException.class.cast(cause);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    public static Object simulateConstructorCall(@NotNull final Constructor constructor, @NotNull final Object... params) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+        try {
+            return constructor.newInstance(params);
+        } catch (final InstantiationException | InvocationTargetException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof RuntimeException) {
                 throw RuntimeException.class.cast(cause);
