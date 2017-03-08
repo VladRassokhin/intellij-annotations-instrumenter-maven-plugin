@@ -87,6 +87,7 @@ public class ImplicitClassNotNullInstrumenterTest {
         final Class<?> c = getCompiledClass(CLASSES_DIR,  FULL_TEST_CLASS);
         final Method implicitReturn = c.getMethod("implicitReturn", String.class);
         ReflectionUtil.simulateMethodCall(implicitReturn, "should work");
+
         exception.expect(IllegalStateException.class);
         exception.expectMessage("NotNull method se/eris/implicit/" + CLASS_NAME + ".implicitReturn must not return null");
         ReflectionUtil.simulateMethodCall(implicitReturn, new Object[]{null});
@@ -96,6 +97,7 @@ public class ImplicitClassNotNullInstrumenterTest {
     public void implicitParameter_shouldValidate() throws Exception {
         final Class<?> c = getCompiledClass(CLASSES_DIR, FULL_TEST_CLASS);
         final Method implicitParameterMethod = c.getMethod("implicitParameter", String.class);
+
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/implicit/" + CLASS_NAME + ".implicitParameter must not be null");
         ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null});
@@ -105,6 +107,7 @@ public class ImplicitClassNotNullInstrumenterTest {
     public void implicitConstructorParameter_shouldValidate() throws Exception {
         final Class<?> c = getCompiledClass(CLASSES_DIR, FULL_TEST_CLASS);
         final Constructor<?> implicitParameterConstructor = c.getConstructor(String.class);
+
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/implicit/" + CLASS_NAME + ".<init> must not be null");
         ReflectionUtil.simulateConstructorCall(implicitParameterConstructor, new Object[]{null});
