@@ -26,23 +26,19 @@ import java.util.Set;
 class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
 
     private final Set<String> nullableAnnotations;
-    private final boolean isInnerClass;
+    private final boolean isAnonymousClass;
 
-    ImplicitThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> nullableAnnotations, boolean isInnerClass) {
+    ImplicitThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> nullableAnnotations, final boolean isAnonymousClass) {
         super(Opcodes.ASM5, methodVisitor, argumentTypes, returnType, access, methodName, className, true);
         this.nullableAnnotations = nullableAnnotations;
-        this.isInnerClass = isInnerClass;
+        this.isAnonymousClass = isAnonymousClass;
         if (!isSynthetic() && !isAnonymousClassConstructor()) {
             addImplicitNotNulls();
         }
     }
 
     private boolean isAnonymousClassConstructor() {
-        return isAnonymousClass() && isConstructor();
-    }
-
-    private boolean isAnonymousClass() {
-        return isInnerClass && this.className.matches(".*\\$[0-9]+$");
+        return isAnonymousClass && isConstructor();
     }
 
     private boolean isConstructor() {

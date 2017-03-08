@@ -39,10 +39,10 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
     private final Collection<ThrowOnNullMethodVisitor> methodVisitors = new ArrayList<>();
 
     private String className;
+    private boolean isAnonymous = false;
+    private boolean classAnnotatedImplicit = false;
     @NotNull
     private final Configuration configuration;
-    private boolean classAnnotatedImplicit = false;
-    private boolean isInnerClass = false;
 
     public NotNullInstrumenterClassVisitor(@NotNull final ClassVisitor classVisitor, @NotNull final Configuration configuration) {
         super(Opcodes.ASM5, classVisitor);
@@ -60,15 +60,16 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
         return converted;
     }
 
-    @Override
-    public void visitOuterClass(String s, String s1, String s2) {
-        super.visitOuterClass(s, s1, s2);
-        isInnerClass = true;
-    }
-
     public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
         className = name;
+    }
+
+    @Override
+    public void visitInnerClass(final String name, final String outer, final String innerName, final int access) {
+        if (name.equals(className)) {
+            isAnonymous = innerName == null;
+        }
     }
 
     @NotNull
@@ -78,7 +79,7 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
         final MethodVisitor methodVisitor = cv.visitMethod(access, name, desc, signature, exceptions);
         final ThrowOnNullMethodVisitor visitor;
         if (classAnnotatedImplicit || configuration.isImplicitInstrumentation(toClassName(className))) {
-            visitor = new ImplicitThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, nullable, isInnerClass);
+            visitor = new ImplicitThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, nullable, isAnonymous);
         } else {
             visitor = new AnnotationThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, notnull);
         }
