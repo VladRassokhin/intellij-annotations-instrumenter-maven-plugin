@@ -13,7 +13,7 @@ public final class ClassMatcher {
             .add(".", "\\.")
             .add("**", ".*")
             .add("*", "[^\\.]*")
-            .sufix("$")
+            .suffix("$")
             .build();
 
     @NotNull

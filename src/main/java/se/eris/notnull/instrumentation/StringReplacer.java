@@ -50,7 +50,7 @@ public class StringReplacer {
             return this;
         }
 
-        public Builder sufix(final String suffix) {
+        public Builder suffix(final String suffix) {
             this.suffix = suffix;
             return this;
         }
