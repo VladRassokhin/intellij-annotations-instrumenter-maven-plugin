@@ -6,31 +6,23 @@ import java.util.regex.Pattern;
 
 public final class ClassMatcher {
 
+    private static final StringReplacer PATTERN_REPLACER = StringReplacer.init()
+            .prefix("^")
+            .add("$", "\\$")
+            .add(".**", "(\\.[^\\.]*)*")
+            .add(".", "\\.")
+            .add("**", ".*")
+            .add("*", "[^\\.]*")
+            .sufix("$")
+            .build();
+
     @NotNull
     private final Pattern pattern;
 
     @NotNull
     public static ClassMatcher namePattern(@NotNull final String classNamePattern) {
-        final StringWorker worker = new StringWorker(classNamePattern);
-        final StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < worker.length(); i++) {
-            if (worker.isString(i, "$")) {
-                sb.append("\\$");
-            } else if (worker.isString(i, ".**")) {
-                sb.append("(\\.[^\\.]*)*");
-                i += 2;
-            } else if (worker.isChar(i, '.')) {
-                sb.append("\\.");
-            } else if (worker.isString(i, "**")) {
-                sb.append(".*");
-                i += 1;
-            } else if (worker.isChar(i, '*')) {
-                sb.append("[^\\.]*");
-            } else {
-                sb.append(classNamePattern.charAt(i));
-            }
-        }
-        return new ClassMatcher(Pattern.compile("^" + sb.toString() + "$"));
+        final String pattern = PATTERN_REPLACER.apply(classNamePattern);
+        return new ClassMatcher(Pattern.compile(pattern));
     }
 
     private ClassMatcher(@NotNull final Pattern pattern) {
@@ -56,4 +48,5 @@ public final class ClassMatcher {
     public boolean matches(final CharSequence classFileName) {
         return pattern.matcher(classFileName).matches();
     }
+
 }
