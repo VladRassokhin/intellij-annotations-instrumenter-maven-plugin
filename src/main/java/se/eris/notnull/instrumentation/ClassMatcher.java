@@ -14,7 +14,9 @@ public final class ClassMatcher {
         final StringWorker worker = new StringWorker(classNamePattern);
         final StringBuilder sb = new StringBuilder();
         for (int i = 0; i < worker.length(); i++) {
-            if (worker.isString(i, ".**")) {
+            if (worker.isString(i, "$")) {
+                sb.append("\\$");
+            } else if (worker.isString(i, ".**")) {
                 sb.append("(\\.[^\\.]*)*");
                 i += 2;
             } else if (worker.isChar(i, '.')) {
@@ -23,7 +25,7 @@ public final class ClassMatcher {
                 sb.append(".*");
                 i += 1;
             } else if (worker.isChar(i, '*')) {
-                    sb.append("[^\\.]*");
+                sb.append("[^\\.]*");
             } else {
                 sb.append(classNamePattern.charAt(i));
             }

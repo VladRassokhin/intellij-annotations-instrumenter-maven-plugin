@@ -63,4 +63,20 @@ public class ClassMatcherTest {
         assertThat(matcher.matches("se.eris.Test"), is(true));
     }
 
+    @Test
+    public void currencyDollar_shouldWork() {
+        final ClassMatcher matcher = ClassMatcher.namePattern("**.Test$1");
+        assertThat(matcher.matches("se.Test"), is(false));
+        assertThat(matcher.matches("se.Test$1"), is(true));
+        assertThat(matcher.matches("se.Test$12"), is(false));
+    }
+
+    @Test
+    public void regexp_shouldWork() {
+        final ClassMatcher matcher = ClassMatcher.namePattern("**.Test($[0-9]+)?");
+        assertThat(matcher.matches("se.Test"), is(true));
+        assertThat(matcher.matches("se.Test$1"), is(true));
+        assertThat(matcher.matches("se.Test$12"), is(true));
+    }
+
 }
