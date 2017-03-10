@@ -1,4 +1,4 @@
-package se.eris.notnull.instrumentation;
+package se.eris.util.string;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,17 +20,9 @@ public class StringReplacer {
     }
 
     public String apply(final String s) {
-        final StringManipulator worker = new StringManipulator(s);
+        final StringWorker worker = new StringWorker(s);
         worker.insert(prefix);
-        outer:
-        while (!worker.isDone()) {
-            for (final Replacement replacement : replacements) {
-                if (worker.replaceIfMatch(replacement)) {
-                    continue outer;
-                }
-            }
-            worker.step();
-        }
+        worker.replace(replacements);
         worker.insert(suffix);
         return worker.toString();
     }
@@ -41,8 +33,8 @@ public class StringReplacer {
             return new Builder();
         }
 
-        private String prefix;
-        private String suffix;
+        private String prefix = "";
+        private String suffix = "";
         private final List<Replacement> replacements = new ArrayList<>();
 
         public Builder prefix(final String prefix) {

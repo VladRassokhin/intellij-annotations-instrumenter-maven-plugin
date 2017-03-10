@@ -26,7 +26,7 @@ import org.objectweb.asm.Opcodes;
 import se.eris.asm.AsmUtils;
 import se.eris.maven.LogWrapper;
 import se.eris.notnull.Configuration;
-import se.eris.notnull.InstrumenterExecutionException;
+import se.eris.notnull.InstrumentExecutionException;
 import se.eris.util.ClassFileUtils;
 
 import java.io.File;
@@ -72,7 +72,7 @@ public class NotNullInstrumenter {
         } catch (final IOException e) {
             logger.warn("Failed to instrument NotNull assertion for " + file.getPath() + ": " + e.getMessage());
         } catch (final RuntimeException e) {
-            throw new InstrumenterExecutionException("NotNull instrumentation failed for " + file.getPath() + ": " + e.toString(), e);
+            throw new InstrumentExecutionException("NotNull instrumentation failed for " + file.getPath() + ": " + e.toString(), e);
         }
         return 0;
     }

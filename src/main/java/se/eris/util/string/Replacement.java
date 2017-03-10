@@ -1,8 +1,5 @@
-package se.eris.notnull.instrumentation;
+package se.eris.util.string;
 
-/**
- * Created by olle on 2017-03-09.
- */
 public class Replacement {
     private final String replace;
     private final String with;

@@ -1,6 +1,7 @@
 package se.eris.notnull.instrumentation;
 
 import org.jetbrains.annotations.NotNull;
+import se.eris.util.string.StringReplacer;
 
 import java.util.regex.Pattern;
 
