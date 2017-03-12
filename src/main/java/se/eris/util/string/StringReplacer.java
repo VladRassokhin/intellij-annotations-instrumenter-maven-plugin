@@ -22,7 +22,7 @@ public class StringReplacer {
     public String apply(final String s) {
         final StringWorker worker = new StringWorker(s);
         worker.insert(prefix);
-        worker.replace(replacements);
+        worker.replaceInOrder(replacements);
         worker.insert(suffix);
         return worker.toString();
     }

@@ -26,7 +26,11 @@ class StringWorker {
         return index >= stringAnalyzer.length();
     }
 
-    public void replace(final List<Replacement> replacements) {
+    /**
+     * Iterates character by character once replacing using the first matching replacement.
+     * @param replacements
+     */
+    public void replaceInOrder(final List<Replacement> replacements) {
         while (!isDone()) {
             if (!replaceFirstMatching(replacements)) {
                 step();
