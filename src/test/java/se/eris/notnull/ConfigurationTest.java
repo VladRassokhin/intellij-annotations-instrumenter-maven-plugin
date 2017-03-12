@@ -46,6 +46,12 @@ public class ConfigurationTest {
         assertThat(configuration.isImplicit(), is(true));
     }
 
+    @Test
+    public void excludes() throws Exception {
+        final Configuration configuration = getDefaultNotNullConfiguration(true);
+        configuration.isImplicitInstrumentation("NoName.java");
+    }
+
     private Configuration getDefaultNotNullConfiguration(final boolean implicit) {
         return new Configuration(implicit, new AnnotationConfiguration(Collections.<String>emptySet(), Collections.<String>emptySet()), new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
     }

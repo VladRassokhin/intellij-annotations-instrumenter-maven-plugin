@@ -24,38 +24,35 @@ import org.junit.rules.ExpectedException;
 import se.eris.maven.NopLogWrapper;
 import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
+import se.eris.util.compile.CompileUtil;
 
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
 import java.io.File;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 
 public class AnnotationNotNullInstrumenterTest {
 
     private static final File SRC_DIR = new File("src/test/data");
-    private static final File TARGET_DIR = new File("src/test/data");
+    private static final File CLASSES_DIR = new File("target/test/data/classes");
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @BeforeClass
     public static void beforeClass() {
-        final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/test/TestNotNull.java");
-        compile(fileToCompile);
+        final File fileToCompile = new File(SRC_DIR, "se/eris/test/TestNotNull.java");
+        CompileUtil.compile(CLASSES_DIR.toPath(), fileToCompile);
 
         final Configuration configuration = new Configuration(false, new AnnotationConfiguration(notNull(), Collections.<String>emptySet()), new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
-        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", configuration, Collections.<URL>emptyList());
+        final File classesDirectory = new File(CLASSES_DIR + "/se/eris/test");
+        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations(classesDirectory.toPath(), configuration, Collections.<URL>emptyList());
 
         assertThat(numberOfInstrumentedFiles, greaterThan(0));
     }
@@ -70,7 +67,7 @@ public class AnnotationNotNullInstrumenterTest {
 
     @Test
     public void annotatedParameter_shouldValidate() throws Exception {
-        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull");
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, "should work");
 
@@ -81,7 +78,7 @@ public class AnnotationNotNullInstrumenterTest {
 
     @Test
     public void notnullReturn_shouldValidate() throws Exception {
-        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull");
         final Method notNullReturnMethod = c.getMethod("notNullReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
 
@@ -92,31 +89,13 @@ public class AnnotationNotNullInstrumenterTest {
 
     @Test
     public void annotatedReturn_shouldValidate() throws Exception {
-        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull");
         final Method notNullReturnMethod = c.getMethod("annotatedReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
 
         exception.expect(IllegalStateException.class);
         exception.expectMessage("NotNull method se/eris/test/TestNotNull.annotatedReturn must not return null");
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null});
-    }
-
-    @NotNull
-    private Class<?> getCompiledClass(@NotNull final File targetDir, @NotNull final String className) throws MalformedURLException, ClassNotFoundException {
-        final URL[] classpath = {targetDir.toURI().toURL()};
-        final URLClassLoader classLoader = new URLClassLoader(classpath);
-        return classLoader.loadClass(className);
-    }
-
-    @NotNull
-    private static String getSrcFile(@NotNull final File srcDir, @NotNull final String file) {
-        return new File(srcDir, file).toString().replace("/", File.separator);
-    }
-
-    private static void compile(@NotNull final String... filesToCompile) {
-        final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        final int compilationResult = compiler.run(null, null, null, filesToCompile);
-        assertThat(compilationResult, is(0));
     }
 
 }

@@ -30,6 +30,7 @@ import se.eris.notnull.instrumentation.ClassMatcher;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -63,7 +64,7 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
         instrumenter = new NotNullInstrumenter(logger);
     }
 
-    void instrument(@NotNull final String classesDirectory, @NotNull final Iterable<String> classpathElements) throws MojoExecutionException {
+    void instrument(final Path classesDirectory, @NotNull final Iterable<String> classpathElements) throws MojoExecutionException {
         if (!instrument) {
             return;
         }
@@ -94,20 +95,20 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
 
     private Configuration getConfiguration() {
         return new Configuration(implicit,
-                getAnnotationConfiguration(notNull, nullable),
-                getExcludeConfiguration(excludes));
+                getAnnotationConfiguration(nullToEmpty(notNull), nullToEmpty(nullable)),
+                getExcludeConfiguration(nullToEmpty(excludes)));
     }
 
     private AnnotationConfiguration getAnnotationConfiguration(final Set<String> notNull, final Set<String> nullable) {
-        return new AnnotationConfiguration(nullToEmpty(notNull), nullToEmpty(nullable));
+        return new AnnotationConfiguration(notNull, nullable);
     }
 
     private ExcludeConfiguration getExcludeConfiguration(final Set<String> excludes) {
-        final Set<ClassMatcher> matchers = new HashSet<>();
-        for (final String exclude : nullToEmpty(excludes)) {
-            matchers.add(ClassMatcher.namePattern(exclude));
+        final Set<ClassMatcher> excludeMatchers = new HashSet<>();
+        for (final String exclude : excludes) {
+            excludeMatchers.add(ClassMatcher.namePattern(exclude));
         }
-        return new ExcludeConfiguration(matchers);
+        return new ExcludeConfiguration(excludeMatchers);
     }
 
     private Set<String> nullToEmpty(final Set<String> set) {

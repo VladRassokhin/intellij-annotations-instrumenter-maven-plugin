@@ -34,6 +34,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
@@ -51,14 +52,14 @@ public class NotNullInstrumenter {
         logger = logWrapper;
     }
 
-    public int addNotNullAnnotations(@NotNull final String classesDirectory, final Configuration configuration, @NotNull final List<URL> urls) {
+    public int addNotNullAnnotations(final Path classesDirectory, final Configuration configuration, @NotNull final List<URL> urls) {
         final InstrumentationClassFinder finder = new InstrumentationClassFinder(urls.toArray(new URL[urls.size()]));
-        return instrumentDirectoryRecursive(new File(classesDirectory), finder, configuration);
+        return instrumentDirectoryRecursive(classesDirectory, finder, configuration);
     }
 
-    private int instrumentDirectoryRecursive(@NotNull final File classesDirectory, @NotNull final InstrumentationClassFinder finder, final Configuration configuration) {
+    private int instrumentDirectoryRecursive(final Path classesDirectory, @NotNull final InstrumentationClassFinder finder, final Configuration configuration) {
         int instrumentedCounter = 0;
-        final Collection<File> classes = ClassFileUtils.getClassFiles(classesDirectory.toPath());
+        final Collection<File> classes = ClassFileUtils.getClassFiles(classesDirectory);
         for (@NotNull final File file : classes) {
             instrumentedCounter += instrumentFile(file, finder, configuration);
         }

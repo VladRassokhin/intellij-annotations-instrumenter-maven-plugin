@@ -7,14 +7,14 @@ import java.util.Set;
 
 public class ExcludeConfiguration {
 
-    private final Set<ClassMatcher> exclude;
+    private final Set<ClassMatcher> excludes;
 
-    public ExcludeConfiguration(final Set<ClassMatcher> exclude) {
-        this.exclude = new HashSet<>(exclude);
+    public ExcludeConfiguration(final Set<ClassMatcher> excludes) {
+        this.excludes = new HashSet<>(excludes);
     }
 
     public boolean isClassImplicitInstrumentation(final CharSequence className) {
-        for (final ClassMatcher classMatcher : exclude) {
+        for (final ClassMatcher classMatcher : excludes) {
             if (classMatcher.matches(className)) {
                 return false;
             }

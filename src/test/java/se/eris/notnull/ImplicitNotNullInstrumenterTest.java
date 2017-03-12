@@ -24,15 +24,12 @@ import org.junit.rules.ExpectedException;
 import se.eris.maven.NopLogWrapper;
 import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
+import se.eris.util.compile.CompileUtil;
 
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -44,19 +41,21 @@ import static org.hamcrest.Matchers.greaterThan;
 public class ImplicitNotNullInstrumenterTest {
 
     private static final File SRC_DIR = new File("src/test/data");
-    private static final File TARGET_DIR = new File("src/test/data");
+    private static final File CLASSES_DIR = new File("target/test/data/classes");
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        final String fileToCompile = getSrcFile(SRC_DIR, "se/eris/test/TestNotNull.java");
-        compile(fileToCompile);
+        final File fileToCompile = new File(SRC_DIR, "se/eris/test/TestNotNull.java");
+        CompileUtil.compile(CLASSES_DIR, fileToCompile);
 
         final Configuration configuration = new Configuration(true, new AnnotationConfiguration(Collections.<String>emptySet(), nullable()), new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
-        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations("src/test/data/se/eris/test", configuration, Collections.<URL>emptyList());
+        final String classesDirectory = new File(CLASSES_DIR, "/se/eris/test").toString();
+        final File classesDirectory1 = new File(classesDirectory);
+        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations(classesDirectory1.toPath(), configuration, Collections.<URL>emptyList());
 
         assertThat(numberOfInstrumentedFiles, greaterThan(0));
     }
@@ -71,7 +70,7 @@ public class ImplicitNotNullInstrumenterTest {
 
     @Test
     public void notNullAnnotatedParameter_shouldValidate() throws Exception {
-        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull");
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, "should work");
         exception.expect(IllegalArgumentException.class);
@@ -81,7 +80,7 @@ public class ImplicitNotNullInstrumenterTest {
 
     @Test
     public void implicitParameter_shouldValidate() throws Exception {
-        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull");
         final Method implicitParameterMethod = c.getMethod("implicitParameter", String.class);
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/test/TestNotNull.implicitParameter must not be null");
@@ -90,14 +89,14 @@ public class ImplicitNotNullInstrumenterTest {
 
     @Test
     public void nullableAnnotatedParameter_shouldNotValidate() throws Exception {
-        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull");
         final Method implicitParameterMethod = c.getMethod("nullableParameter", String.class);
         ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null});
     }
 
     @Test
     public void implicitReturn_shouldValidate() throws Exception {
-        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull");
         final Method notNullReturnMethod = c.getMethod("implicitReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
         exception.expect(IllegalStateException.class);
@@ -107,7 +106,7 @@ public class ImplicitNotNullInstrumenterTest {
 
     @Test
     public void annotatedReturn_shouldNotValidate() throws Exception {
-        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull");
         final Method notNullReturnMethod = c.getMethod("annotatedReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, (String) null);
     }
@@ -115,7 +114,7 @@ public class ImplicitNotNullInstrumenterTest {
     @Test
     public void innerClassWithoutConstructor_shouldWork() throws Exception {
         boolean syntheticConstructorFound = false;
-        final Class<?> c = getCompiledClass(TARGET_DIR, "se.eris.test.TestNotNull$Inner");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull$Inner");
         for (final Constructor<?> constructor : c.getDeclaredConstructors()) {
             final boolean isSynthetic = constructor.isSynthetic();
             if (isSynthetic) {
@@ -125,24 +124,6 @@ public class ImplicitNotNullInstrumenterTest {
             }
         }
         assertThat(syntheticConstructorFound, is(true));
-    }
-
-    @NotNull
-    private Class<?> getCompiledClass(@NotNull final File targetDir, @NotNull final String className) throws MalformedURLException, ClassNotFoundException {
-        final URL[] classpath = {targetDir.toURI().toURL()};
-        final URLClassLoader classLoader = new URLClassLoader(classpath);
-        return classLoader.loadClass(className);
-    }
-
-    @NotNull
-    private static String getSrcFile(@NotNull final File srcDir, @NotNull final String file) {
-        return new File(srcDir, file).toString().replace("/", File.separator);
-    }
-
-    private static void compile(@NotNull final String... filesToCompile) {
-        final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        final int compilationResult = compiler.run(null, null, null, filesToCompile);
-        assertThat(compilationResult, is(0));
     }
 
 }

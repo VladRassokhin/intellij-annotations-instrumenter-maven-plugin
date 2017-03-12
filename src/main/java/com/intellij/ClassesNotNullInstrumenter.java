@@ -21,6 +21,9 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
+import java.io.File;
+import java.nio.file.Path;
+
 /**
  * @author Vladislav.Rassokhin
  * @author Olle Sundblad
@@ -38,7 +41,8 @@ public class ClassesNotNullInstrumenter extends AbstractNotNullInstrumenterTask 
     @Override
     public void execute() throws MojoExecutionException {
         try {
-            instrument(project.getBuild().getOutputDirectory(), project.getCompileClasspathElements());
+            final Path classesDirectory = new File(project.getBuild().getOutputDirectory()).toPath();
+            instrument(classesDirectory, project.getCompileClasspathElements());
         }
         catch (final DependencyResolutionRequiredException e) {
             throw new MojoExecutionException(e.getMessage(), e);
