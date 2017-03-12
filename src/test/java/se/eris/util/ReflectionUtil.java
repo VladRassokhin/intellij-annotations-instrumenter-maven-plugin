@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -54,6 +55,36 @@ public class ReflectionUtil {
             } else {
                 throw e;
             }
+        }
+    }
+
+    public static <T> void setField(final Object instance, final String fieldName, final T value) {
+        Class<?> instanceClass = instance.getClass();
+        Field field = getDeclaredField(instanceClass, fieldName);
+        while (field == null) {
+            instanceClass = instanceClass.getSuperclass();
+            field = getDeclaredField(instanceClass, fieldName);
+        }
+        field.setAccessible(true);
+        try {
+            field.set(instance, value);
+        }
+        catch (final IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        finally {
+            field.setAccessible(false);
+        }
+    }
+
+    private static Field getDeclaredField(final Class<?> instanceClass, final String fieldName) {
+        if (instanceClass == null) {
+            throw new RuntimeException(new NoSuchFieldException(fieldName));
+        }
+        try {
+            return instanceClass.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException | SecurityException e) {
+            return null;
         }
     }
 }
