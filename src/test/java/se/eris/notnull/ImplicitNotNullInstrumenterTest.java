@@ -30,6 +30,7 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -41,21 +42,24 @@ import static org.hamcrest.Matchers.greaterThan;
 public class ImplicitNotNullInstrumenterTest {
 
     private static final File SRC_DIR = new File("src/test/data");
-    private static final File CLASSES_DIR = new File("target/test/data/classes");
+    private static final Path CLASSES_DIRECTORY = new File("target/test/data/classes").toPath();
+
+    private static final String CLASS_NAME = "TestNotNull";
+
+    private static final String TEST_FILE = "se/eris/test/" + CLASS_NAME + ".java";
+    private static final String TEST_CLASS = "se.eris.test." + CLASS_NAME;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        final File fileToCompile = new File(SRC_DIR, "se/eris/test/TestNotNull.java");
-        CompileUtil.compile(CLASSES_DIR, fileToCompile);
+        final File fileToCompile = new File(SRC_DIR, TEST_FILE);
+        CompileUtil.compile(CLASSES_DIRECTORY, fileToCompile);
 
         final Configuration configuration = new Configuration(true, new AnnotationConfiguration(Collections.<String>emptySet(), nullable()), new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
-        final String classesDirectory = new File(CLASSES_DIR, "/se/eris/test").toString();
-        final File classesDirectory1 = new File(classesDirectory);
-        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations(classesDirectory1.toPath(), configuration, Collections.<URL>emptyList());
+        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations(CLASSES_DIRECTORY, configuration, Collections.<URL>emptyList());
 
         assertThat(numberOfInstrumentedFiles, greaterThan(0));
     }
@@ -70,43 +74,43 @@ public class ImplicitNotNullInstrumenterTest {
 
     @Test
     public void notNullAnnotatedParameter_shouldValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, TEST_CLASS);
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, "should work");
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/test/TestNotNull.notNullParameter must not be null");
+        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/test/" + CLASS_NAME + ".notNullParameter must not be null");
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
 
     @Test
     public void implicitParameter_shouldValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, TEST_CLASS);
         final Method implicitParameterMethod = c.getMethod("implicitParameter", String.class);
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/test/TestNotNull.implicitParameter must not be null");
+        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/test/" + CLASS_NAME + ".implicitParameter must not be null");
         ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null});
     }
 
     @Test
     public void nullableAnnotatedParameter_shouldNotValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, TEST_CLASS);
         final Method implicitParameterMethod = c.getMethod("nullableParameter", String.class);
         ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null});
     }
 
     @Test
     public void implicitReturn_shouldValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, TEST_CLASS);
         final Method notNullReturnMethod = c.getMethod("implicitReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
         exception.expect(IllegalStateException.class);
-        exception.expectMessage("NotNull method se/eris/test/TestNotNull.implicitReturn must not return null");
+        exception.expectMessage("NotNull method se/eris/test/" + CLASS_NAME + ".implicitReturn must not return null");
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null});
     }
 
     @Test
     public void annotatedReturn_shouldNotValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, TEST_CLASS);
         final Method notNullReturnMethod = c.getMethod("annotatedReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, (String) null);
     }
@@ -114,7 +118,7 @@ public class ImplicitNotNullInstrumenterTest {
     @Test
     public void innerClassWithoutConstructor_shouldWork() throws Exception {
         boolean syntheticConstructorFound = false;
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull$Inner");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, TEST_CLASS + "$Inner");
         for (final Constructor<?> constructor : c.getDeclaredConstructors()) {
             final boolean isSynthetic = constructor.isSynthetic();
             if (isSynthetic) {

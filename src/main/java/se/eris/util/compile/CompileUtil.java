@@ -17,10 +17,6 @@ import java.util.Arrays;
 
 public class CompileUtil {
 
-    public static boolean compile(final File targetDir, @NotNull final File... filesToCompile) {
-        return compile(targetDir.toPath(), filesToCompile);
-    }
-
     public static boolean compile(final Path targetDir, @NotNull final File...filesToCompile) {
             createTargetDirectory(targetDir);
             final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -51,9 +47,9 @@ public class CompileUtil {
         }
 
         @NotNull
-        public static Class<?> getCompiledClass ( @NotNull final File targetDir, @NotNull final String className) throws
+        public static Class<?> getCompiledClass(final Path classesDirectory, @NotNull final String className) throws
         MalformedURLException, ClassNotFoundException {
-            final URL[] classpath = {targetDir.toURI().toURL()};
+            final URL[] classpath = {classesDirectory.toUri().toURL()};
             final URLClassLoader classLoader = new URLClassLoader(classpath);
             return classLoader.loadClass(className);
         }

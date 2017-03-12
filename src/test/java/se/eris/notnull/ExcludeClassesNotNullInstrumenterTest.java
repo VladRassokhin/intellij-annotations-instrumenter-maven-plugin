@@ -28,6 +28,7 @@ import se.eris.util.compile.CompileUtil;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,29 +40,29 @@ import static org.hamcrest.Matchers.greaterThan;
 public class ExcludeClassesNotNullInstrumenterTest {
 
     private static final File SRC_DIR = new File("src/test/data");
-    private static final File CLASSES_DIR = new File("target/test/data/classes");
+    private static final Path CLASSES_DIRECTORY = new File("target/test/data/classes").toPath();
+
     private static final String TEST_CLASS = "TestExclude";
+    private static final File TEST_FILE = new File(SRC_DIR, "se/eris/exclude/" + TEST_CLASS + ".java");
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @BeforeClass
     public static void beforeClass() {
-        final File fileToCompile = new File(SRC_DIR, "se/eris/exclude/" + TEST_CLASS + ".java");
-        CompileUtil.compile(CLASSES_DIR, fileToCompile);
+        CompileUtil.compile(CLASSES_DIRECTORY, TEST_FILE);
 
         final ExcludeConfiguration excludeConfiguration = new ExcludeConfiguration(Collections.singleton(ClassMatcher.namePattern("se.eris.exclude.*")));
         final Configuration configuration = new Configuration(true, new AnnotationConfiguration(), excludeConfiguration);
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
-        final File classesDirectory = new File(CLASSES_DIR, "se/eris/exclude");
-        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations(classesDirectory.toPath(), configuration, Collections.<URL>emptyList());
+        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations(CLASSES_DIRECTORY, configuration, Collections.<URL>emptyList());
 
         assertThat(numberOfInstrumentedFiles, greaterThan(0));
     }
 
     @Test
     public void annotatedParameter_shouldValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.exclude." + TEST_CLASS);
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.exclude." + TEST_CLASS);
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
 
         exception.expect(IllegalArgumentException.class);
@@ -71,7 +72,7 @@ public class ExcludeClassesNotNullInstrumenterTest {
 
     @Test
     public void unAnnotatedParameter_shouldNotValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.exclude." + TEST_CLASS);
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.exclude." + TEST_CLASS);
         final Method notNullParameterMethod = c.getMethod("unAnnotatedParameter", String.class);
 
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
@@ -79,7 +80,7 @@ public class ExcludeClassesNotNullInstrumenterTest {
 
     @Test
     public void notnullReturn_shouldNotValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.exclude." + TEST_CLASS);
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.exclude." + TEST_CLASS);
         final Method notNullReturnMethod = c.getMethod("notNullReturn", String.class);
 
         exception.expect(IllegalStateException.class);
@@ -89,8 +90,8 @@ public class ExcludeClassesNotNullInstrumenterTest {
 
     @Test
     public void unAnnotatedReturn_shouldNotValidate() throws Exception {
-        CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.exclude." + TEST_CLASS);
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.exclude." + TEST_CLASS);
+        CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.exclude." + TEST_CLASS);
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.exclude." + TEST_CLASS);
         final Method notNullParameterMethod = c.getMethod("unAnnotatedReturn", String.class);
 
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});

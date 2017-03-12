@@ -29,6 +29,7 @@ import se.eris.util.compile.CompileUtil;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,20 +40,20 @@ import static org.hamcrest.Matchers.greaterThan;
 public class AnnotationNotNullInstrumenterTest {
 
     private static final File SRC_DIR = new File("src/test/data");
-    private static final File CLASSES_DIR = new File("target/test/data/classes");
+    private static final Path CLASSES_DIRECTORY = new File("target/test/data/classes").toPath();
+
+    private static final File TEST_FILE = new File(SRC_DIR, "se/eris/test/TestNotNull.java");
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @BeforeClass
     public static void beforeClass() {
-        final File fileToCompile = new File(SRC_DIR, "se/eris/test/TestNotNull.java");
-        CompileUtil.compile(CLASSES_DIR.toPath(), fileToCompile);
+        CompileUtil.compile(CLASSES_DIRECTORY, TEST_FILE);
 
         final Configuration configuration = new Configuration(false, new AnnotationConfiguration(notNull(), Collections.<String>emptySet()), new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
-        final File classesDirectory = new File(CLASSES_DIR + "/se/eris/test");
-        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations(classesDirectory.toPath(), configuration, Collections.<URL>emptyList());
+        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations(CLASSES_DIRECTORY, configuration, Collections.<URL>emptyList());
 
         assertThat(numberOfInstrumentedFiles, greaterThan(0));
     }
@@ -67,7 +68,7 @@ public class AnnotationNotNullInstrumenterTest {
 
     @Test
     public void annotatedParameter_shouldValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.test.TestNotNull");
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, "should work");
 
@@ -78,7 +79,7 @@ public class AnnotationNotNullInstrumenterTest {
 
     @Test
     public void notnullReturn_shouldValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.test.TestNotNull");
         final Method notNullReturnMethod = c.getMethod("notNullReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
 
@@ -89,7 +90,7 @@ public class AnnotationNotNullInstrumenterTest {
 
     @Test
     public void annotatedReturn_shouldValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIR, "se.eris.test.TestNotNull");
+        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.test.TestNotNull");
         final Method notNullReturnMethod = c.getMethod("annotatedReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
 
