@@ -164,7 +164,7 @@ Example:
         <implicit>true</implicit>
         <excludes>
             <classes>**.wsdl.**</classes>
-            <classes>com.*.*Test</classes>
+            <classes>com.*.*Spec</classes>
         </excludes>
     </configuration>
 
