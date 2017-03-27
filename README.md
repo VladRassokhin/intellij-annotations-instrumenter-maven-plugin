@@ -153,10 +153,10 @@ is still a bit experimental the exclusion rules might change (depending on feedb
 
 There are three patterns
 
-* . matching package boundary
-* \* matching anything except package boundaries
-* \*\* matching anything (including package boundaries)
-* .\*\* matching any number of package levels
+* __.__  matching package boundary
+* __\*__  matching anything except package boundaries
+* __\*\*__  matching anything (including package boundaries)
+* __.\*\*__  matching any number of package levels
 
 Example:
 
