@@ -16,7 +16,11 @@
 package com.intellij.compiler.notNullVerification;
 
 import org.jetbrains.annotations.NotNull;
-import org.objectweb.asm.*;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import se.eris.lang.LangUtils;
 import se.eris.notnull.Configuration;
 import se.eris.notnull.ImplicitNotNull;
@@ -30,7 +34,6 @@ import java.util.Set;
  * @author ven
  * @author Vladislav.Rassokhin
  * @author Olle Sundblad
- *         noinspection HardCodedStringLiteral
  */
 public class NotNullInstrumenterClassVisitor extends ClassVisitor {
 

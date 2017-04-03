@@ -18,7 +18,11 @@ package com.intellij.compiler.notNullVerification;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.objectweb.asm.*;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import se.eris.asm.AsmUtils;
 
 import java.util.Set;
@@ -81,8 +85,8 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
         return av;
     }
 
-    private boolean setNullable(final int parameter) {
-        return notNullParams.remove((Integer)parameter);
+    private void setNullable(final int parameter) {
+        notNullParams.remove((Integer) parameter);
     }
 
     /**
