@@ -52,4 +52,15 @@ public class TestNotNull {
         private String s = "synthetic";
     }
 
+    public static class Superarg {}
+    public static class Subarg extends Superarg {}
+
+    public static class Super<S extends Superarg> {
+        public void overload(@NotNull S s) {}
+    }
+
+    public static class Sub extends Super<Subarg> {
+        @Override
+        public void overload(@NotNull Subarg s) {}
+    }
 }

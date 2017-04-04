@@ -15,6 +15,7 @@
  */
 package com.intellij.compiler.notNullVerification;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Label;
@@ -37,6 +38,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     final Type[] argumentTypes;
     private final Type returnType;
     boolean isReturnNotNull;
+    private final boolean isAnonymousClass;
     private boolean instrumented = false;
     private int syntheticCount;
     final int access;
@@ -45,7 +47,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     final List<Integer> notNullParams;
     Label startGeneratedCodeLabel;
 
-    ThrowOnNullMethodVisitor(final int api, @Nullable final MethodVisitor mv, @NotNull final Type[] argumentTypes, final Type returnType, final int access, final String methodName, final String className, final boolean isReturnNotNull) {
+    ThrowOnNullMethodVisitor(final int api, @Nullable final MethodVisitor mv, @NotNull final Type[] argumentTypes, final Type returnType, final int access, final String methodName, final String className, final boolean isReturnNotNull, boolean isAnonymousClass) {
         super(api, mv);
         this.argumentTypes = argumentTypes;
         this.returnType = returnType;
@@ -53,6 +55,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
         this.methodName = methodName;
         this.className = className;
         this.isReturnNotNull = isReturnNotNull;
+        this.isAnonymousClass = isAnonymousClass;
         syntheticCount = 0;
         notNullParams = new ArrayList<>();
     }
@@ -96,6 +99,10 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
      */
     @Override
     public void visitCode() {
+        if (isSynthetic() || isAnonymousClassConstructor()) {
+            //Skip synthetic methods, usually no need for instrumentation here.
+            return;
+        }
         if (!notNullParams.isEmpty()) {
             startGeneratedCodeLabel = new Label();
             mv.visitLabel(startGeneratedCodeLabel);
@@ -112,6 +119,19 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
 
             generateThrow(IAE_CLASS_NAME, getThrowMessage(notNullParam), end);
         }
+    }
+
+    private boolean isAnonymousClassConstructor() {
+        return isAnonymousClass && isConstructor();
+    }
+
+    private boolean isConstructor() {
+        return "<init>".equals(this.methodName);
+    }
+
+    @Contract(pure = true)
+    private boolean isSynthetic() {
+        return (this.access & Opcodes.ACC_SYNTHETIC) == Opcodes.ACC_SYNTHETIC;
     }
 
     private void generateThrow(@NotNull final String exceptionClass, @NotNull final String description, @NotNull final Label end) {
