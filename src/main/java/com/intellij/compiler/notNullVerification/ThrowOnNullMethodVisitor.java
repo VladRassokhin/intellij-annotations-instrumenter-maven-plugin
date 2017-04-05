@@ -70,7 +70,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
      * {@inheritDoc}
      */
     public void visitInsn(final int opcode) {
-        if (opcode == Opcodes.ARETURN) {
+        if (shouldInclude() && opcode == Opcodes.ARETURN) {
             if (isReturnNotNull) {
                 mv.visitInsn(Opcodes.DUP);
                 final Label skipLabel = new Label();
@@ -78,7 +78,6 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
                 generateThrow(ISE_CLASS_NAME, "NotNull method " + className + "." + methodName + " must not return null", skipLabel);
             }
         }
-
         mv.visitInsn(opcode);
     }
 
@@ -99,26 +98,33 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
      */
     @Override
     public void visitCode() {
-        if (isSynthetic() || isAnonymousClassConstructor()) {
-            //Skip synthetic methods, usually no need for instrumentation here.
-            return;
-        }
-        if (!notNullParams.isEmpty()) {
-            startGeneratedCodeLabel = new Label();
-            mv.visitLabel(startGeneratedCodeLabel);
-        }
-        for (final Integer notNullParam : notNullParams) {
-            int var = ((access & Opcodes.ACC_STATIC) == 0) ? 1 : 0;
-            for (int i = 0; i < notNullParam; ++i) {
-                var += argumentTypes[i].getSize();
+        if (shouldInclude()) {
+            if (!notNullParams.isEmpty()) {
+                startGeneratedCodeLabel = new Label();
+                mv.visitLabel(startGeneratedCodeLabel);
             }
-            mv.visitVarInsn(Opcodes.ALOAD, var);
+            for (final Integer notNullParam : notNullParams) {
+                int var = ((access & Opcodes.ACC_STATIC) == 0) ? 1 : 0;
+                for (int i = 0; i < notNullParam; ++i) {
+                    var += argumentTypes[i].getSize();
+                }
+                mv.visitVarInsn(Opcodes.ALOAD, var);
 
-            final Label end = new Label();
-            mv.visitJumpInsn(Opcodes.IFNONNULL, end);
+                final Label end = new Label();
+                mv.visitJumpInsn(Opcodes.IFNONNULL, end);
 
-            generateThrow(IAE_CLASS_NAME, getThrowMessage(notNullParam), end);
+                generateThrow(IAE_CLASS_NAME, getThrowMessage(notNullParam), end);
+            }
         }
+        mv.visitCode();
+    }
+
+    protected boolean shouldInclude() {
+        return !shouldSkip();
+    }
+
+    private boolean shouldSkip() {
+        return isSynthetic() || isAnonymousClassConstructor();
     }
 
     private boolean isAnonymousClassConstructor() {

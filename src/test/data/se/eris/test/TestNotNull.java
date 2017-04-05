@@ -63,4 +63,8 @@ public class TestNotNull {
         @Override
         public void overload(@NotNull Subarg s) {}
     }
+    
+    public static class InnerClassesSegmentIsPreserved {
+        public static class ASub {}
+    }
 }

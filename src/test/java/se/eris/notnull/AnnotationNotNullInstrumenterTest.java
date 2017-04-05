@@ -22,10 +22,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.*;
 import se.eris.maven.NopLogWrapper;
 import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
@@ -40,9 +37,11 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
 
+import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.junit.Assert.assertEquals;
 
 public class AnnotationNotNullInstrumenterTest {
 
@@ -142,8 +141,37 @@ public class AnnotationNotNullInstrumenterTest {
         final String onlyExpectedString = "(Lse/eris/test/TestNotNull$Subarg;)V:" +
                 "Argument 0 for @NotNull parameter of " +
                 "se/eris/test/TestNotNull$Sub.overload must not be null";
-        Assert.assertEquals(Collections.singletonList(
+        assertEquals(Collections.singletonList(
                 onlyExpectedString), strings);
+    }
+
+    @Test
+    public void innerClassesSegmentIsPreserved() throws Exception {
+        // Check that only the specific method has a string annotation indicating instrumentation
+        final File f = new File(TARGET_DIR, "se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved.class");
+        Assert.assertTrue(f.isFile());
+        final ClassReader cr = new ClassReader(new FileInputStream(f));
+        ArrayList<InnerClass> innerClasses = getInnerClasses(cr);
+        assertEquals(2, innerClasses.size());
+        //self-entry
+        assertEquals("se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved", innerClasses.get(0).name);
+        //inner entry
+        InnerClass expected = new InnerClass("se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved$ASub",
+                "se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved", "ASub", Opcodes.ACC_PUBLIC |
+                Opcodes.ACC_STATIC);
+        assertEquals(expected
+                , innerClasses.get(1));
+    }
+
+    private ArrayList<InnerClass> getInnerClasses(ClassReader cr) {
+        final ArrayList<InnerClass> innerClasses = new ArrayList<>();
+        cr.accept(new ClassVisitor(Opcodes.ASM5) {
+            @Override
+            public void visitInnerClass(String name, String outerName, String innerName, int access) {
+                innerClasses.add(new InnerClass(name, outerName, innerName, access));
+            }
+        }, 0);
+        return innerClasses;
     }
 
     @NotNull
