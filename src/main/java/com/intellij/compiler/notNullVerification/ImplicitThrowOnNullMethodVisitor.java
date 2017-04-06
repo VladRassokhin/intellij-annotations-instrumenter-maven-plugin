@@ -26,28 +26,11 @@ import java.util.Set;
 class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
 
     private final Set<String> nullableAnnotations;
-    private final boolean isAnonymousClass;
 
     ImplicitThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> nullableAnnotations, final boolean isAnonymousClass) {
-        super(Opcodes.ASM5, methodVisitor, argumentTypes, returnType, access, methodName, className, true);
+        super(Opcodes.ASM5, methodVisitor, argumentTypes, returnType, access, methodName, className, true, isAnonymousClass);
         this.nullableAnnotations = nullableAnnotations;
-        this.isAnonymousClass = isAnonymousClass;
-        if (!isSynthetic() && !isAnonymousClassConstructor()) {
-            addImplicitNotNulls();
-        }
-    }
-
-    private boolean isAnonymousClassConstructor() {
-        return isAnonymousClass && isConstructor();
-    }
-
-    private boolean isConstructor() {
-        return "<init>".equals(this.methodName);
-    }
-
-    @Contract(pure = true)
-    private boolean isSynthetic() {
-        return (this.access & Opcodes.ACC_SYNTHETIC) == Opcodes.ACC_SYNTHETIC;
+        addImplicitNotNulls();
     }
 
     private void addImplicitNotNulls() {
@@ -82,7 +65,7 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     }
 
     private boolean setNullable(final int parameter) {
-        return notNullParams.remove((Integer)parameter);
+        return notNullParams.remove((Integer) parameter);
     }
 
     /**

@@ -25,8 +25,8 @@ class AnnotationThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
 
     private final Set<String> notNullAnnotations;
 
-    AnnotationThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> notNullAnnotations) {
-        super(Opcodes.ASM5, methodVisitor, argumentTypes, returnType, access, methodName, className, false);
+    AnnotationThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> notNullAnnotations, boolean isAnonymous) {
+        super(Opcodes.ASM5, methodVisitor, argumentTypes, returnType, access, methodName, className, false, isAnonymous);
         this.notNullAnnotations = notNullAnnotations;
     }
 
