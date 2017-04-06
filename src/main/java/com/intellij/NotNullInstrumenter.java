@@ -26,7 +26,7 @@ import org.objectweb.asm.Opcodes;
 import se.eris.asm.AsmUtils;
 import se.eris.maven.LogWrapper;
 import se.eris.notnull.Configuration;
-import se.eris.notnull.InstrumenterExecutionException;
+import se.eris.notnull.InstrumentExecutionException;
 import se.eris.util.ClassFileUtils;
 
 import java.io.File;
@@ -34,6 +34,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
@@ -51,14 +52,14 @@ public class NotNullInstrumenter {
         logger = logWrapper;
     }
 
-    public int addNotNullAnnotations(@NotNull final String classesDirectory, final Configuration configuration, @NotNull final List<URL> urls) {
+    public int addNotNullAnnotations(final Path classesDirectory, final Configuration configuration, @NotNull final List<URL> urls) {
         final InstrumentationClassFinder finder = new InstrumentationClassFinder(urls.toArray(new URL[urls.size()]));
-        return instrumentDirectoryRecursive(new File(classesDirectory), finder, configuration);
+        return instrumentDirectoryRecursive(classesDirectory, finder, configuration);
     }
 
-    private int instrumentDirectoryRecursive(@NotNull final File classesDirectory, @NotNull final InstrumentationClassFinder finder, final Configuration configuration) {
+    private int instrumentDirectoryRecursive(final Path classesDirectory, @NotNull final InstrumentationClassFinder finder, final Configuration configuration) {
         int instrumentedCounter = 0;
-        final Collection<File> classes = ClassFileUtils.getClassFiles(classesDirectory.toPath());
+        final Collection<File> classes = ClassFileUtils.getClassFiles(classesDirectory);
         for (@NotNull final File file : classes) {
             instrumentedCounter += instrumentFile(file, finder, configuration);
         }
@@ -69,12 +70,9 @@ public class NotNullInstrumenter {
         logger.debug("Adding NotNull assertions to " + file.getPath());
         try {
             return instrumentClass(file, finder, configuration) ? 1 : 0;
-        } catch (final IOException e) {
-            logger.warn("Failed to instrument NotNull assertion for " + file.getPath() + ": " + e.getMessage());
-        } catch (final RuntimeException e) {
-            throw new InstrumenterExecutionException("NotNull instrumentation failed for " + file.getPath() + ": " + e.toString(), e);
+        } catch (final RuntimeException | IOException e) {
+            throw new InstrumentExecutionException("NotNull instrumentation failed for " + file.getPath(), e);
         }
-        return 0;
     }
 
     private static boolean instrumentClass(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, final Configuration configuration) throws IOException {

@@ -17,9 +17,9 @@ package se.eris.notnull;
 
 import org.jetbrains.annotations.NotNull;
 
-public class InstrumenterExecutionException extends RuntimeException {
+public class InstrumentExecutionException extends RuntimeException {
 
-    public InstrumenterExecutionException(@NotNull final String message, @NotNull final Throwable throwable) {
+    public InstrumentExecutionException(@NotNull final String message, @NotNull final Throwable throwable) {
         super(message, throwable);
     }
 

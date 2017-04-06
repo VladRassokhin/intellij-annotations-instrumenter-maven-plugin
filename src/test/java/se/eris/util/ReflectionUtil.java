@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -43,7 +44,9 @@ public class ReflectionUtil {
             }
         }
     }
-
+//Users/olle/IdeaProjects/intellij-annotations-instrumenter-maven-plugin/src/test/data/se/eris/implicit/TestClassImplicit$1.java
+    //                                                                   src/test/data/se/eris/test/TestClassImplicit$1.java
+    //                                                           reading src/test/data/se/eris/test/implicit/TestClassImplicit$1.java
     public static Object simulateConstructorCall(@NotNull final Constructor constructor, @NotNull final Object... params) throws IllegalAccessException, InvocationTargetException, InstantiationException {
         try {
             return constructor.newInstance(params);
@@ -54,6 +57,36 @@ public class ReflectionUtil {
             } else {
                 throw e;
             }
+        }
+    }
+
+    public static <T> void setField(final Object instance, final String fieldName, final T value) {
+        Class<?> instanceClass = instance.getClass();
+        Field field = getDeclaredField(instanceClass, fieldName);
+        while (field == null) {
+            instanceClass = instanceClass.getSuperclass();
+            field = getDeclaredField(instanceClass, fieldName);
+        }
+        field.setAccessible(true);
+        try {
+            field.set(instance, value);
+        }
+        catch (final IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        finally {
+            field.setAccessible(false);
+        }
+    }
+
+    private static Field getDeclaredField(final Class<?> instanceClass, final String fieldName) {
+        if (instanceClass == null) {
+            throw new RuntimeException(new NoSuchFieldException(fieldName));
+        }
+        try {
+            return instanceClass.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException | SecurityException e) {
+            return null;
         }
     }
 }

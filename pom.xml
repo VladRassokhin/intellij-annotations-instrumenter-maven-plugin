@@ -21,6 +21,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
+
         <maven-core.version>3.3.9</maven-core.version>
         <maven-plugin-annotations.version>3.5</maven-plugin-annotations.version>
         <intellij-annotations.version>13.0</intellij-annotations.version>
