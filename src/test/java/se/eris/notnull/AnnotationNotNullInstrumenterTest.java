@@ -21,21 +21,31 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import se.eris.maven.NopLogWrapper;
 import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
 import se.eris.util.compile.CompileUtil;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.junit.Assert.assertTrue;
 
 public class AnnotationNotNullInstrumenterTest {
 
@@ -101,11 +111,11 @@ public class AnnotationNotNullInstrumenterTest {
 
     @Test
     public void overridingMethod_isInstrumented() throws Exception {
-        final Class<?> subargClass = getCompiledClass("se.eris.test.TestNotNull$Subarg");
-        final Class<?> subClass = getCompiledClass("se.eris.test.TestNotNull$Sub");
+        final Class<?> subargClass = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.test.TestNotNull$Subarg");
+        final Class<?> subClass = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.test.TestNotNull$Sub");
         final Method specializedMethod = subClass.getMethod("overload", subargClass);
-        Assert.assertFalse(specializedMethod.isSynthetic());
-        Assert.assertFalse(specializedMethod.isBridge());
+        assertFalse(specializedMethod.isSynthetic());
+        assertFalse(specializedMethod.isBridge());
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Argument 0 for @NotNull parameter of se/eris/test/TestNotNull$Sub.overload must not be null");
         ReflectionUtil.simulateMethodCall(subClass.newInstance(), specializedMethod, new Object[]{null});
@@ -113,11 +123,11 @@ public class AnnotationNotNullInstrumenterTest {
 
     @Test
     public void syntheticMethod_dispatchesToSpecializedMethod() throws Exception {
-        final Class<?> superargClass = getCompiledClass("se.eris.test.TestNotNull$Superarg");
-        final Class<?> subClass = getCompiledClass("se.eris.test.TestNotNull$Sub");
+        final Class<?> superargClass = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.test.TestNotNull$Superarg");
+        final Class<?> subClass = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.test.TestNotNull$Sub");
         final Method generalMethod = subClass.getMethod("overload", superargClass);
-        Assert.assertTrue(generalMethod.isSynthetic());
-        Assert.assertTrue(generalMethod.isBridge());
+        assertTrue(generalMethod.isSynthetic());
+        assertTrue(generalMethod.isBridge());
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Argument 0 for @NotNull parameter of se/eris/test/TestNotNull$Sub.overload must not be null");
         ReflectionUtil.simulateMethodCall(subClass.newInstance(), generalMethod, new Object[]{null});
@@ -126,10 +136,10 @@ public class AnnotationNotNullInstrumenterTest {
     @Test
     public void onlySpecificMethod_isInstrumented() throws Exception {
         // Check that only the specific method has a string annotation indicating instrumentation
-        final File f = new File(TARGET_DIR, "se/eris/test/TestNotNull$Sub.class");
-        Assert.assertTrue(f.isFile());
+        final File f = new File(CLASSES_DIRECTORY.toFile(), "se/eris/test/TestNotNull$Sub.class");
+        assertTrue(f.isFile());
         final ClassReader cr = new ClassReader(new FileInputStream(f));
-        final ArrayList<String> strings = getStringConstants(cr, "overload");
+        final List<String> strings = getStringConstants(cr, "overload");
         final String onlyExpectedString = "(Lse/eris/test/TestNotNull$Subarg;)V:" +
                 "Argument 0 for @NotNull parameter of " +
                 "se/eris/test/TestNotNull$Sub.overload must not be null";
@@ -140,26 +150,26 @@ public class AnnotationNotNullInstrumenterTest {
     @Test
     public void innerClassesSegmentIsPreserved() throws Exception {
         // Check that only the specific method has a string annotation indicating instrumentation
-        final File f = new File(TARGET_DIR, "se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved.class");
-        Assert.assertTrue(f.isFile());
+        final File f = new File(CLASSES_DIRECTORY.toFile(), "se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved.class");
+        assertTrue(f.isFile());
         final ClassReader cr = new ClassReader(new FileInputStream(f));
-        ArrayList<InnerClass> innerClasses = getInnerClasses(cr);
+        final List<InnerClass> innerClasses = getInnerClasses(cr);
         assertEquals(2, innerClasses.size());
         //self-entry
         assertEquals("se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved", innerClasses.get(0).name);
         //inner entry
-        InnerClass expected = new InnerClass("se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved$ASub",
+        final InnerClass expected = new InnerClass("se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved$ASub",
                 "se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved", "ASub", Opcodes.ACC_PUBLIC |
                 Opcodes.ACC_STATIC);
         assertEquals(expected
                 , innerClasses.get(1));
     }
 
-    private ArrayList<InnerClass> getInnerClasses(ClassReader cr) {
-        final ArrayList<InnerClass> innerClasses = new ArrayList<>();
+    private List<InnerClass> getInnerClasses(final ClassReader cr) {
+        final List<InnerClass> innerClasses = new ArrayList<>();
         cr.accept(new ClassVisitor(Opcodes.ASM5) {
             @Override
-            public void visitInnerClass(String name, String outerName, String innerName, int access) {
+            public void visitInnerClass(final String name, final String outerName, final String innerName, final int access) {
                 innerClasses.add(new InnerClass(name, outerName, innerName, access));
             }
         }, 0);
@@ -167,16 +177,16 @@ public class AnnotationNotNullInstrumenterTest {
     }
 
     @NotNull
-    private ArrayList<String> getStringConstants(ClassReader cr, final String methodName) {
-        final ArrayList<String> strings = new ArrayList<>();
+    private List<String> getStringConstants(final ClassReader cr, final String methodName) {
+        final List<String> strings = new ArrayList<>();
         cr.accept(new ClassVisitor(Opcodes.ASM5) {
             @Override
-            public MethodVisitor visitMethod(int access, String name, final String desc, String signature,
-                                             String[] exceptions) {
+            public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
+                                             final String[] exceptions) {
                 if (name.equals(methodName)) {
                     return new MethodVisitor(Opcodes.ASM5) {
                         @Override
-                        public void visitLdcInsn(Object cst) {
+                        public void visitLdcInsn(final Object cst) {
                             if (cst instanceof String) {
                                 strings.add(desc + ":" + cst);
                             }
@@ -187,22 +197,6 @@ public class AnnotationNotNullInstrumenterTest {
             }
         }, 0);
         return strings;
-    }
-
-    @NotNull
-    private Class<?> getCompiledClass(@NotNull final String className) throws MalformedURLException, ClassNotFoundException {
-        return classLoader.loadClass(className);
-    }
-
-    @NotNull
-    private static String getSrcFile(@NotNull final File srcDir, @NotNull final String file) {
-        return new File(srcDir, file).toString().replace("/", File.separator);
-    }
-
-    private static void compile(@NotNull final String... filesToCompile) {
-        final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        final int compilationResult = compiler.run(null, null, null, filesToCompile);
-        assertThat(compilationResult, is(0));
     }
 
 }
