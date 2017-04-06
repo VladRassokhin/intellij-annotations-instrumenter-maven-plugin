@@ -67,6 +67,7 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
 
     @Override
     public void visitInnerClass(final String name, final String outer, final String innerName, final int access) {
+        super.visitInnerClass(name, outer, innerName, access);
         if (name.equals(className)) {
             isAnonymous = innerName == null;
         }
@@ -81,7 +82,7 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
         if (classAnnotatedImplicit || configuration.isImplicitInstrumentation(toClassName(className))) {
             visitor = new ImplicitThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, nullable, isAnonymous);
         } else {
-            visitor = new AnnotationThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, notnull);
+            visitor = new AnnotationThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, notnull, isAnonymous);
         }
         methodVisitors.add(visitor);
         return visitor;
