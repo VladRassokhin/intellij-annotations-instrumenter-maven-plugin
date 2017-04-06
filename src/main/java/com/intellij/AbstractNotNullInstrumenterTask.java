@@ -17,7 +17,6 @@ package com.intellij;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +30,11 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Vladislav.Rassokhin
@@ -39,7 +42,7 @@ import java.util.*;
  */
 abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
 
-    @Component
+    @Parameter( defaultValue = "${project}", readonly = true )
     MavenProject project;
 
     @Parameter

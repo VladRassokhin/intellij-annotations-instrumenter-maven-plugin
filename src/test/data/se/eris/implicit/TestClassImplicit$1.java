@@ -27,6 +27,8 @@ public class TestClassImplicit$1 {
 
         Foo(Integer i) {}
 
+        public void m() {
+        }
     }
 
     public TestClassImplicit$1(String s) {

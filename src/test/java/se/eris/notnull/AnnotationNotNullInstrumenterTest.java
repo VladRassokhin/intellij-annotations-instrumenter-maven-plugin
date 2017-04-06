@@ -28,11 +28,12 @@ import org.objectweb.asm.Opcodes;
 import se.eris.maven.NopLogWrapper;
 import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
-import se.eris.util.compile.CompileUtil;
+import se.eris.util.TestCompiler;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -57,9 +58,12 @@ public class AnnotationNotNullInstrumenterTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
+    private static TestCompiler compiler;
+
     @BeforeClass
-    public static void beforeClass() {
-        CompileUtil.compile(CLASSES_DIRECTORY, TEST_FILE);
+    public static void beforeClass() throws MalformedURLException {
+        compiler = TestCompiler.create(CLASSES_DIRECTORY);
+        compiler.compile(TEST_FILE);
 
         final Configuration configuration = new Configuration(false, new AnnotationConfiguration(notNull(), Collections.<String>emptySet()), new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
@@ -78,7 +82,7 @@ public class AnnotationNotNullInstrumenterTest {
 
     @Test
     public void annotatedParameter_shouldValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.test.TestNotNull");
+        final Class<?> c = compiler.getCompiledClass("se.eris.test.TestNotNull");
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, "should work");
 
@@ -89,7 +93,7 @@ public class AnnotationNotNullInstrumenterTest {
 
     @Test
     public void notnullReturn_shouldValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.test.TestNotNull");
+        final Class<?> c = compiler.getCompiledClass("se.eris.test.TestNotNull");
         final Method notNullReturnMethod = c.getMethod("notNullReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
 
@@ -100,7 +104,7 @@ public class AnnotationNotNullInstrumenterTest {
 
     @Test
     public void annotatedReturn_shouldValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.test.TestNotNull");
+        final Class<?> c = compiler.getCompiledClass("se.eris.test.TestNotNull");
         final Method notNullReturnMethod = c.getMethod("annotatedReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
 
@@ -111,8 +115,8 @@ public class AnnotationNotNullInstrumenterTest {
 
     @Test
     public void overridingMethod_isInstrumented() throws Exception {
-        final Class<?> subargClass = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.test.TestNotNull$Subarg");
-        final Class<?> subClass = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.test.TestNotNull$Sub");
+        final Class<?> subargClass = compiler.getCompiledClass("se.eris.test.TestNotNull$Subarg");
+        final Class<?> subClass = compiler.getCompiledClass("se.eris.test.TestNotNull$Sub");
         final Method specializedMethod = subClass.getMethod("overload", subargClass);
         assertFalse(specializedMethod.isSynthetic());
         assertFalse(specializedMethod.isBridge());
@@ -123,8 +127,8 @@ public class AnnotationNotNullInstrumenterTest {
 
     @Test
     public void syntheticMethod_dispatchesToSpecializedMethod() throws Exception {
-        final Class<?> superargClass = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.test.TestNotNull$Superarg");
-        final Class<?> subClass = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.test.TestNotNull$Sub");
+        final Class<?> superargClass = compiler.getCompiledClass("se.eris.test.TestNotNull$Superarg");
+        final Class<?> subClass = compiler.getCompiledClass("se.eris.test.TestNotNull$Sub");
         final Method generalMethod = subClass.getMethod("overload", superargClass);
         assertTrue(generalMethod.isSynthetic());
         assertTrue(generalMethod.isBridge());

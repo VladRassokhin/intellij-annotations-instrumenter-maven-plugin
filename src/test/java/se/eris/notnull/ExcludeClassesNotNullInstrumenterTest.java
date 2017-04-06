@@ -23,10 +23,11 @@ import org.junit.rules.ExpectedException;
 import se.eris.maven.NopLogWrapper;
 import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
-import se.eris.util.compile.CompileUtil;
+import se.eris.util.TestCompiler;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -48,9 +49,12 @@ public class ExcludeClassesNotNullInstrumenterTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
+    private static TestCompiler compiler;
+
     @BeforeClass
-    public static void beforeClass() {
-        CompileUtil.compile(CLASSES_DIRECTORY, TEST_FILE);
+    public static void beforeClass() throws MalformedURLException {
+        compiler = TestCompiler.create(CLASSES_DIRECTORY);
+        compiler.compile(TEST_FILE);
 
         final ExcludeConfiguration excludeConfiguration = new ExcludeConfiguration(Collections.singleton(ClassMatcher.namePattern("se.eris.exclude.*")));
         final Configuration configuration = new Configuration(true, new AnnotationConfiguration(), excludeConfiguration);
@@ -62,7 +66,7 @@ public class ExcludeClassesNotNullInstrumenterTest {
 
     @Test
     public void annotatedParameter_shouldValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.exclude." + TEST_CLASS);
+        final Class<?> c = compiler.getCompiledClass("se.eris.exclude." + TEST_CLASS);
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
 
         exception.expect(IllegalArgumentException.class);
@@ -72,7 +76,7 @@ public class ExcludeClassesNotNullInstrumenterTest {
 
     @Test
     public void unAnnotatedParameter_shouldNotValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.exclude." + TEST_CLASS);
+        final Class<?> c = compiler.getCompiledClass("se.eris.exclude." + TEST_CLASS);
         final Method notNullParameterMethod = c.getMethod("unAnnotatedParameter", String.class);
 
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
@@ -80,7 +84,7 @@ public class ExcludeClassesNotNullInstrumenterTest {
 
     @Test
     public void notnullReturn_shouldNotValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.exclude." + TEST_CLASS);
+        final Class<?> c = compiler.getCompiledClass("se.eris.exclude." + TEST_CLASS);
         final Method notNullReturnMethod = c.getMethod("notNullReturn", String.class);
 
         exception.expect(IllegalStateException.class);
@@ -90,8 +94,8 @@ public class ExcludeClassesNotNullInstrumenterTest {
 
     @Test
     public void unAnnotatedReturn_shouldNotValidate() throws Exception {
-        CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.exclude." + TEST_CLASS);
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, "se.eris.exclude." + TEST_CLASS);
+        compiler.getCompiledClass("se.eris.exclude." + TEST_CLASS);
+        final Class<?> c = compiler.getCompiledClass("se.eris.exclude." + TEST_CLASS);
         final Method notNullParameterMethod = c.getMethod("unAnnotatedReturn", String.class);
 
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});

@@ -44,7 +44,9 @@ public class ReflectionUtil {
             }
         }
     }
-
+//Users/olle/IdeaProjects/intellij-annotations-instrumenter-maven-plugin/src/test/data/se/eris/implicit/TestClassImplicit$1.java
+    //                                                                   src/test/data/se/eris/test/TestClassImplicit$1.java
+    //                                                           reading src/test/data/se/eris/test/implicit/TestClassImplicit$1.java
     public static Object simulateConstructorCall(@NotNull final Constructor constructor, @NotNull final Object... params) throws IllegalAccessException, InvocationTargetException, InstantiationException {
         try {
             return constructor.newInstance(params);

@@ -24,7 +24,7 @@ import org.junit.rules.ExpectedException;
 import se.eris.maven.NopLogWrapper;
 import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
-import se.eris.util.compile.CompileUtil;
+import se.eris.util.TestCompiler;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -46,16 +46,18 @@ public class ImplicitNotNullInstrumenterTest {
 
     private static final String CLASS_NAME = "TestNotNull";
 
-    private static final String TEST_FILE = "se/eris/test/" + CLASS_NAME + ".java";
+    private static final File TEST_FILE = new File(SRC_DIR, "se/eris/test/" + CLASS_NAME + ".java");
     private static final String TEST_CLASS = "se.eris.test." + CLASS_NAME;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
+    private static TestCompiler compiler;
+
     @BeforeClass
     public static void beforeClass() throws Exception {
-        final File fileToCompile = new File(SRC_DIR, TEST_FILE);
-        CompileUtil.compile(CLASSES_DIRECTORY, fileToCompile);
+        compiler = TestCompiler.create(CLASSES_DIRECTORY);
+        compiler.compile(TEST_FILE);
 
         final Configuration configuration = new Configuration(true, new AnnotationConfiguration(Collections.<String>emptySet(), nullable()), new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
@@ -74,7 +76,7 @@ public class ImplicitNotNullInstrumenterTest {
 
     @Test
     public void notNullAnnotatedParameter_shouldValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, TEST_CLASS);
+        final Class<?> c = compiler.getCompiledClass(TEST_CLASS);
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, "should work");
         exception.expect(IllegalArgumentException.class);
@@ -84,7 +86,7 @@ public class ImplicitNotNullInstrumenterTest {
 
     @Test
     public void implicitParameter_shouldValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, TEST_CLASS);
+        final Class<?> c = compiler.getCompiledClass(TEST_CLASS);
         final Method implicitParameterMethod = c.getMethod("implicitParameter", String.class);
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/test/" + CLASS_NAME + ".implicitParameter must not be null");
@@ -93,14 +95,14 @@ public class ImplicitNotNullInstrumenterTest {
 
     @Test
     public void nullableAnnotatedParameter_shouldNotValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, TEST_CLASS);
+        final Class<?> c = compiler.getCompiledClass(TEST_CLASS);
         final Method implicitParameterMethod = c.getMethod("nullableParameter", String.class);
         ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null});
     }
 
     @Test
     public void implicitReturn_shouldValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, TEST_CLASS);
+        final Class<?> c = compiler.getCompiledClass(TEST_CLASS);
         final Method notNullReturnMethod = c.getMethod("implicitReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
         exception.expect(IllegalStateException.class);
@@ -110,7 +112,7 @@ public class ImplicitNotNullInstrumenterTest {
 
     @Test
     public void annotatedReturn_shouldNotValidate() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, TEST_CLASS);
+        final Class<?> c = compiler.getCompiledClass(TEST_CLASS);
         final Method notNullReturnMethod = c.getMethod("annotatedReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, (String) null);
     }
@@ -118,7 +120,7 @@ public class ImplicitNotNullInstrumenterTest {
     @Test
     public void innerClassWithoutConstructor_shouldWork() throws Exception {
         boolean syntheticConstructorFound = false;
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, TEST_CLASS + "$Inner");
+        final Class<?> c = compiler.getCompiledClass(TEST_CLASS + "$Inner");
         for (final Constructor<?> constructor : c.getDeclaredConstructors()) {
             final boolean isSynthetic = constructor.isSynthetic();
             if (isSynthetic) {

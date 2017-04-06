@@ -23,10 +23,11 @@ import org.junit.rules.ExpectedException;
 import se.eris.maven.NopLogWrapper;
 import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
-import se.eris.util.compile.CompileUtil;
+import se.eris.util.TestCompiler;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -47,10 +48,13 @@ public class ImplicitInnerClassNullableInstrumenterTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
+    private static TestCompiler compiler;
+
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeClass() throws MalformedURLException {
         final File fileToCompile = new File(SRC_DIR, TEST_FILE);
-        CompileUtil.compile(CLASSES_DIRECTORY, fileToCompile);
+        compiler = TestCompiler.create(CLASSES_DIRECTORY);
+        compiler.compile(fileToCompile);
 
         final Configuration configuration = new Configuration(true,
                 new AnnotationConfiguration(),
@@ -63,7 +67,7 @@ public class ImplicitInnerClassNullableInstrumenterTest {
 
     @Test
     public void anonymousClassConstructor_shouldFollowParentAnnotation() throws Exception {
-        final Class<?> c = CompileUtil.getCompiledClass(CLASSES_DIRECTORY, TEST_CLASS);
+        final Class<?> c = compiler.getCompiledClass(TEST_CLASS);
         final Method anonymousClassNullable = c.getMethod("anonymousClassNullable");
         ReflectionUtil.simulateMethodCall(anonymousClassNullable);
 
