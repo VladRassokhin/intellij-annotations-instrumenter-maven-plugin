@@ -1,4 +1,4 @@
-#intellij-annotations-instrumenter-maven-plugin
+# intellij-annotations-instrumenter-maven-plugin
 
 IntelliJ IDEA annotations instrumenter maven plugin
 
@@ -11,7 +11,7 @@ significant changes have been made:
 * Added implicit NotNull option
 * Added flag to turn instrumentation of
 
-##Usage
+## Usage
 
 Just update your pom.xml with following: 
 
@@ -46,7 +46,7 @@ Just update your pom.xml with following:
 And start adding @NotNull/@Nullable annotations to your code.
 
 
-##Use other and/or multiple annotations
+## Use other and/or multiple annotations
 
 By default only the annotation org.jetbrains.annotations.NotNull is supported if you
 want to one or more other annotations add them to configuration, for example:
@@ -82,7 +82,7 @@ Note that configuration will replace the default annotations, so org.jetbrains.a
 no longer be included by default thus it must be added again if used (as in the above example).
 
 
-##Implicit NotNull instrumentation
+## Implicit NotNull instrumentation
 
 If you don't like to have @NotNull on 99.99% of your parameters and methods turn on the implicit instrumentation:
 
@@ -138,7 +138,7 @@ Strings (or a + null if b is null).
 **Note** that when using implicit you need to specify the Nullable annotations (not the NotNull).
 
 
-##Turn off Instrumentation
+## Turn off Instrumentation
 
 The property `se.eris.notnull.instrument=true/false` turns on/off the instrumentation. This may seem like a 
 stupid feature but it is really useful when you have multiple maven profiles and only one of them, eg Sonar/Findbugs, 
@@ -146,17 +146,17 @@ should build without instrumentation since it messes up the statistics (branch c
 
 `mvn clean install -Dse.eris.notnull.instrument=false`
 
-##Exclusion
+## Exclusion
 
 To ease migration to implicit it is now possible to exclude certain class files from instrumentation. This 
 is still a bit experimental the exclusion rules might change (depending on feedback).
 
 There are three patterns
 
-* . matching package boundary
-* * matching anything except package boundaries
-* ** matching anything (including package boundaries)
-* .** matching any number of package levels
+* __.__  matching package boundary
+* __\*__  matching anything except package boundaries
+* __\*\*__  matching anything (including package boundaries)
+* __.\*\*__  matching any number of package levels
 
 Example:
 
@@ -164,7 +164,7 @@ Example:
         <implicit>true</implicit>
         <excludes>
             <classes>**.wsdl.**</classes>
-            <classes>com.*.*Test</classes>
+            <classes>com.*.*Spec</classes>
         </excludes>
     </configuration>
 
@@ -174,5 +174,4 @@ com.UnitTest.
 
 Things I am thinking about (want feedback):
 
-* Automatically adding the (\\$[0-9]+)? regexp to the end, to match anonymous classes.
-* Allow full regexp.
+* Allow full regexp by allowing quoting of the regexp chars I treat special (_._, _*_, and _$_). 

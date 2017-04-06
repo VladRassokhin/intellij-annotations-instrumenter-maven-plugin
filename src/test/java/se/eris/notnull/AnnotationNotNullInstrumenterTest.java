@@ -99,4 +99,110 @@ public class AnnotationNotNullInstrumenterTest {
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null});
     }
 
+    @Test
+    public void overridingMethod_isInstrumented() throws Exception {
+        final Class<?> subargClass = getCompiledClass("se.eris.test.TestNotNull$Subarg");
+        final Class<?> subClass = getCompiledClass("se.eris.test.TestNotNull$Sub");
+        final Method specializedMethod = subClass.getMethod("overload", subargClass);
+        Assert.assertFalse(specializedMethod.isSynthetic());
+        Assert.assertFalse(specializedMethod.isBridge());
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Argument 0 for @NotNull parameter of se/eris/test/TestNotNull$Sub.overload must not be null");
+        ReflectionUtil.simulateMethodCall(subClass.newInstance(), specializedMethod, new Object[]{null});
+    }
+
+    @Test
+    public void syntheticMethod_dispatchesToSpecializedMethod() throws Exception {
+        final Class<?> superargClass = getCompiledClass("se.eris.test.TestNotNull$Superarg");
+        final Class<?> subClass = getCompiledClass("se.eris.test.TestNotNull$Sub");
+        final Method generalMethod = subClass.getMethod("overload", superargClass);
+        Assert.assertTrue(generalMethod.isSynthetic());
+        Assert.assertTrue(generalMethod.isBridge());
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Argument 0 for @NotNull parameter of se/eris/test/TestNotNull$Sub.overload must not be null");
+        ReflectionUtil.simulateMethodCall(subClass.newInstance(), generalMethod, new Object[]{null});
+    }
+
+    @Test
+    public void onlySpecificMethod_isInstrumented() throws Exception {
+        // Check that only the specific method has a string annotation indicating instrumentation
+        final File f = new File(TARGET_DIR, "se/eris/test/TestNotNull$Sub.class");
+        Assert.assertTrue(f.isFile());
+        final ClassReader cr = new ClassReader(new FileInputStream(f));
+        final ArrayList<String> strings = getStringConstants(cr, "overload");
+        final String onlyExpectedString = "(Lse/eris/test/TestNotNull$Subarg;)V:" +
+                "Argument 0 for @NotNull parameter of " +
+                "se/eris/test/TestNotNull$Sub.overload must not be null";
+        assertEquals(Collections.singletonList(
+                onlyExpectedString), strings);
+    }
+
+    @Test
+    public void innerClassesSegmentIsPreserved() throws Exception {
+        // Check that only the specific method has a string annotation indicating instrumentation
+        final File f = new File(TARGET_DIR, "se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved.class");
+        Assert.assertTrue(f.isFile());
+        final ClassReader cr = new ClassReader(new FileInputStream(f));
+        ArrayList<InnerClass> innerClasses = getInnerClasses(cr);
+        assertEquals(2, innerClasses.size());
+        //self-entry
+        assertEquals("se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved", innerClasses.get(0).name);
+        //inner entry
+        InnerClass expected = new InnerClass("se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved$ASub",
+                "se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved", "ASub", Opcodes.ACC_PUBLIC |
+                Opcodes.ACC_STATIC);
+        assertEquals(expected
+                , innerClasses.get(1));
+    }
+
+    private ArrayList<InnerClass> getInnerClasses(ClassReader cr) {
+        final ArrayList<InnerClass> innerClasses = new ArrayList<>();
+        cr.accept(new ClassVisitor(Opcodes.ASM5) {
+            @Override
+            public void visitInnerClass(String name, String outerName, String innerName, int access) {
+                innerClasses.add(new InnerClass(name, outerName, innerName, access));
+            }
+        }, 0);
+        return innerClasses;
+    }
+
+    @NotNull
+    private ArrayList<String> getStringConstants(ClassReader cr, final String methodName) {
+        final ArrayList<String> strings = new ArrayList<>();
+        cr.accept(new ClassVisitor(Opcodes.ASM5) {
+            @Override
+            public MethodVisitor visitMethod(int access, String name, final String desc, String signature,
+                                             String[] exceptions) {
+                if (name.equals(methodName)) {
+                    return new MethodVisitor(Opcodes.ASM5) {
+                        @Override
+                        public void visitLdcInsn(Object cst) {
+                            if (cst instanceof String) {
+                                strings.add(desc + ":" + cst);
+                            }
+                        }
+                    };
+                }
+                return super.visitMethod(access, name, desc, signature, exceptions);
+            }
+        }, 0);
+        return strings;
+    }
+
+    @NotNull
+    private Class<?> getCompiledClass(@NotNull final String className) throws MalformedURLException, ClassNotFoundException {
+        return classLoader.loadClass(className);
+    }
+
+    @NotNull
+    private static String getSrcFile(@NotNull final File srcDir, @NotNull final String file) {
+        return new File(srcDir, file).toString().replace("/", File.separator);
+    }
+
+    private static void compile(@NotNull final String... filesToCompile) {
+        final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        final int compilationResult = compiler.run(null, null, null, filesToCompile);
+        assertThat(compilationResult, is(0));
+    }
+
 }

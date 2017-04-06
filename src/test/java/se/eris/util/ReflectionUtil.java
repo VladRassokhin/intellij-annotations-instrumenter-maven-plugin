@@ -32,9 +32,9 @@ public class ReflectionUtil {
         return simulateMethodCall(null, method, params);
     }
 
-    public static Object simulateMethodCall(@Nullable final Class<?> cls, @NotNull final Method method, @NotNull final Object... params) throws IllegalAccessException, InvocationTargetException {
+    public static Object simulateMethodCall(@Nullable final Object o, @NotNull final Method method, @NotNull final Object... params) throws IllegalAccessException, InvocationTargetException {
         try {
-            return method.invoke(cls, params);
+            return method.invoke(o, params);
         } catch (final InvocationTargetException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof RuntimeException) {
