@@ -169,8 +169,8 @@ Example:
     </configuration>
 
 Would exclude all files which have wsdl in any package part and classes with names ending 
-in Test under com.&lt;package&gt; for example com.a.UnitTest but not com.a.b.UnitTest or 
-com.UnitTest.
+in Spec under com.&lt;package&gt; for example com.a.UnitSpec but not com.a.b.UnitSpec or 
+com.UnitSpec.
 
 Things I am thinking about (want feedback):
 
