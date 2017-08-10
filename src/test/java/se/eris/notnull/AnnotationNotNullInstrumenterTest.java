@@ -45,7 +45,7 @@ import java.util.Set;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertTrue;
 
 public class AnnotationNotNullInstrumenterTest {
@@ -87,7 +87,10 @@ public class AnnotationNotNullInstrumenterTest {
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, "should work");
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for @NotNull parameter of se/eris/test/TestNotNull.notNullParameter must not be null");
+        exception.expectMessage(allOf(
+                startsWith("Argument 0 for @NotNull parameter "),
+                endsWith(" of se/eris/test/TestNotNull.notNullParameter must not be null")
+        ));
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
 
@@ -121,7 +124,10 @@ public class AnnotationNotNullInstrumenterTest {
         assertFalse(specializedMethod.isSynthetic());
         assertFalse(specializedMethod.isBridge());
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for @NotNull parameter of se/eris/test/TestNotNull$Sub.overload must not be null");
+        exception.expectMessage(allOf(
+                startsWith("Argument 0 for @NotNull parameter "),
+                endsWith(" of se/eris/test/TestNotNull$Sub.overload must not be null")
+        ));
         ReflectionUtil.simulateMethodCall(subClass.newInstance(), specializedMethod, new Object[]{null});
     }
 
@@ -133,7 +139,10 @@ public class AnnotationNotNullInstrumenterTest {
         assertTrue(generalMethod.isSynthetic());
         assertTrue(generalMethod.isBridge());
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for @NotNull parameter of se/eris/test/TestNotNull$Sub.overload must not be null");
+        exception.expectMessage(allOf(
+                startsWith("Argument 0 for @NotNull parameter "),
+                endsWith(" of se/eris/test/TestNotNull$Sub.overload must not be null")
+        ));
         ReflectionUtil.simulateMethodCall(subClass.newInstance(), generalMethod, new Object[]{null});
     }
 
@@ -144,11 +153,13 @@ public class AnnotationNotNullInstrumenterTest {
         assertTrue(f.isFile());
         final ClassReader cr = new ClassReader(new FileInputStream(f));
         final List<String> strings = getStringConstants(cr, "overload");
-        final String onlyExpectedString = "(Lse/eris/test/TestNotNull$Subarg;)V:" +
-                "Argument 0 for @NotNull parameter of " +
-                "se/eris/test/TestNotNull$Sub.overload must not be null";
-        assertEquals(Collections.singletonList(
-                onlyExpectedString), strings);
+        assertEquals(1, strings.size());
+        for (String string : strings) {
+            assertThat(string, allOf(
+                    startsWith("(Lse/eris/test/TestNotNull$Subarg;)V:Argument 0 for @NotNull parameter "),
+                    endsWith(" of se/eris/test/TestNotNull$Sub.overload must not be null")
+            ));
+        }
     }
 
     @Test

@@ -33,7 +33,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.*;
 
 /**
  * Tests to verify that package exclusion works.
@@ -70,7 +70,10 @@ public class ExcludeClassesNotNullInstrumenterTest {
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for @NotNull parameter of se/eris/exclude/" + TEST_CLASS + ".notNullParameter must not be null");
+        exception.expectMessage(allOf(
+                startsWith("Argument 0 for @NotNull parameter "),
+                endsWith(" of se/eris/exclude/" + TEST_CLASS + ".notNullParameter must not be null")
+        ));
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
 

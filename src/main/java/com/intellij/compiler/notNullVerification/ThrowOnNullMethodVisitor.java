@@ -35,6 +35,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     private static final String ISE_CLASS_NAME = "java/lang/IllegalStateException";
     private static final String CONSTRUCTOR_NAME = "<init>";
 
+    protected ArrayList<String> parameterNames = null;
     final Type[] argumentTypes;
     private final Type returnType;
     boolean isReturnNotNull;
@@ -62,6 +63,14 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
 
     private void setInstrumented() {
         instrumented = true;
+    }
+
+    /** This will be invoked only when visiting bytecode produced by java 8+ compiler with '-parameters' option. */
+    @Override
+    public void visitParameter(String name, int access) {
+        if (parameterNames == null) parameterNames = new ArrayList<>(argumentTypes.length);
+        parameterNames.add(name);
+        if (mv != null) mv.visitParameter(name, access);
     }
 
     /**

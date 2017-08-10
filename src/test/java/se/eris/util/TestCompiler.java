@@ -13,7 +13,9 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class TestCompiler {
 
@@ -33,8 +35,12 @@ public class TestCompiler {
 
     public boolean compile(@NotNull final File...filesToCompile) {
             final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+            List<String> options = new ArrayList<>();
+            options.addAll(Arrays.asList(getOutputPathParameter(targetDir)));
+            // http://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html#options
+            if (compiler.isSupportedOption("-parameters") != -1) options.add("-parameters");
             final Iterable<? extends JavaFileObject> javaFileObjects = getJavaFileObjects(compiler, filesToCompile);
-            final JavaCompiler.CompilationTask task = compiler.getTask(null, null, null, Arrays.asList(getOutputPathParameter(targetDir)), null, javaFileObjects);
+            final JavaCompiler.CompilationTask task = compiler.getTask(null, null, null, options, null, javaFileObjects);
             return task.call();
         }
 

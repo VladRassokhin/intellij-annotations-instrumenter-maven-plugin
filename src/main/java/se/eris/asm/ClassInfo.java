@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
 * Collects class info. That is name, modifiers, super class, and interfaces.
@@ -32,14 +33,14 @@ public class ClassInfo {
     private final int access;
     @NotNull
     private final String name;
-    @NotNull
+    @Nullable
     private final String signature;
     @Nullable
     private final String superName;
     @NotNull
     private final String[] interfaces;
 
-    public ClassInfo(final int version, final int access, @NotNull final String name, @NotNull final String signature, @Nullable final String superName, @Nullable final String[] interfaces) {
+    public ClassInfo(final int version, final int access, @NotNull final String name, @Nullable final String signature, @Nullable final String superName, @Nullable final String[] interfaces) {
         this.version = version;
         this.access = access;
         this.name = name;
@@ -61,7 +62,7 @@ public class ClassInfo {
         return name;
     }
 
-    @NotNull
+    @Nullable
     public String getSignature() {
         return signature;
     }
@@ -90,7 +91,7 @@ public class ClassInfo {
         if (version != classInfo.version) return false;
         if (access != classInfo.access) return false;
         if (!name.equals(classInfo.name)) return false;
-        if (!signature.equals(classInfo.signature)) return false;
+        if (!Objects.equals(signature, classInfo.signature)) return false;
         if (superName != null ? !superName.equals(classInfo.superName) : classInfo.superName != null) return false;
         // Probably incorrect - comparing Object[] arrays with Arrays.equals
         return Arrays.equals(interfaces, classInfo.interfaces);
@@ -102,7 +103,7 @@ public class ClassInfo {
         int result = version;
         result = 31 * result + access;
         result = 31 * result + name.hashCode();
-        result = 31 * result + signature.hashCode();
+        result = 31 * result + (signature == null ? 0 : signature.hashCode());
         result = 31 * result + (superName != null ? superName.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(interfaces);
         return result;
