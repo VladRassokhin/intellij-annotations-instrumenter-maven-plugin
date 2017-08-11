@@ -89,8 +89,8 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
 
     @Override
     @NotNull
-    protected String getThrowMessage(final int parameterNumber) {
-        return "Argument " + getSourceCodeParameterNumber(parameterNumber) + " for implicit 'NotNull' parameter of " + className + "." + methodName + " must not be null";
+    protected String notNullCause() {
+        return "implicit NotNull";
     }
 
     /**

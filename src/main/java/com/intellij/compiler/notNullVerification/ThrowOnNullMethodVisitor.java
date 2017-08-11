@@ -172,7 +172,19 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     }
 
     @NotNull
-    protected abstract String getThrowMessage(int parameterNumber);
+    private String getThrowMessage(int parameterNumber) {
+        int pnum = getSourceCodeParameterNumber(parameterNumber);
+        String pname = parameterNames == null || parameterNames.size() <= pnum
+            ? "" : String.format(" '%s'", parameterNames.get(pnum));
+        return String.format(
+            "Argument %d for %s parameter%s of %s.%s must not be null",
+            pnum, notNullCause(), pname, className, methodName
+        );
+    }
+
+    /** Returns the reason for the parameter to be instrumented as non-null one. */
+    @NotNull
+    protected abstract String notNullCause();
 
     int increaseSyntheticCount() {
         return syntheticCount++;
