@@ -49,7 +49,9 @@ public class TestCompiler {
         List<String> options = new ArrayList<>();
         options.add("-d");
         options.add(targetDir.toString());
-        if (parametersOptionSupported) options.add("-parameters");
+        if (parametersOptionSupported) {
+            options.add("-parameters");
+        }
         return options;
     }
 

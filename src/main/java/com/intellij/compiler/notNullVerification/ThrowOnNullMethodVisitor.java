@@ -68,7 +68,9 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     /** This will be invoked only when visiting bytecode produced by java 8+ compiler with '-parameters' option. */
     @Override
     public void visitParameter(String name, int access) {
-        if (parameterNames == null) parameterNames = new ArrayList<>(argumentTypes.length);
+        if (parameterNames == null) {
+            parameterNames = new ArrayList<>(argumentTypes.length);
+        }
         parameterNames.add(name);
         if (mv != null) mv.visitParameter(name, access);
     }
