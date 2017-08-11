@@ -60,6 +60,12 @@ public class AnnotationNotNullInstrumenterTest {
 
     private static TestCompiler compiler;
 
+    /** Returns single-quoted parameter name if compiler supports `-parameters` option, empty string otherwise. */
+    @NotNull
+    private static String maybeName(@NotNull String parameterName) {
+        return compiler.parametersOptionSupported() ? String.format(" '%s'", parameterName) : "";
+    }
+
     @BeforeClass
     public static void beforeClass() throws MalformedURLException {
         compiler = TestCompiler.create(CLASSES_DIRECTORY);
@@ -87,9 +93,9 @@ public class AnnotationNotNullInstrumenterTest {
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, "should work");
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(allOf(
-                startsWith("Argument 0 for @NotNull parameter "),
-                endsWith(" of se/eris/test/TestNotNull.notNullParameter must not be null")
+        exception.expectMessage(is(
+            "Argument 0 for @NotNull parameter" + maybeName("s") +
+                " of se/eris/test/TestNotNull.notNullParameter must not be null"
         ));
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
@@ -124,9 +130,9 @@ public class AnnotationNotNullInstrumenterTest {
         assertFalse(specializedMethod.isSynthetic());
         assertFalse(specializedMethod.isBridge());
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(allOf(
-                startsWith("Argument 0 for @NotNull parameter "),
-                endsWith(" of se/eris/test/TestNotNull$Sub.overload must not be null")
+        exception.expectMessage(is(
+            "Argument 0 for @NotNull parameter" + maybeName("s") +
+                " of se/eris/test/TestNotNull$Sub.overload must not be null"
         ));
         ReflectionUtil.simulateMethodCall(subClass.newInstance(), specializedMethod, new Object[]{null});
     }
@@ -139,9 +145,9 @@ public class AnnotationNotNullInstrumenterTest {
         assertTrue(generalMethod.isSynthetic());
         assertTrue(generalMethod.isBridge());
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(allOf(
-                startsWith("Argument 0 for @NotNull parameter "),
-                endsWith(" of se/eris/test/TestNotNull$Sub.overload must not be null")
+        exception.expectMessage(is(
+            "Argument 0 for @NotNull parameter" + maybeName("s") +
+                " of se/eris/test/TestNotNull$Sub.overload must not be null"
         ));
         ReflectionUtil.simulateMethodCall(subClass.newInstance(), generalMethod, new Object[]{null});
     }
@@ -155,9 +161,9 @@ public class AnnotationNotNullInstrumenterTest {
         final List<String> strings = getStringConstants(cr, "overload");
         assertEquals(1, strings.size());
         for (String string : strings) {
-            assertThat(string, allOf(
-                    startsWith("(Lse/eris/test/TestNotNull$Subarg;)V:Argument 0 for @NotNull parameter "),
-                    endsWith(" of se/eris/test/TestNotNull$Sub.overload must not be null")
+            assertThat(string, is(
+                "(Lse/eris/test/TestNotNull$Subarg;)V:Argument 0 for @NotNull parameter" + maybeName("s") +
+                    " of se/eris/test/TestNotNull$Sub.overload must not be null"
             ));
         }
     }

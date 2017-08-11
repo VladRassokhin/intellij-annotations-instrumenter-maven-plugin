@@ -16,6 +16,7 @@
 package se.eris.notnull;
 
 import com.intellij.NotNullInstrumenter;
+import org.jetbrains.annotations.NotNull;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,7 +34,8 @@ import java.nio.file.Path;
 import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
 
 /**
  * Tests to verify that package exclusion works.
@@ -50,6 +52,12 @@ public class ExcludeClassesNotNullInstrumenterTest {
     public ExpectedException exception = ExpectedException.none();
 
     private static TestCompiler compiler;
+
+    /** Returns single-quoted parameter name if compiler supports `-parameters` option, empty string otherwise. */
+    @NotNull
+    private static String maybeName(@NotNull String parameterName) {
+        return compiler.parametersOptionSupported() ? String.format(" '%s'", parameterName) : "";
+    }
 
     @BeforeClass
     public static void beforeClass() throws MalformedURLException {
@@ -70,9 +78,9 @@ public class ExcludeClassesNotNullInstrumenterTest {
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(allOf(
-                startsWith("Argument 0 for @NotNull parameter "),
-                endsWith(" of se/eris/exclude/" + TEST_CLASS + ".notNullParameter must not be null")
+        exception.expectMessage(is(
+            "Argument 0 for @NotNull parameter" + maybeName("s") +
+                " of se/eris/exclude/" + TEST_CLASS + ".notNullParameter must not be null"
         ));
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
