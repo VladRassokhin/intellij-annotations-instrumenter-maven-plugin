@@ -13,7 +13,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestCompiler {
 
@@ -21,26 +22,37 @@ public class TestCompiler {
         return new TestCompiler(targetDir);
     }
 
-    private final Path targetDir;
+    private final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+    private final boolean parametersOptionSupported = compiler.isSupportedOption("-parameters") != -1;
+    private final Iterable<String> options;
     private final URLClassLoader classLoader;
 
     private TestCompiler(final Path targetDir) throws MalformedURLException {
         createTargetDirectory(targetDir);
-        this.targetDir = targetDir;
+        options = buildCompilerOptions(targetDir, parametersOptionSupported);
         final URL[] classpath = {targetDir.toUri().toURL()};
         classLoader = new URLClassLoader(classpath);
     }
 
-    public boolean compile(@NotNull final File...filesToCompile) {
-            final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-            final Iterable<? extends JavaFileObject> javaFileObjects = getJavaFileObjects(compiler, filesToCompile);
-            final JavaCompiler.CompilationTask task = compiler.getTask(null, null, null, Arrays.asList(getOutputPathParameter(targetDir)), null, javaFileObjects);
-            return task.call();
-        }
+    public boolean compile(@NotNull final File... filesToCompile) {
+        final Iterable<? extends JavaFileObject> javaFileObjects = getJavaFileObjects(compiler, filesToCompile);
+        final JavaCompiler.CompilationTask task = compiler.getTask(null, null, null, options, null, javaFileObjects);
+        return task.call();
+    }
 
+    /**
+     * Builds options to be passed to the compiler.
+     * See http://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html#options
+     */
     @NotNull
-    private static String[] getOutputPathParameter(final Path targetDir) {
-        return new String[]{"-d", targetDir.toString()};
+    private static Iterable<String> buildCompilerOptions(final Path targetDir, final boolean parametersOptionSupported) {
+        final List<String> options = new ArrayList<>();
+        options.add("-d");
+        options.add(targetDir.toString());
+        if (parametersOptionSupported) {
+            options.add("-parameters");
+        }
+        return options;
     }
 
     @NotNull
@@ -57,6 +69,11 @@ public class TestCompiler {
                                                                          @NotNull final File... filesToCompile) {
         final StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
         return fileManager.getJavaFileObjects(filesToCompile);
+    }
+
+    /** Whether the compiler supports `-parameters` option. */
+    public boolean parametersOptionSupported() {
+        return parametersOptionSupported;
     }
 
     @NotNull

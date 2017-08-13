@@ -37,6 +37,7 @@ import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
 
 public class ImplicitClassNotNullInstrumenterTest {
 
@@ -52,6 +53,12 @@ public class ImplicitClassNotNullInstrumenterTest {
     public ExpectedException exception = ExpectedException.none();
 
     private static TestCompiler compiler;
+
+    /** Returns single-quoted parameter name if compiler supports `-parameters` option, empty string otherwise. */
+    @NotNull
+    private static String maybeName(@NotNull String parameterName) {
+        return compiler.parametersOptionSupported() ? String.format(" '%s'", parameterName) : "";
+    }
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -98,7 +105,9 @@ public class ImplicitClassNotNullInstrumenterTest {
         final Method implicitParameterMethod = c.getMethod("implicitParameter", String.class);
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/implicit/" + CLASS_NAME + ".implicitParameter must not be null");
+        exception.expectMessage(is(
+            "Argument 0 for implicit NotNull parameter" + maybeName("s") + " of se/eris/implicit/" + CLASS_NAME + ".implicitParameter must not be null"
+        ));
         ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null});
     }
 
@@ -108,7 +117,9 @@ public class ImplicitClassNotNullInstrumenterTest {
         final Constructor<?> implicitParameterConstructor = c.getConstructor(String.class);
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/implicit/" + CLASS_NAME + ".<init> must not be null");
+        exception.expectMessage(is(
+            "Argument 0 for implicit NotNull parameter" + maybeName("s") + " of se/eris/implicit/" + CLASS_NAME + ".<init> must not be null"
+        ));
         ReflectionUtil.simulateConstructorCall(implicitParameterConstructor, new Object[]{null});
     }
 

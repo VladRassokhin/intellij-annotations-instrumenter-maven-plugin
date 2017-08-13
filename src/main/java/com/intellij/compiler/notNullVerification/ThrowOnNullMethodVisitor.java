@@ -35,6 +35,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     private static final String ISE_CLASS_NAME = "java/lang/IllegalStateException";
     private static final String CONSTRUCTOR_NAME = "<init>";
 
+    protected ArrayList<String> parameterNames = null;
     final Type[] argumentTypes;
     private final Type returnType;
     boolean isReturnNotNull;
@@ -62,6 +63,16 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
 
     private void setInstrumented() {
         instrumented = true;
+    }
+
+    /** This will be invoked only when visiting bytecode produced by java 8+ compiler with '-parameters' option. */
+    @Override
+    public void visitParameter(String name, int access) {
+        if (parameterNames == null) {
+            parameterNames = new ArrayList<>(argumentTypes.length);
+        }
+        parameterNames.add(name);
+        if (mv != null) mv.visitParameter(name, access);
     }
 
     /**
@@ -161,7 +172,19 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     }
 
     @NotNull
-    protected abstract String getThrowMessage(int parameterNumber);
+    private String getThrowMessage(int parameterNumber) {
+        int pnum = getSourceCodeParameterNumber(parameterNumber);
+        String pname = parameterNames == null || parameterNames.size() <= pnum
+            ? "" : String.format(" '%s'", parameterNames.get(pnum));
+        return String.format(
+            "Argument %d for %s parameter%s of %s.%s must not be null",
+            pnum, notNullCause(), pname, className, methodName
+        );
+    }
+
+    /** Returns the reason for the parameter to be instrumented as non-null one. */
+    @NotNull
+    protected abstract String notNullCause();
 
     int increaseSyntheticCount() {
         return syntheticCount++;

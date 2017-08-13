@@ -68,6 +68,14 @@ public class InnerClassPreservedTest {
         assertThat(numberOfInstrumentedFiles, greaterThan(0));
     }
 
+    /**
+     * @return single-quoted parameter name if compiler supports `-parameters` option, empty string otherwise.
+     */
+    @NotNull
+    private static String maybeName(@NotNull final String parameterName) {
+        return compiler.parametersOptionSupported() ? String.format(" '%s'", parameterName) : "";
+    }
+
     @Test
     public void syntheticMethod_dispatchesToSpecializedMethod() throws Exception {
         final TestClass sub = TEST_CLASS.inner("Sub");
@@ -77,7 +85,7 @@ public class InnerClassPreservedTest {
         assertTrue(generalMethod.isSynthetic());
         assertTrue(generalMethod.isBridge());
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for @NotNull parameter of " + sub.getAsmName() + ".overload must not be null");
+        exception.expectMessage("Argument 0 for @NotNull parameter" + maybeName("s") + " of " + sub.getAsmName() + ".overload must not be null");
         ReflectionUtil.simulateMethodCall(subClass.newInstance(), generalMethod, new Object[]{null});
     }
 
@@ -88,7 +96,7 @@ public class InnerClassPreservedTest {
         final ClassReader classReader = sub.getClassReader(TARGET_DIR);
         final List<String> strings = getStringConstants(classReader, "overload");
         final String onlyExpectedString = "(L" + TEST_CLASS.inner("Subarg").getAsmName() + ";)V:" +
-                "Argument 0 for @NotNull parameter of " +
+                "Argument 0 for @NotNull parameter" + maybeName("s") + " of " +
                 sub.getAsmName() + ".overload must not be null";
         assertEquals(Collections.singletonList(onlyExpectedString), strings);
     }

@@ -16,6 +16,7 @@
 package se.eris.notnull;
 
 import com.intellij.NotNullInstrumenter;
+import org.jetbrains.annotations.NotNull;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,6 +35,7 @@ import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
 
 public class ImplicitInnerClassNullableInstrumenterTest {
 
@@ -49,6 +51,12 @@ public class ImplicitInnerClassNullableInstrumenterTest {
     public ExpectedException exception = ExpectedException.none();
 
     private static TestCompiler compiler;
+
+    /** Returns single-quoted parameter name if compiler supports `-parameters` option, empty string otherwise. */
+    @NotNull
+    private static String maybeName(@NotNull String parameterName) {
+        return compiler.parametersOptionSupported() ? String.format(" '%s'", parameterName) : "";
+    }
 
     @BeforeClass
     public static void beforeClass() throws MalformedURLException {
@@ -72,7 +80,9 @@ public class ImplicitInnerClassNullableInstrumenterTest {
         ReflectionUtil.simulateMethodCall(anonymousClassNullable);
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/implicit/" + CLASS_NAME + "$Foo.<init> must not be null");
+        exception.expectMessage(is(
+            "Argument 0 for implicit NotNull parameter" + maybeName("i") + " of se/eris/implicit/" + CLASS_NAME + "$Foo.<init> must not be null"
+        ));
         final Method anonymousClassNotNull = c.getMethod("anonymousClassNotNull");
         ReflectionUtil.simulateMethodCall(anonymousClassNotNull);
     }

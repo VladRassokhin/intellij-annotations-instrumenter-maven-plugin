@@ -67,8 +67,8 @@ class AnnotationThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
 
     @Override
     @NotNull
-    protected String getThrowMessage(int notNullParam) {
-        return "Argument " + getSourceCodeParameterNumber(notNullParam) + " for @NotNull parameter of " + className + "." + methodName + " must not be null";
+    protected String notNullCause() {
+        return "@NotNull";
     }
 
     /**

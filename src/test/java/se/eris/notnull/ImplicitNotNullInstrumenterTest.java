@@ -54,6 +54,12 @@ public class ImplicitNotNullInstrumenterTest {
 
     private static TestCompiler compiler;
 
+    /** Returns single-quoted parameter name if compiler supports `-parameters` option, empty string otherwise. */
+    @NotNull
+    private static String maybeName(@NotNull String parameterName) {
+        return compiler.parametersOptionSupported() ? String.format(" '%s'", parameterName) : "";
+    }
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         compiler = TestCompiler.create(CLASSES_DIRECTORY);
@@ -80,7 +86,9 @@ public class ImplicitNotNullInstrumenterTest {
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, "should work");
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/test/" + CLASS_NAME + ".notNullParameter must not be null");
+        exception.expectMessage(is(
+            "Argument 0 for implicit NotNull parameter" + maybeName("s") + " of se/eris/test/" + CLASS_NAME + ".notNullParameter must not be null"
+        ));
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
 
@@ -89,7 +97,9 @@ public class ImplicitNotNullInstrumenterTest {
         final Class<?> c = compiler.getCompiledClass(TEST_CLASS);
         final Method implicitParameterMethod = c.getMethod("implicitParameter", String.class);
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for implicit 'NotNull' parameter of se/eris/test/" + CLASS_NAME + ".implicitParameter must not be null");
+        exception.expectMessage(is(
+            "Argument 0 for implicit NotNull parameter" + maybeName("s") + " of se/eris/test/" + CLASS_NAME + ".implicitParameter must not be null"
+        ));
         ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null});
     }
 

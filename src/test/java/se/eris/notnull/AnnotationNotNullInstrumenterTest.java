@@ -38,6 +38,8 @@ import java.util.Set;
 import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertTrue;
 
 public class AnnotationNotNullInstrumenterTest {
 
@@ -71,6 +73,14 @@ public class AnnotationNotNullInstrumenterTest {
         return annotations;
     }
 
+    /**
+     * @return single-quoted parameter name if compiler supports `-parameters` option, empty string otherwise.
+     */
+    @NotNull
+    private static String maybeName(@NotNull final String parameterName) {
+        return compiler.parametersOptionSupported() ? String.format(" '%s'", parameterName) : "";
+    }
+
     @Test
     public void annotatedParameter_shouldValidate() throws Exception {
         final Class<?> c = compiler.getCompiledClass(TEST_CLASS.getName());
@@ -78,7 +88,9 @@ public class AnnotationNotNullInstrumenterTest {
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, "should work");
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for @NotNull parameter of " + TEST_CLASS.getAsmName() + ".notNullParameter must not be null");
+        exception.expectMessage(is(
+                "Argument 0 for @NotNull parameter" + maybeName("s") +
+                " of " + TEST_CLASS.getAsmName() + ".notNullParameter must not be null"));
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
 
@@ -112,7 +124,10 @@ public class AnnotationNotNullInstrumenterTest {
         assertFalse(specializedMethod.isSynthetic());
         assertFalse(specializedMethod.isBridge());
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for @NotNull parameter of " + TEST_CLASS.getAsmName() + "$Sub.overload must not be null");
+        exception.expectMessage(is(
+                "Argument 0 for @NotNull parameter" +  maybeName("s") +
+                        " of " + TEST_CLASS.getAsmName() + "$Sub.overload must not be null"
+        ));
         ReflectionUtil.simulateMethodCall(subClass.newInstance(), specializedMethod, new Object[]{null});
     }
 
