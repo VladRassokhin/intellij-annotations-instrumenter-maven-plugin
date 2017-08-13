@@ -53,12 +53,6 @@ public class AnnotationNotNullInstrumenterTest {
 
     private static TestCompiler compiler;
 
-    /** Returns single-quoted parameter name if compiler supports `-parameters` option, empty string otherwise. */
-    @NotNull
-    private static String maybeName(@NotNull String parameterName) {
-        return compiler.parametersOptionSupported() ? String.format(" '%s'", parameterName) : "";
-    }
-
     @BeforeClass
     public static void beforeClass() throws MalformedURLException {
         compiler = TestCompiler.create(TARGET_DIR.toPath());
@@ -79,6 +73,14 @@ public class AnnotationNotNullInstrumenterTest {
         return annotations;
     }
 
+    /**
+     * @return single-quoted parameter name if compiler supports `-parameters` option, empty string otherwise.
+     */
+    @NotNull
+    private static String maybeName(@NotNull final String parameterName) {
+        return compiler.parametersOptionSupported() ? String.format(" '%s'", parameterName) : "";
+    }
+
     @Test
     public void annotatedParameter_shouldValidate() throws Exception {
         final Class<?> c = compiler.getCompiledClass(TEST_CLASS.getName());
@@ -87,9 +89,8 @@ public class AnnotationNotNullInstrumenterTest {
 
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(is(
-            "Argument 0 for @NotNull parameter " + maybeName("s") + 
-                "of " + TEST_CLASS.getAsmName() + ".notNullParameter must not be null"
-        ));
+                "Argument 0 for @NotNull parameter" + maybeName("s") +
+                " of " + TEST_CLASS.getAsmName() + ".notNullParameter must not be null"));
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
 
@@ -124,92 +125,10 @@ public class AnnotationNotNullInstrumenterTest {
         assertFalse(specializedMethod.isBridge());
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(is(
-            "Argument 0 for @NotNull parameter " + maybeName("s") +
-                " of " + TEST_CLASS.getAsmName() + "$Sub.overload must not be null"
+                "Argument 0 for @NotNull parameter" +  maybeName("s") +
+                        " of " + TEST_CLASS.getAsmName() + "$Sub.overload must not be null"
         ));
         ReflectionUtil.simulateMethodCall(subClass.newInstance(), specializedMethod, new Object[]{null});
     }
 
-    @Test
-    public void syntheticMethod_dispatchesToSpecializedMethod() throws Exception {
-        final Class<?> superargClass = compiler.getCompiledClass("se.eris.test.TestNotNull$Superarg");
-        final Class<?> subClass = compiler.getCompiledClass("se.eris.test.TestNotNull$Sub");
-        final Method generalMethod = subClass.getMethod("overload", superargClass);
-        assertTrue(generalMethod.isSynthetic());
-        assertTrue(generalMethod.isBridge());
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(is(
-            "Argument 0 for @NotNull parameter" + maybeName("s") +
-                " of se/eris/test/TestNotNull$Sub.overload must not be null"
-        ));
-        ReflectionUtil.simulateMethodCall(subClass.newInstance(), generalMethod, new Object[]{null});
-    }
-
-    @Test
-    public void onlySpecificMethod_isInstrumented() throws Exception {
-        // Check that only the specific method has a string annotation indicating instrumentation
-        final File f = new File(CLASSES_DIRECTORY.toFile(), "se/eris/test/TestNotNull$Sub.class");
-        assertTrue(f.isFile());
-        final ClassReader cr = new ClassReader(new FileInputStream(f));
-        final List<String> strings = getStringConstants(cr, "overload");
-        assertEquals(1, strings.size());
-        for (String string : strings) {
-            assertThat(string, is(
-                "(Lse/eris/test/TestNotNull$Subarg;)V:Argument 0 for @NotNull parameter" + maybeName("s") +
-                    " of se/eris/test/TestNotNull$Sub.overload must not be null"
-            ));
-        }
-    }
-
-    @Test
-    public void innerClassesSegmentIsPreserved() throws Exception {
-        // Check that only the specific method has a string annotation indicating instrumentation
-        final File f = new File(CLASSES_DIRECTORY.toFile(), "se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved.class");
-        assertTrue(f.isFile());
-        final ClassReader cr = new ClassReader(new FileInputStream(f));
-        final List<InnerClass> innerClasses = getInnerClasses(cr);
-        assertEquals(2, innerClasses.size());
-        //self-entry
-        assertEquals("se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved", innerClasses.get(0).name);
-        //inner entry
-        final InnerClass expected = new InnerClass("se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved$ASub",
-                "se/eris/test/TestNotNull$InnerClassesSegmentIsPreserved", "ASub", Opcodes.ACC_PUBLIC |
-                Opcodes.ACC_STATIC);
-        assertEquals(expected
-                , innerClasses.get(1));
-    }
-
-    private List<InnerClass> getInnerClasses(final ClassReader cr) {
-        final List<InnerClass> innerClasses = new ArrayList<>();
-        cr.accept(new ClassVisitor(Opcodes.ASM5) {
-            @Override
-            public void visitInnerClass(final String name, final String outerName, final String innerName, final int access) {
-                innerClasses.add(new InnerClass(name, outerName, innerName, access));
-            }
-        }, 0);
-        return innerClasses;
-    }
-
-    @NotNull
-    private List<String> getStringConstants(final ClassReader cr, final String methodName) {
-        final List<String> strings = new ArrayList<>();
-        cr.accept(new ClassVisitor(Opcodes.ASM5) {
-            @Override
-            public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
-                                             final String[] exceptions) {
-                if (name.equals(methodName)) {
-                    return new MethodVisitor(Opcodes.ASM5) {
-                        @Override
-                        public void visitLdcInsn(final Object cst) {
-                            if (cst instanceof String) {
-                                strings.add(desc + ":" + cst);
-                            }
-                        }
-                    };
-                }
-                return super.visitMethod(access, name, desc, signature, exceptions);
-            }
-        }, 0);
-        return strings;
-    }
 }

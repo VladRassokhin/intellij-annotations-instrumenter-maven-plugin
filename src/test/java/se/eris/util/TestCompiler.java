@@ -34,7 +34,7 @@ public class TestCompiler {
         classLoader = new URLClassLoader(classpath);
     }
 
-    public boolean compile(@NotNull final File...filesToCompile) {
+    public boolean compile(@NotNull final File... filesToCompile) {
         final Iterable<? extends JavaFileObject> javaFileObjects = getJavaFileObjects(compiler, filesToCompile);
         final JavaCompiler.CompilationTask task = compiler.getTask(null, null, null, options, null, javaFileObjects);
         return task.call();
@@ -46,7 +46,7 @@ public class TestCompiler {
      */
     @NotNull
     private static Iterable<String> buildCompilerOptions(final Path targetDir, final boolean parametersOptionSupported) {
-        List<String> options = new ArrayList<>();
+        final List<String> options = new ArrayList<>();
         options.add("-d");
         options.add(targetDir.toString());
         if (parametersOptionSupported) {
