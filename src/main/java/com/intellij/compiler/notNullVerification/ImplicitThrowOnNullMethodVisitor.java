@@ -15,7 +15,6 @@
  */
 package com.intellij.compiler.notNullVerification;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.AnnotationVisitor;
@@ -90,7 +89,7 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     @Override
     @NotNull
     protected String notNullCause() {
-        return "implicit NotNull";
+        return "Implicit NotNull";
     }
 
     /**

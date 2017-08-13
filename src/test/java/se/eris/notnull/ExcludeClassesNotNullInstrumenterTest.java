@@ -53,10 +53,12 @@ public class ExcludeClassesNotNullInstrumenterTest {
 
     private static TestCompiler compiler;
 
-    /** Returns single-quoted parameter name if compiler supports `-parameters` option, empty string otherwise. */
+    /**
+     * @return single-quoted parameter name if compiler supports `-parameters` option, empty string otherwise.
+     */
     @NotNull
-    private static String maybeName(@NotNull String parameterName) {
-        return compiler.parametersOptionSupported() ? String.format(" '%s'", parameterName) : "";
+    private static String maybeName(@NotNull final String parameterName) {
+        return compiler.parametersOptionSupported() ? String.format(" (parameter '%s')", parameterName) : "";
     }
 
     @BeforeClass
@@ -79,7 +81,7 @@ public class ExcludeClassesNotNullInstrumenterTest {
 
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(is(
-            "Argument 0 for @NotNull parameter" + maybeName("s") +
+            "NotNull annotated argument 0" + maybeName("s") +
                 " of se/eris/exclude/" + TEST_CLASS + ".notNullParameter must not be null"
         ));
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});

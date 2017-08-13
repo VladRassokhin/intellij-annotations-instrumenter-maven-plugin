@@ -39,7 +39,6 @@ import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
 
 public class AnnotationNotNullInstrumenterTest {
 
@@ -78,7 +77,7 @@ public class AnnotationNotNullInstrumenterTest {
      */
     @NotNull
     private static String maybeName(@NotNull final String parameterName) {
-        return compiler.parametersOptionSupported() ? String.format(" '%s'", parameterName) : "";
+        return compiler.parametersOptionSupported() ? String.format(" (parameter '%s')", parameterName) : "";
     }
 
     @Test
@@ -89,7 +88,7 @@ public class AnnotationNotNullInstrumenterTest {
 
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(is(
-                "Argument 0 for @NotNull parameter" + maybeName("s") +
+                "NotNull annotated argument 0" + maybeName("s") +
                 " of " + TEST_CLASS.getAsmName() + ".notNullParameter must not be null"));
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
     }
@@ -125,7 +124,7 @@ public class AnnotationNotNullInstrumenterTest {
         assertFalse(specializedMethod.isBridge());
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(is(
-                "Argument 0 for @NotNull parameter" +  maybeName("s") +
+                "NotNull annotated argument 0" +  maybeName("s") +
                         " of " + TEST_CLASS.getAsmName() + "$Sub.overload must not be null"
         ));
         ReflectionUtil.simulateMethodCall(subClass.newInstance(), specializedMethod, new Object[]{null});

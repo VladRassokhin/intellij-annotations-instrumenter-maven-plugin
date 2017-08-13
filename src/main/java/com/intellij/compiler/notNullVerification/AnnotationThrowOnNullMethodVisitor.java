@@ -17,7 +17,11 @@ package com.intellij.compiler.notNullVerification;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.objectweb.asm.*;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 import java.util.Set;
 
@@ -68,7 +72,7 @@ class AnnotationThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     @Override
     @NotNull
     protected String notNullCause() {
-        return "@NotNull";
+        return "NotNull annotated";
     }
 
     /**

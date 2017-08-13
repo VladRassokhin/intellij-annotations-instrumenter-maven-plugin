@@ -48,7 +48,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     final List<Integer> notNullParams;
     Label startGeneratedCodeLabel;
 
-    ThrowOnNullMethodVisitor(final int api, @Nullable final MethodVisitor mv, @NotNull final Type[] argumentTypes, final Type returnType, final int access, final String methodName, final String className, final boolean isReturnNotNull, boolean isAnonymousClass) {
+    ThrowOnNullMethodVisitor(final int api, @Nullable final MethodVisitor mv, @NotNull final Type[] argumentTypes, final Type returnType, final int access, final String methodName, final String className, final boolean isReturnNotNull, final boolean isAnonymousClass) {
         super(api, mv);
         this.argumentTypes = argumentTypes;
         this.returnType = returnType;
@@ -67,7 +67,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
 
     /** This will be invoked only when visiting bytecode produced by java 8+ compiler with '-parameters' option. */
     @Override
-    public void visitParameter(String name, int access) {
+    public void visitParameter(final String name, final int access) {
         if (parameterNames == null) {
             parameterNames = new ArrayList<>(argumentTypes.length);
         }
@@ -100,7 +100,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
         return (access & Opcodes.ACC_STATIC) != 0;
     }
 
-    boolean isParameter(int index) {
+    boolean isParameter(final int index) {
         return isStatic() ? index < argumentTypes.length : index <= argumentTypes.length;
     }
 
@@ -167,18 +167,18 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
         return AsmUtils.isReferenceType(this.returnType);
     }
 
-    boolean isParameterReferenceType(int parameter) {
+    boolean isParameterReferenceType(final int parameter) {
         return AsmUtils.isReferenceType(argumentTypes[parameter]);
     }
 
     @NotNull
-    private String getThrowMessage(int parameterNumber) {
-        int pnum = getSourceCodeParameterNumber(parameterNumber);
-        String pname = parameterNames == null || parameterNames.size() <= pnum
-            ? "" : String.format(" '%s'", parameterNames.get(pnum));
+    private String getThrowMessage(final int parameterNumber) {
+        final int pnum = getSourceCodeParameterNumber(parameterNumber);
+        final String pname = parameterNames == null || parameterNames.size() <= pnum
+            ? "" : String.format(" (parameter '%s')", parameterNames.get(pnum));
         return String.format(
-            "Argument %d for %s parameter%s of %s.%s must not be null",
-            pnum, notNullCause(), pname, className, methodName
+            "%s argument %d%s of %s.%s must not be null",
+                notNullCause(), pnum, pname, className, methodName
         );
     }
 
@@ -190,7 +190,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
         return syntheticCount++;
     }
 
-    int getSourceCodeParameterNumber(int parameterNumber) {
+    private int getSourceCodeParameterNumber(final int parameterNumber) {
         return parameterNumber - syntheticCount;
     }
 

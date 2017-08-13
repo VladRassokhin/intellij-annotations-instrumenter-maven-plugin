@@ -73,7 +73,7 @@ public class InnerClassPreservedTest {
      */
     @NotNull
     private static String maybeName(@NotNull final String parameterName) {
-        return compiler.parametersOptionSupported() ? String.format(" '%s'", parameterName) : "";
+        return compiler.parametersOptionSupported() ? String.format(" (parameter '%s')", parameterName) : "";
     }
 
     @Test
@@ -85,7 +85,7 @@ public class InnerClassPreservedTest {
         assertTrue(generalMethod.isSynthetic());
         assertTrue(generalMethod.isBridge());
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Argument 0 for @NotNull parameter" + maybeName("s") + " of " + sub.getAsmName() + ".overload must not be null");
+        exception.expectMessage("NotNull annotated argument 0" + maybeName("s") + " of " + sub.getAsmName() + ".overload must not be null");
         ReflectionUtil.simulateMethodCall(subClass.newInstance(), generalMethod, new Object[]{null});
     }
 
@@ -96,7 +96,7 @@ public class InnerClassPreservedTest {
         final ClassReader classReader = sub.getClassReader(TARGET_DIR);
         final List<String> strings = getStringConstants(classReader, "overload");
         final String onlyExpectedString = "(L" + TEST_CLASS.inner("Subarg").getAsmName() + ";)V:" +
-                "Argument 0 for @NotNull parameter" + maybeName("s") + " of " +
+                "NotNull annotated argument 0" + maybeName("s") + " of " +
                 sub.getAsmName() + ".overload must not be null";
         assertEquals(Collections.singletonList(onlyExpectedString), strings);
     }

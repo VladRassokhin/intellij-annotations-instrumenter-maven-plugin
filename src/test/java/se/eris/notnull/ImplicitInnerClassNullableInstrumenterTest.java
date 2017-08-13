@@ -52,10 +52,12 @@ public class ImplicitInnerClassNullableInstrumenterTest {
 
     private static TestCompiler compiler;
 
-    /** Returns single-quoted parameter name if compiler supports `-parameters` option, empty string otherwise. */
+    /**
+     * @return single-quoted parameter name if compiler supports `-parameters` option, empty string otherwise.
+     */
     @NotNull
-    private static String maybeName(@NotNull String parameterName) {
-        return compiler.parametersOptionSupported() ? String.format(" '%s'", parameterName) : "";
+    private static String maybeName(@NotNull final String parameterName) {
+        return compiler.parametersOptionSupported() ? String.format(" (parameter '%s')", parameterName) : "";
     }
 
     @BeforeClass
@@ -81,7 +83,7 @@ public class ImplicitInnerClassNullableInstrumenterTest {
 
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(is(
-            "Argument 0 for implicit NotNull parameter" + maybeName("i") + " of se/eris/implicit/" + CLASS_NAME + "$Foo.<init> must not be null"
+            "Implicit NotNull argument 0" + maybeName("i") + " of se/eris/implicit/" + CLASS_NAME + "$Foo.<init> must not be null"
         ));
         final Method anonymousClassNotNull = c.getMethod("anonymousClassNotNull");
         ReflectionUtil.simulateMethodCall(anonymousClassNotNull);
