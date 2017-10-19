@@ -1,7 +1,7 @@
-intellij-annotations-instrumenter-maven-plugin
+IntelliJ IDEA annotations instrumenter maven plugin
 ==============================================
 
-IntelliJ IDEA annotations instrumenter maven plugin
+# NOTE: This plugin is discontinued and no longer maintained, development is done at https://github.com/osundblad/intellij-annotations-instrumenter-maven-plugin . Please use that version instead.
 
 Usage
 ==============================================
