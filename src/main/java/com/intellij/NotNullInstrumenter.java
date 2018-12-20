@@ -22,7 +22,6 @@ import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
 import se.eris.asm.AsmUtils;
 import se.eris.maven.LogWrapper;
 import se.eris.notnull.Configuration;
@@ -53,7 +52,7 @@ public class NotNullInstrumenter {
     }
 
     public int addNotNullAnnotations(final Path classesDirectory, final Configuration configuration, @NotNull final List<URL> urls) {
-        final InstrumentationClassFinder finder = new InstrumentationClassFinder(urls.toArray(new URL[urls.size()]));
+        final InstrumentationClassFinder finder = new InstrumentationClassFinder(urls.toArray(new URL[0]));
         return instrumentDirectoryRecursive(classesDirectory, finder, configuration);
     }
 
@@ -76,7 +75,7 @@ public class NotNullInstrumenter {
     }
 
     private static boolean instrumentClass(@NotNull final File file, @NotNull final InstrumentationClassFinder finder, final Configuration configuration) throws IOException {
-        try (FileInputStream inputStream = new FileInputStream(file)) {
+        try (final FileInputStream inputStream = new FileInputStream(file)) {
             final ClassReader classReader = new ClassReader(inputStream);
 
             final int fileVersion = getClassFileVersion(classReader);
@@ -87,7 +86,7 @@ public class NotNullInstrumenter {
                 final NotNullInstrumenterClassVisitor instrumentingVisitor = new NotNullInstrumenterClassVisitor(writer, configuration);
                 classReader.accept(instrumentingVisitor, NO_FLAGS);
                 if (instrumentingVisitor.hasInstrumented()) {
-                    try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+                    try (final FileOutputStream fileOutputStream = new FileOutputStream(file)) {
                         fileOutputStream.write(writer.toByteArray());
                         return true;
                     }
@@ -106,7 +105,7 @@ public class NotNullInstrumenter {
 
     private static int getClassFileVersion(@NotNull final ClassReader reader) {
         final int[] classFileVersion = new int[1];
-        reader.accept(new ClassVisitor(Opcodes.ASM5) {
+        reader.accept(new ClassVisitor(AsmUtils.ASM_OPCODES_VERSION) {
             public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
                 classFileVersion[0] = version;
             }

@@ -38,22 +38,20 @@ public class ReflectionUtil {
         } catch (final InvocationTargetException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof RuntimeException) {
-                throw RuntimeException.class.cast(cause);
+                throw (RuntimeException) cause;
             } else {
                 throw e;
             }
         }
     }
-//Users/olle/IdeaProjects/intellij-annotations-instrumenter-maven-plugin/src/test/data/se/eris/implicit/TestClassImplicit$1.java
-    //                                                                   src/test/data/se/eris/test/TestClassImplicit$1.java
-    //                                                           reading src/test/data/se/eris/test/implicit/TestClassImplicit$1.java
+
     public static Object simulateConstructorCall(@NotNull final Constructor constructor, @NotNull final Object... params) throws IllegalAccessException, InvocationTargetException, InstantiationException {
         try {
             return constructor.newInstance(params);
         } catch (final InstantiationException | InvocationTargetException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof RuntimeException) {
-                throw RuntimeException.class.cast(cause);
+                throw (RuntimeException) cause;
             } else {
                 throw e;
             }
@@ -85,7 +83,7 @@ public class ReflectionUtil {
         }
         try {
             return instanceClass.getDeclaredField(fieldName);
-        } catch (NoSuchFieldException | SecurityException e) {
+        } catch (final NoSuchFieldException | SecurityException e) {
             return null;
         }
     }

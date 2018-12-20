@@ -25,6 +25,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import se.eris.asm.AsmUtils;
 import se.eris.maven.NopLogWrapper;
 import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
@@ -118,7 +119,7 @@ public class InnerClassPreservedTest {
 
     private List<InnerClass> getInnerClasses(final ClassReader cr) {
         final List<InnerClass> innerClasses = new ArrayList<>();
-        cr.accept(new ClassVisitor(Opcodes.ASM5) {
+        cr.accept(new ClassVisitor(AsmUtils.ASM_OPCODES_VERSION) {
             @Override
             public void visitInnerClass(final String name, final String outerName, final String innerName, final int access) {
                 innerClasses.add(new InnerClass(name, outerName, innerName, access));
@@ -130,12 +131,12 @@ public class InnerClassPreservedTest {
     @NotNull
     private List<String> getStringConstants(final ClassReader cr, final String methodName) {
         final List<String> strings = new ArrayList<>();
-        cr.accept(new ClassVisitor(Opcodes.ASM5) {
+        cr.accept(new ClassVisitor(AsmUtils.ASM_OPCODES_VERSION) {
             @Override
             public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
                                              final String[] exceptions) {
                 if (name.equals(methodName)) {
-                    return new MethodVisitor(Opcodes.ASM5) {
+                    return new MethodVisitor(AsmUtils.ASM_OPCODES_VERSION) {
                         @Override
                         public void visitLdcInsn(final Object cst) {
                             if (cst instanceof String) {

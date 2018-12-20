@@ -20,8 +20,8 @@ import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import se.eris.asm.AsmUtils;
 
 import java.util.Set;
 
@@ -29,8 +29,8 @@ class AnnotationThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
 
     private final Set<String> notNullAnnotations;
 
-    AnnotationThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> notNullAnnotations, boolean isAnonymous) {
-        super(Opcodes.ASM5, methodVisitor, argumentTypes, returnType, access, methodName, className, false, isAnonymous);
+    AnnotationThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> notNullAnnotations, final boolean isAnonymous) {
+        super(AsmUtils.ASM_OPCODES_VERSION, methodVisitor, argumentTypes, returnType, access, methodName, className, false, isAnonymous);
         this.notNullAnnotations = notNullAnnotations;
     }
 

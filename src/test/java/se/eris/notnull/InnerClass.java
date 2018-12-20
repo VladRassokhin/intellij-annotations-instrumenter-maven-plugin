@@ -6,7 +6,7 @@ class InnerClass {
     public String innerName;
     int access;
 
-    public InnerClass(String name, String outerName, String innerName, int access) {
+    public InnerClass(final String name, final String outerName, final String innerName, final int access) {
         this.name = name;
         this.outerName = outerName;
         this.innerName = innerName;
@@ -24,11 +24,11 @@ class InnerClass {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        InnerClass that = (InnerClass) o;
+        final InnerClass that = (InnerClass) o;
 
         if (access != that.access) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;

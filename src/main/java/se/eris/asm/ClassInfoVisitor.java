@@ -18,7 +18,6 @@ package se.eris.asm;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.Opcodes;
 
 /**
 * Collects class info. That is name, modifiers, super class, and interfaces.
@@ -28,7 +27,7 @@ public class ClassInfoVisitor extends ClassVisitor {
     private ClassInfo classInfo;
 
     public ClassInfoVisitor() {
-        super(Opcodes.ASM5);
+        super(AsmUtils.ASM_OPCODES_VERSION);
     }
 
     public void visit(final int version, final int access, @NotNull final String name, final String signature, @Nullable final String superName, @Nullable final String[] interfaces) {

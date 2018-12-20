@@ -46,7 +46,7 @@ public class ClassFileUtils {
         private final Set<File> classFiles = new HashSet<>();
 
         @Override
-        public FileVisitResult visitFile(@NotNull final Path path, @NotNull final BasicFileAttributes attrs) throws IOException {
+        public FileVisitResult visitFile(@NotNull final Path path, @NotNull final BasicFileAttributes attrs) {
             if (attrs.isRegularFile() && path.toFile().getName().endsWith(CLASS_FILE_EXTENSION)) {
                 classFiles.add(path.toFile());
             }
@@ -54,7 +54,7 @@ public class ClassFileUtils {
         }
 
         @Override
-        public FileVisitResult visitFileFailed(@NotNull final Path file, @NotNull final IOException exc) throws IOException {
+        public FileVisitResult visitFileFailed(@NotNull final Path file, @NotNull final IOException exc) {
             return FileVisitResult.CONTINUE;
         }
 

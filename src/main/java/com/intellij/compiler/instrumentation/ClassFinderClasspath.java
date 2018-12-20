@@ -20,10 +20,21 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import se.eris.notnull.instrumentation.Resource;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -66,11 +77,8 @@ class ClassFinderClasspath {
                     for (int j = 0; j < bytes.size(); j++) {
                         bytesArray[j] = (byte) bytes.get(j).intValue();
                     }
-                    try {
-                        decoded.append(new String(bytesArray, "UTF-8"));
-                        continue;
-                    } catch (final UnsupportedEncodingException ignored) {
-                    }
+                    decoded.append(new String(bytesArray, StandardCharsets.UTF_8));
+                    continue;
                 }
             }
 
