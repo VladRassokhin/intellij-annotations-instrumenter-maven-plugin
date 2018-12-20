@@ -19,8 +19,8 @@ import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import se.eris.asm.AsmUtils;
 import se.eris.lang.LangUtils;
 import se.eris.notnull.Configuration;
 import se.eris.notnull.ImplicitNotNull;
@@ -48,7 +48,7 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
     private final Configuration configuration;
 
     public NotNullInstrumenterClassVisitor(@NotNull final ClassVisitor classVisitor, @NotNull final Configuration configuration) {
-        super(Opcodes.ASM5, classVisitor);
+        super(AsmUtils.ASM_OPCODES_VERSION, classVisitor);
         this.configuration = configuration;
         this.notnull = convertToClassName(configuration.getNotNullAnnotations());
         this.nullable = convertToClassName(configuration.getNullableAnnotations());

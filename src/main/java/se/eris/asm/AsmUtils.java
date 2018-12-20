@@ -16,9 +16,12 @@
 package se.eris.asm;
 
 import org.jetbrains.annotations.NotNull;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 public final class AsmUtils {
+
+    public static final int ASM_OPCODES_VERSION = Opcodes.ASM7;
 
     public static final int JAVA_VERSION_5 = 5;
     public static final int JAVA_VERSION_6 = 6;

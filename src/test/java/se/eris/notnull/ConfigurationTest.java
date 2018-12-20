@@ -47,7 +47,7 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void excludes() throws Exception {
+    public void excludes() {
         final Configuration configuration = getDefaultNotNullConfiguration(true);
         configuration.isImplicitInstrumentation("NoName.java");
     }

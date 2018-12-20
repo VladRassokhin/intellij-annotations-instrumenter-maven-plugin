@@ -48,10 +48,10 @@ public class PseudoClassTest {
 
     @NotNull
     private InstrumentationClassFinder getInstrumentationClassFinder() throws MalformedURLException {
-        String[] paths = System.getProperty("java.class.path").split(System.getProperty("path.separator"));
-        URL[] urls = new URL[paths.length];
+        final String[] paths = System.getProperty("java.class.path").split(System.getProperty("path.separator"));
+        final URL[] urls = new URL[paths.length];
         for (int i = 0; i < paths.length; i++) {
-            String path = paths[i];
+            final String path = paths[i];
             urls[i] = new File(path).toURI().toURL();
         }
         return new InstrumentationClassFinder(urls);

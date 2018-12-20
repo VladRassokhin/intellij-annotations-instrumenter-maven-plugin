@@ -20,7 +20,6 @@ import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import se.eris.asm.AsmUtils;
 
@@ -31,7 +30,7 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     private final Set<String> nullableAnnotations;
 
     ImplicitThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> nullableAnnotations, final boolean isAnonymousClass) {
-        super(Opcodes.ASM5, methodVisitor, argumentTypes, returnType, access, methodName, className, true, isAnonymousClass);
+        super(AsmUtils.ASM_OPCODES_VERSION, methodVisitor, argumentTypes, returnType, access, methodName, className, true, isAnonymousClass);
         this.nullableAnnotations = nullableAnnotations;
         addImplicitNotNulls();
     }
