@@ -132,7 +132,7 @@ public class ImplicitNotNullInstrumenterTest {
     @Test
     public void innerClassWithoutConstructor_shouldWork() throws Exception {
         boolean syntheticConstructorFound = false;
-        final Class<?> c = compiler.getCompiledClass(TEST_CLASS + "$Inner");
+        final Class<?> c = compiler.getCompiledClass(TEST_CLASS + "$Nested");
         for (final Constructor<?> constructor : c.getDeclaredConstructors()) {
             final boolean isSynthetic = constructor.isSynthetic();
             if (isSynthetic) {

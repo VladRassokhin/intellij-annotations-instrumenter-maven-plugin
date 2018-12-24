@@ -44,11 +44,11 @@ public class TestNotNull {
         return s;
     }
 
-    public static String createInner() {
-        return new Inner().s;
+    public static String createNested() {
+        return new Nested().s;
     }
 
-    private static final class Inner {
+    private static final class Nested {
         private String s = "synthetic";
     }
 
@@ -64,7 +64,7 @@ public class TestNotNull {
         public void overload(@NotNull Subarg s) {}
     }
     
-    public static class InnerClassesSegmentIsPreserved {
+    public static class NestedClassesSegmentIsPreserved {
         public static class ASub {}
     }
 }

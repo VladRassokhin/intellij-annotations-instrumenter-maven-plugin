@@ -49,6 +49,11 @@ public class TestCompiler {
         final List<String> options = new ArrayList<>();
         options.add("-d");
         options.add(targetDir.toString());
+        // todo run tests with different source/target versions
+        options.add("-source");
+        options.add("1.8");
+        options.add("-target");
+        options.add("1.8");
         if (parametersOptionSupported) {
             options.add("-parameters");
         }
