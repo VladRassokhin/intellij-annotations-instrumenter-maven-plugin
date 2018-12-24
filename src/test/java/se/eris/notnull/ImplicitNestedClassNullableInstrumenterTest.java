@@ -37,7 +37,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 
-public class ImplicitInnerClassNullableInstrumenterTest {
+public class ImplicitNestedClassNullableInstrumenterTest {
 
     private static final String CLASS_NAME = "TestClassImplicit$1";
 

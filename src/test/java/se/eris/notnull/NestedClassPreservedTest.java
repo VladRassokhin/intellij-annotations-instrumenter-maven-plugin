@@ -45,7 +45,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertTrue;
 
-public class InnerClassPreservedTest {
+public class NestedClassPreservedTest {
 
     private static final File SRC_DIR = new File("src/test/data");
     private static final File TARGET_DIR = new File("target/test/data/classes");
@@ -103,9 +103,9 @@ public class InnerClassPreservedTest {
     }
 
     @Test
-    public void innerClassesSegmentIsPreserved() throws Exception {
+    public void nestedClassesSegmentIsPreserved() throws Exception {
         // Check that only the specific method has a string annotation indicating instrumentation
-        final TestClass preserved = TEST_CLASS.inner("InnerClassesSegmentIsPreserved");
+        final TestClass preserved = TEST_CLASS.inner("NestedClassesSegmentIsPreserved");
         final ClassReader classReader = preserved.getClassReader(TARGET_DIR);
         final List<InnerClass> innerClasses = getInnerClasses(classReader);
         assertEquals(2, innerClasses.size());
