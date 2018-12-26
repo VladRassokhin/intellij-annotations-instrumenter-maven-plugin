@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * Tests to verify that package exclusion works.
  */
-class ExcludeClassesNotNullInstrumenterTest {
+class ExcludeClassesInstrumenterTest {
 
     private static final File SRC_DIR = new File("src/test/data");
     private static final Path DESTINATION_BASEDIR = new File("target/test/data/classes").toPath();
@@ -54,12 +54,12 @@ class ExcludeClassesNotNullInstrumenterTest {
 
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null}));
         assertEquals("NotNull annotated argument 0" + VersionCompiler.maybeName(compilers.get(javaVersion), "s") +
-                " of se/eris/exclude/" + testClass.getSimpleName() + ".notNullParameter must not be null", exception.getMessage());
+                " of " + testClass.getAsmName() + ".notNullParameter must not be null", exception.getMessage());
     }
 
     @TestSupportedJavaVersions
     void unAnnotatedParameter_shouldNotValidate(final String javaVersion) throws Exception {
-        final Class<?> c = compilers.get(javaVersion).getCompiledClass("se.eris.exclude." + testClass.getSimpleName());
+        final Class<?> c = compilers.get(javaVersion).getCompiledClass(testClass.getName());
         final Method notNullParameterMethod = c.getMethod("unAnnotatedParameter", String.class);
 
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});
@@ -67,17 +67,17 @@ class ExcludeClassesNotNullInstrumenterTest {
 
     @TestSupportedJavaVersions
     void notnullReturn_shouldNotValidate(final String javaVersion) throws Exception {
-        final Class<?> c = compilers.get(javaVersion).getCompiledClass("se.eris.exclude." + testClass.getSimpleName());
+        final Class<?> c = compilers.get(javaVersion).getCompiledClass(testClass.getName());
         final Method notNullReturnMethod = c.getMethod("notNullReturn", String.class);
 
         final IllegalStateException exception = assertThrows(IllegalStateException.class, () -> ReflectionUtil.simulateMethodCall(notNullReturnMethod, new Object[]{null}));
-        assertEquals("NotNull method se/eris/exclude/" + testClass.getSimpleName() + ".notNullReturn must not return null", exception.getMessage());
+        assertEquals("NotNull method " + testClass.getAsmName() + ".notNullReturn must not return null", exception.getMessage());
     }
 
     @TestSupportedJavaVersions
     void unAnnotatedReturn_shouldNotValidate(final String javaVersion) throws Exception {
-        compilers.get(javaVersion).getCompiledClass("se.eris.exclude." + testClass.getSimpleName());
-        final Class<?> c = compilers.get(javaVersion).getCompiledClass("se.eris.exclude." + testClass.getSimpleName());
+        compilers.get(javaVersion).getCompiledClass(testClass.getName());
+        final Class<?> c = compilers.get(javaVersion).getCompiledClass(testClass.getName());
         final Method notNullParameterMethod = c.getMethod("unAnnotatedReturn", String.class);
 
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, new Object[]{null});

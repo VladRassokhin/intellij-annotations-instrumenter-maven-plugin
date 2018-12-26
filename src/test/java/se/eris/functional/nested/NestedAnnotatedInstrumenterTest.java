@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 Eris IT AB
+ * Copyright 2013-2016 Eris IT AB
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,105 +13,87 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.eris.notnull;
+package se.eris.functional.nested;
 
-import com.intellij.NotNullInstrumenter;
 import org.jetbrains.annotations.NotNull;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeAll;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import se.eris.asm.AsmUtils;
-import se.eris.maven.NopLogWrapper;
-import se.eris.notnull.instrumentation.ClassMatcher;
+import se.eris.notnull.AnnotationConfiguration;
+import se.eris.notnull.Configuration;
+import se.eris.notnull.ExcludeConfiguration;
 import se.eris.util.ReflectionUtil;
 import se.eris.util.TestClass;
 import se.eris.util.TestCompiler;
-import se.eris.util.TestCompilerOptions;
+import se.eris.util.TestSupportedJavaVersions;
+import se.eris.util.version.VersionCompiler;
 
-import javax.tools.ToolProvider;
 import java.io.File;
 import java.lang.reflect.Method;
-import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static junit.framework.TestCase.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class NestedClassPreservedTest {
+class NestedAnnotatedInstrumenterTest {
 
     private static final File SRC_DIR = new File("src/test/data");
-    private static final File DESTINATION_DIR = new File("target/test/data/classes");
+    private static final Path DESTINATION_BASEDIR = new File("target/test/data/classes").toPath();
 
-    private static final TestClass TEST_CLASS = new TestClass("se.eris.test.TestNotNull");
+    private static final Map<String, TestCompiler> compilers = new HashMap<>();
+    private static final TestClass testClass = new TestClass("se.eris.nested.TestNestedAnnotated");
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
-    private static TestCompiler compiler;
-
-    @BeforeClass
-    public static void beforeClass() {
-        compiler = TestCompiler.create(TestCompilerOptions.from(DESTINATION_DIR.toPath(), "1.8"));
-        compiler.compile(TEST_CLASS.getJavaFile(SRC_DIR));
-
-        final Configuration configuration = new Configuration(false, new AnnotationConfiguration(), new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
-        final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
-        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations(DESTINATION_DIR.toPath(), configuration, Collections.<URL>emptyList());
-
-        assertThat(numberOfInstrumentedFiles, greaterThan(0));
+    @BeforeAll
+    static void beforeClass() {
+        final Configuration configuration = new Configuration(false,
+                new AnnotationConfiguration(),
+                new ExcludeConfiguration(Collections.emptySet()));
+        compilers.putAll(VersionCompiler.compile(DESTINATION_BASEDIR, configuration, testClass.getJavaFile(SRC_DIR)));
     }
 
-    /**
-     * @return single-quoted parameter name if compiler supports `-parameters` option, empty string otherwise.
-     */
-    @NotNull
-    private static String maybeName(@NotNull final String parameterName) {
-        return ToolProvider.getSystemJavaCompiler().isSupportedOption("-parameters") != -1 ? String.format(" (parameter '%s')", parameterName) : "";
-    }
-
-    @Test
-    public void syntheticMethod_dispatchesToSpecializedMethod() throws Exception {
-        final Class<?> superargClass = compiler.getCompiledClass(TEST_CLASS.nested("Superarg").getName());
-        final TestClass sub = TEST_CLASS.nested("Sub");
-        final Class<?> subClass = compiler.getCompiledClass(sub.getName());
+    @TestSupportedJavaVersions
+    public void syntheticMethod_dispatchesToSpecializedMethod(final String javaVersion) throws Exception {
+        final Class<?> superargClass = compilers.get(javaVersion).getCompiledClass(testClass.nested("Superarg").getName());
+        final TestClass sub = testClass.nested("Sub");
+        final Class<?> subClass = compilers.get(javaVersion).getCompiledClass(sub.getName());
         final Method generalMethod = subClass.getMethod("overload", superargClass);
+
         assertTrue(generalMethod.isSynthetic());
         assertTrue(generalMethod.isBridge());
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("NotNull annotated argument 0" + maybeName("s") + " of " + sub.getAsmName() + ".overload must not be null");
-        ReflectionUtil.simulateMethodCall(subClass.newInstance(), generalMethod, new Object[]{null});
+        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> ReflectionUtil.simulateMethodCall(subClass.newInstance(), generalMethod, new Object[]{null}));
+        assertEquals("NotNull annotated argument 0" + VersionCompiler.maybeName(compilers.get(javaVersion), "s") + " of " + sub.getAsmName() + ".overload must not be null", exception.getMessage());
     }
 
-    @Test
-    public void onlySpecificMethod_isInstrumented() throws Exception {
+    @TestSupportedJavaVersions
+    public void onlySpecificMethod_isInstrumented(final String javaVersion) throws Exception {
         // Check that only the specific method has a string annotation indicating instrumentation
-        final TestClass sub = TEST_CLASS.nested("Sub");
-        final ClassReader classReader = sub.getClassReader(DESTINATION_DIR);
+        final TestClass sub = testClass.nested("Sub");
+        final ClassReader classReader = sub.getClassReader(DESTINATION_BASEDIR.resolve(javaVersion).toFile());
         final List<String> strings = getStringConstants(classReader, "overload");
-        final String onlyExpectedString = "(L" + TEST_CLASS.nested("Subarg").getAsmName() + ";)V:" +
-                "NotNull annotated argument 0" + maybeName("s") + " of " +
+        final String onlyExpectedString = "(L" + testClass.nested("Subarg").getAsmName() + ";)V:" +
+                "NotNull annotated argument 0" + VersionCompiler.maybeName(compilers.get(javaVersion), "s") + " of " +
                 sub.getAsmName() + ".overload must not be null";
         assertEquals(Collections.singletonList(onlyExpectedString), strings);
     }
 
-    @Test
-    public void nestedClassesSegmentIsPreserved() throws Exception {
+    @TestSupportedJavaVersions
+    public void nestedClassesSegmentIsPreserved(final String javaVersion) throws Exception {
         // Check that only the specific method has a string annotation indicating instrumentation
-        final TestClass preserved = TEST_CLASS.nested("NestedClassesSegmentIsPreserved");
-        final ClassReader classReader = preserved.getClassReader(DESTINATION_DIR);
+        final TestClass preserved = testClass.nested("NestedClassesSegmentIsPreserved");
+        final ClassReader classReader = preserved.getClassReader(DESTINATION_BASEDIR.resolve(javaVersion).toFile());
         final List<InnerClass> innerClasses = getInnerClasses(classReader);
         assertEquals(2, innerClasses.size());
         //self-entry
-        assertEquals( preserved.getAsmName(), innerClasses.get(0).name);
+        assertEquals(preserved.getAsmName(), innerClasses.get(0).name);
         //inner entry
         final InnerClass expected = new InnerClass(preserved.nested("ASub").getAsmName(),
                 preserved.getAsmName(), "ASub", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
