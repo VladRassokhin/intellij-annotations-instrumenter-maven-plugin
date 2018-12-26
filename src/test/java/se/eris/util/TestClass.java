@@ -14,14 +14,17 @@ public class TestClass {
         this.fullClassName = fullClassName;
     }
 
-    public String getSimpleName() {
-        return fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
-    }
-
     public String getName() {
         return fullClassName;
     }
 
+    public String getSimpleName() {
+        return fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
+    }
+
+    /**
+     * @return full class name with slashes ('/') instead of dots ('.').
+     */
     public String getAsmName() {
         return fullClassName.replace(".", "/");
     }

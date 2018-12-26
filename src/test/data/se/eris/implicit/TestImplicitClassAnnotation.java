@@ -4,7 +4,10 @@ import org.jetbrains.annotations.Nullable;
 import se.eris.notnull.ImplicitNotNull;
 
 @ImplicitNotNull
-public class TestClassImplicit$1 {
+public class TestImplicitClassAnnotation {
+
+    public TestImplicitClassAnnotation(String s) {
+    }
 
     public static String implicitReturn(@Nullable final String s) {
         return s;
@@ -12,6 +15,7 @@ public class TestClassImplicit$1 {
 
     public static void implicitParameter(final String s) {
     }
+
 
     public static void anonymousClassNullable() {
         new Foo((String) null) {}; // anonymous class - no way to annotate constructor parameters
@@ -27,11 +31,6 @@ public class TestClassImplicit$1 {
 
         Foo(Integer i) {}
 
-        public void m() {
-        }
-    }
-
-    public TestClassImplicit$1(String s) {
     }
 
 }

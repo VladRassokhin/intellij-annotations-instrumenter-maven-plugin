@@ -1,4 +1,4 @@
-package se.eris.notnull;
+package se.eris.functional.nested;
 
 class InnerClass {
     public String name;

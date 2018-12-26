@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.eris.test;
+package se.eris.implicit;
 
 import java.util.Arrays;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class TestNotNull {
+public class TestImplicitConfiguration {
 
     public static void notNullParameter(@NotNull final String s) {
     }
@@ -39,7 +39,7 @@ public class TestNotNull {
         return s;
     }
 
-    @java.lang.Deprecated
+    @Nullable
     public static String annotatedReturn(@Nullable final String s) {
         return s;
     }

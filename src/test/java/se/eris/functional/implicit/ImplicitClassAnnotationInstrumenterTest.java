@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.eris.functional.version;
+package se.eris.functional.implicit;
 
 import org.junit.jupiter.api.BeforeAll;
 import se.eris.util.ReflectionUtil;
@@ -32,13 +32,13 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class ImplicitInstrumenterTest {
+class ImplicitClassAnnotationInstrumenterTest {
 
     private static final File SRC_DIR = new File("src/test/data");
     private static final Path DESTINATION_BASEDIR = new File("target/test/data/classes").toPath();
 
     private static final Map<String, TestCompiler> compilers = new HashMap<>();
-    private static final TestClass testClass = new TestClass("se.eris.version.TestImplicit");
+    private static final TestClass testClass = new TestClass("se.eris.implicit.TestImplicitClassAnnotation");
 
     @BeforeAll
     static void beforeClass() {
@@ -52,7 +52,7 @@ class ImplicitInstrumenterTest {
         ReflectionUtil.simulateMethodCall(implicitReturn, "should work");
 
         final IllegalStateException exception = assertThrows(IllegalStateException.class, () -> ReflectionUtil.simulateMethodCall(implicitReturn, new Object[]{null}));
-        assertEquals(exception.getMessage(), String.format("NotNull method se/eris/version/%s.implicitReturn must not return null", testClass.getSimpleName()));
+        assertEquals(exception.getMessage(), String.format("NotNull method %s.implicitReturn must not return null", testClass.getAsmName()));
     }
 
     @TestSupportedJavaVersions
@@ -61,7 +61,7 @@ class ImplicitInstrumenterTest {
         final Method implicitParameterMethod = c.getMethod("implicitParameter", String.class);
 
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null}));
-        final String expected = String.format("Implicit NotNull argument 0%s of se/eris/version/%s.implicitParameter must not be null", VersionCompiler.maybeName(compilers.get(javaVersion), "s"), testClass.getSimpleName());
+        final String expected = String.format("Implicit NotNull argument 0%s of %s.implicitParameter must not be null", VersionCompiler.maybeName(compilers.get(javaVersion), "s"), testClass.getAsmName());
         assertEquals(expected, exception.getMessage());
     }
 
@@ -71,7 +71,7 @@ class ImplicitInstrumenterTest {
         final Constructor<?> implicitParameterConstructor = c.getConstructor(String.class);
 
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> ReflectionUtil.simulateConstructorCall(implicitParameterConstructor, new Object[]{null}));
-        assertEquals("Implicit NotNull argument 0" + VersionCompiler.maybeName(compilers.get(javaVersion), "s") + " of se/eris/version/" + testClass.getSimpleName() + ".<init> must not be null", exception.getMessage());
+        assertEquals(String.format("Implicit NotNull argument 0%s of %s.<init> must not be null", VersionCompiler.maybeName(compilers.get(javaVersion), "s"), testClass.getAsmName()), exception.getMessage());
     }
 
     @TestSupportedJavaVersions
