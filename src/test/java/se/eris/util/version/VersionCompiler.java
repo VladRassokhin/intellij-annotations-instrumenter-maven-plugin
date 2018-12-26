@@ -37,7 +37,9 @@ public class VersionCompiler {
         for (final String version : VERSIONS) {
             final Path destination = destinationBasedir.resolve(version);
             final TestCompiler compiler = TestCompiler.create(TestCompilerOptions.from(destination, version));
-            compiler.compile(javaFiles);
+            if (!compiler.compile(javaFiles)) {
+                throw new RuntimeException("Compilation failed for version " + version);
+            }
             compilers.put(version, compiler);
 
             final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());

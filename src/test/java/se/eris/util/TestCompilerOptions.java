@@ -34,7 +34,7 @@ public class TestCompilerOptions {
         }
     }
 
-    public List<String> getOptions() {
+    public List<String> getCompilerOptions() {
         return new ArrayList<String>() {{
             add("-source");
             add(source);
@@ -46,7 +46,7 @@ public class TestCompilerOptions {
 
     }
 
-    public boolean hasParametersSupport() {
+    public boolean targetHasParametersSupport() {
         return !target.matches("^1\\.[2-7]$");
     }
 

@@ -44,9 +44,8 @@ class NotNullAnnotationInstrumenterTest {
     private static final File SRC_DIR = new File("src/test/data");
     private static final Path DESTINATION_BASEDIR = new File("target/test/data/classes").toPath();
 
-    private static final TestClass testClass = new TestClass("se.eris.test.TestNotNull");
-
     private static final Map<String, TestCompiler> compilers = new HashMap<>();
+    private static final TestClass testClass = new TestClass("se.eris.test.TestNotNull");
 
     @BeforeAll
     static void beforeClass() {

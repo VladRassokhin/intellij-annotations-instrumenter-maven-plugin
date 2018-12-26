@@ -1,7 +1,6 @@
 package se.eris.util;
 
 import org.jetbrains.annotations.NotNull;
-import se.eris.util.compiler.JavaSystemCompilerUtil;
 
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -11,7 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,9 +21,6 @@ public class TestCompiler {
 
     public static TestCompiler create(final TestCompilerOptions options) {
         return new TestCompiler(options);
-    }
-    public static TestCompiler create(final Path destinationDirectory) {
-        return create(TestCompilerOptions.from(destinationDirectory, "1.8"));
     }
 
     private TestCompiler(final TestCompilerOptions options) {
@@ -54,11 +49,15 @@ public class TestCompiler {
      */
     @NotNull
     private List<String> buildCompilerOptions() {
-        final List<String> options = new ArrayList<>(this.options.getOptions());
-        if (JavaSystemCompilerUtil.supportParametersOption()) {
-            options.add("-parameters");
+        final List<String> compilerOptions = new ArrayList<>(options.getCompilerOptions());
+        if (compilerHasOptionSupport("-parameters") && options.targetHasParametersSupport()) {
+            compilerOptions.add("-parameters");
         }
-        return options;
+        return compilerOptions;
+    }
+
+    private boolean compilerHasOptionSupport(final String option) {
+        return ToolProvider.getSystemJavaCompiler().isSupportedOption(option) != -1;
     }
 
     @NotNull
@@ -84,6 +83,6 @@ public class TestCompiler {
     }
 
     public boolean hasParametersSupport() {
-        return options.hasParametersSupport();
+        return options.targetHasParametersSupport();
     }
 }
