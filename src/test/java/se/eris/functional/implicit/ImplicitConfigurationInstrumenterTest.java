@@ -15,12 +15,10 @@
  */
 package se.eris.functional.implicit;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
 import se.eris.notnull.AnnotationConfiguration;
 import se.eris.notnull.Configuration;
 import se.eris.notnull.ExcludeConfiguration;
-import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
 import se.eris.util.TestClass;
 import se.eris.util.TestCompiler;
@@ -33,16 +31,14 @@ import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public class ImplicitConfigurationInstrumenterTest {
+class ImplicitConfigurationInstrumenterTest {
 
     private static final File SRC_DIR = new File("src/test/data");
     private static final Path DESTINATION_BASEDIR = new File("target/test/data/classes").toPath();
@@ -52,19 +48,12 @@ public class ImplicitConfigurationInstrumenterTest {
 
     @BeforeAll
     static void beforeClass() {
-        final Configuration configuration = new Configuration(true, new AnnotationConfiguration(Collections.<String>emptySet(), nullable()), new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
+        final Configuration configuration = new Configuration(true, new AnnotationConfiguration(), new ExcludeConfiguration(Collections.emptySet()));
         compilers.putAll(VersionCompiler.compile(DESTINATION_BASEDIR, configuration, testClass.getJavaFile(SRC_DIR)));
     }
 
-    @NotNull
-    private static Set<String> nullable() {
-        final Set<String> annotations = new HashSet<>();
-        annotations.add("org.jetbrains.annotations.Nullable");
-        return annotations;
-    }
-
     @TestSupportedJavaVersions
-    public void notNullAnnotatedParameter_shouldValidate(final String javaVersion) throws Exception {
+    void notNullAnnotatedParameter_shouldValidate(final String javaVersion) throws Exception {
         final Class<?> c = compilers.get(javaVersion).getCompiledClass(testClass.getName());
         final Method notNullParameterMethod = c.getMethod("notNullParameter", String.class);
         ReflectionUtil.simulateMethodCall(notNullParameterMethod, "should work");
@@ -75,7 +64,7 @@ public class ImplicitConfigurationInstrumenterTest {
     }
 
     @TestSupportedJavaVersions
-    public void implicitParameter_shouldValidate(final String javaVersion) throws Exception {
+    void implicitParameter_shouldValidate(final String javaVersion) throws Exception {
         final Class<?> c = compilers.get(javaVersion).getCompiledClass(testClass.getName());
         final Method implicitParameterMethod = c.getMethod("implicitParameter", String.class);
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null}));
@@ -83,14 +72,14 @@ public class ImplicitConfigurationInstrumenterTest {
     }
 
     @TestSupportedJavaVersions
-    public void nullableAnnotatedParameter_shouldNotValidate(final String javaVersion) throws Exception {
+    void nullableAnnotatedParameter_shouldNotValidate(final String javaVersion) throws Exception {
         final Class<?> c = compilers.get(javaVersion).getCompiledClass(testClass.getName());
         final Method implicitParameterMethod = c.getMethod("nullableParameter", String.class);
         ReflectionUtil.simulateMethodCall(implicitParameterMethod, new Object[]{null});
     }
 
     @TestSupportedJavaVersions
-    public void implicitReturn_shouldValidate(final String javaVersion) throws Exception {
+    void implicitReturn_shouldValidate(final String javaVersion) throws Exception {
         final Class<?> c = compilers.get(javaVersion).getCompiledClass(testClass.getName());
         final Method notNullReturnMethod = c.getMethod("implicitReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, "should work");
@@ -100,25 +89,29 @@ public class ImplicitConfigurationInstrumenterTest {
     }
 
     @TestSupportedJavaVersions
-    public void annotatedReturn_shouldNotValidate(final String javaVersion) throws Exception {
+    void annotatedReturn_shouldNotValidate(final String javaVersion) throws Exception {
         final Class<?> c = compilers.get(javaVersion).getCompiledClass(testClass.getName());
         final Method notNullReturnMethod = c.getMethod("annotatedReturn", String.class);
         ReflectionUtil.simulateMethodCall(notNullReturnMethod, (String) null);
     }
 
     @TestSupportedJavaVersions
-    public void innerClassWithoutConstructor_shouldWork(final String javaVersion) throws Exception {
-        boolean syntheticConstructorFound = false;
+    void nestedClassWithoutConstructor_shouldWork(final String javaVersion) throws Exception {
+        boolean noArgConstructorFound = false;
         final Class<?> c = compilers.get(javaVersion).getCompiledClass(testClass.getName() + "$Nested");
         for (final Constructor<?> constructor : c.getDeclaredConstructors()) {
-            final boolean isSynthetic = constructor.isSynthetic();
-            if (isSynthetic) {
-                syntheticConstructorFound = true;
+            if (constructor.getParameterCount() == 0) {
+                noArgConstructorFound = true;
+                constructor.setAccessible(true);
+                constructor.newInstance();
+            } else if (constructor.isSynthetic()) {
                 constructor.setAccessible(true);
                 constructor.newInstance(constructor.getGenericParameterTypes()[0].getClass().cast(null));
+            } else {
+                throw new RuntimeException("There should be no constructors with these properties (only no-arg snd synthetic)");
             }
         }
-        assertTrue(syntheticConstructorFound);
+        assertTrue(noArgConstructorFound);
     }
 
 }
