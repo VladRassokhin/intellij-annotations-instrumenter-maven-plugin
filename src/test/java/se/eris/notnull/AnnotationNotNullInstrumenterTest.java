@@ -26,6 +26,8 @@ import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
 import se.eris.util.TestClass;
 import se.eris.util.TestCompiler;
+import se.eris.util.TestCompilerOptions;
+import se.eris.util.compiler.JavaSystemCompilerUtil;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -54,8 +56,8 @@ public class AnnotationNotNullInstrumenterTest {
 
     @BeforeClass
     public static void beforeClass() throws MalformedURLException {
-        compiler = TestCompiler.create(TARGET_DIR.toPath());
-        compiler.compile(TEST_CLASS.getFile(SRC_DIR));
+        compiler = TestCompiler.create(TestCompilerOptions.from(TARGET_DIR.toPath(), "1.8"));
+        compiler.compile(TEST_CLASS.getJavaFile(SRC_DIR));
 
         final Configuration configuration = new Configuration(false, new AnnotationConfiguration(notNull(), Collections.<String>emptySet()), new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
@@ -77,7 +79,7 @@ public class AnnotationNotNullInstrumenterTest {
      */
     @NotNull
     private static String maybeName(@NotNull final String parameterName) {
-        return compiler.parametersOptionSupported() ? String.format(" (parameter '%s')", parameterName) : "";
+        return JavaSystemCompilerUtil.supportParametersOption() ? String.format(" (parameter '%s')", parameterName) : "";
     }
 
     @Test

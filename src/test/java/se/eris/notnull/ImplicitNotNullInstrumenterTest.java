@@ -25,11 +25,12 @@ import se.eris.maven.NopLogWrapper;
 import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
 import se.eris.util.TestCompiler;
+import se.eris.util.TestCompilerOptions;
+import se.eris.util.compiler.JavaSystemCompilerUtil;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashSet;
@@ -42,7 +43,7 @@ import static org.hamcrest.Matchers.greaterThan;
 public class ImplicitNotNullInstrumenterTest {
 
     private static final File SRC_DIR = new File("src/test/data");
-    private static final Path CLASSES_DIRECTORY = new File("target/test/data/classes").toPath();
+    private static final Path DESTINATION_DIR = new File("target/test/data/classes").toPath();
 
     private static final String CLASS_NAME = "TestNotNull";
 
@@ -59,17 +60,17 @@ public class ImplicitNotNullInstrumenterTest {
      */
     @NotNull
     private static String maybeName(@NotNull final String parameterName) {
-        return compiler.parametersOptionSupported() ? String.format(" (parameter '%s')", parameterName) : "";
+        return JavaSystemCompilerUtil.supportParametersOption() ? String.format(" (parameter '%s')", parameterName) : "";
     }
 
     @BeforeClass
-    public static void beforeClass() throws Exception {
-        compiler = TestCompiler.create(CLASSES_DIRECTORY);
+    public static void beforeClass() {
+        compiler = TestCompiler.create(TestCompilerOptions.from(DESTINATION_DIR, "1.8"));
         compiler.compile(TEST_FILE);
 
         final Configuration configuration = new Configuration(true, new AnnotationConfiguration(Collections.<String>emptySet(), nullable()), new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
-        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations(CLASSES_DIRECTORY, configuration, Collections.<URL>emptyList());
+        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations(DESTINATION_DIR, configuration, Collections.emptyList());
 
         assertThat(numberOfInstrumentedFiles, greaterThan(0));
     }

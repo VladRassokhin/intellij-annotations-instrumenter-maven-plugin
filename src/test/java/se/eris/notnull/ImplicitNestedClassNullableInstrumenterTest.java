@@ -25,6 +25,8 @@ import se.eris.maven.NopLogWrapper;
 import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
 import se.eris.util.TestCompiler;
+import se.eris.util.TestCompilerOptions;
+import se.eris.util.compiler.JavaSystemCompilerUtil;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -57,13 +59,13 @@ public class ImplicitNestedClassNullableInstrumenterTest {
      */
     @NotNull
     private static String maybeName(@NotNull final String parameterName) {
-        return compiler.parametersOptionSupported() ? String.format(" (parameter '%s')", parameterName) : "";
+        return JavaSystemCompilerUtil.supportParametersOption() ? String.format(" (parameter '%s')", parameterName) : "";
     }
 
     @BeforeClass
     public static void beforeClass() throws MalformedURLException {
         final File fileToCompile = new File(SRC_DIR, TEST_FILE);
-        compiler = TestCompiler.create(CLASSES_DIRECTORY);
+        compiler = TestCompiler.create(TestCompilerOptions.from(CLASSES_DIRECTORY, "1.8"));
         compiler.compile(fileToCompile);
 
         final Configuration configuration = new Configuration(true,
