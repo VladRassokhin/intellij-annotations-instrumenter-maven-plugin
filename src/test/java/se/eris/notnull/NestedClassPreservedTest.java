@@ -31,10 +31,11 @@ import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
 import se.eris.util.TestClass;
 import se.eris.util.TestCompiler;
+import se.eris.util.TestCompilerOptions;
+import se.eris.util.compiler.JavaSystemCompilerUtil;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,7 +49,7 @@ import static org.junit.Assert.assertTrue;
 public class NestedClassPreservedTest {
 
     private static final File SRC_DIR = new File("src/test/data");
-    private static final File TARGET_DIR = new File("target/test/data/classes");
+    private static final File DESTINATION_DIR = new File("target/test/data/classes");
 
     private static final TestClass TEST_CLASS = new TestClass("se.eris.test.TestNotNull");
 
@@ -58,13 +59,13 @@ public class NestedClassPreservedTest {
     private static TestCompiler compiler;
 
     @BeforeClass
-    public static void beforeClass() throws MalformedURLException {
-        compiler = TestCompiler.create(TARGET_DIR.toPath());
-        compiler.compile(TEST_CLASS.getFile(SRC_DIR));
+    public static void beforeClass() {
+        compiler = TestCompiler.create(TestCompilerOptions.from(DESTINATION_DIR.toPath(), "1.8"));
+        compiler.compile(TEST_CLASS.getJavaFile(SRC_DIR));
 
         final Configuration configuration = new Configuration(false, new AnnotationConfiguration(), new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
         final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
-        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations(TARGET_DIR.toPath(), configuration, Collections.<URL>emptyList());
+        final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations(DESTINATION_DIR.toPath(), configuration, Collections.<URL>emptyList());
 
         assertThat(numberOfInstrumentedFiles, greaterThan(0));
     }
@@ -74,13 +75,13 @@ public class NestedClassPreservedTest {
      */
     @NotNull
     private static String maybeName(@NotNull final String parameterName) {
-        return compiler.parametersOptionSupported() ? String.format(" (parameter '%s')", parameterName) : "";
+        return JavaSystemCompilerUtil.supportParametersOption() ? String.format(" (parameter '%s')", parameterName) : "";
     }
 
     @Test
     public void syntheticMethod_dispatchesToSpecializedMethod() throws Exception {
-        final TestClass sub = TEST_CLASS.inner("Sub");
-        final Class<?> superargClass = compiler.getCompiledClass(TEST_CLASS.inner("Superarg").getName());
+        final Class<?> superargClass = compiler.getCompiledClass(TEST_CLASS.nested("Superarg").getName());
+        final TestClass sub = TEST_CLASS.nested("Sub");
         final Class<?> subClass = compiler.getCompiledClass(sub.getName());
         final Method generalMethod = subClass.getMethod("overload", superargClass);
         assertTrue(generalMethod.isSynthetic());
@@ -93,10 +94,10 @@ public class NestedClassPreservedTest {
     @Test
     public void onlySpecificMethod_isInstrumented() throws Exception {
         // Check that only the specific method has a string annotation indicating instrumentation
-        final TestClass sub = TEST_CLASS.inner("Sub");
-        final ClassReader classReader = sub.getClassReader(TARGET_DIR);
+        final TestClass sub = TEST_CLASS.nested("Sub");
+        final ClassReader classReader = sub.getClassReader(DESTINATION_DIR);
         final List<String> strings = getStringConstants(classReader, "overload");
-        final String onlyExpectedString = "(L" + TEST_CLASS.inner("Subarg").getAsmName() + ";)V:" +
+        final String onlyExpectedString = "(L" + TEST_CLASS.nested("Subarg").getAsmName() + ";)V:" +
                 "NotNull annotated argument 0" + maybeName("s") + " of " +
                 sub.getAsmName() + ".overload must not be null";
         assertEquals(Collections.singletonList(onlyExpectedString), strings);
@@ -105,14 +106,14 @@ public class NestedClassPreservedTest {
     @Test
     public void nestedClassesSegmentIsPreserved() throws Exception {
         // Check that only the specific method has a string annotation indicating instrumentation
-        final TestClass preserved = TEST_CLASS.inner("NestedClassesSegmentIsPreserved");
-        final ClassReader classReader = preserved.getClassReader(TARGET_DIR);
+        final TestClass preserved = TEST_CLASS.nested("NestedClassesSegmentIsPreserved");
+        final ClassReader classReader = preserved.getClassReader(DESTINATION_DIR);
         final List<InnerClass> innerClasses = getInnerClasses(classReader);
         assertEquals(2, innerClasses.size());
         //self-entry
         assertEquals( preserved.getAsmName(), innerClasses.get(0).name);
         //inner entry
-        final InnerClass expected = new InnerClass(preserved.inner("ASub").getAsmName(),
+        final InnerClass expected = new InnerClass(preserved.nested("ASub").getAsmName(),
                 preserved.getAsmName(), "ASub", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
         assertEquals(expected, innerClasses.get(1));
     }

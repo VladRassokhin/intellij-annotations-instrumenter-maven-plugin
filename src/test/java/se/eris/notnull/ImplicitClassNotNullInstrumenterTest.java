@@ -25,6 +25,8 @@ import se.eris.maven.NopLogWrapper;
 import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
 import se.eris.util.TestCompiler;
+import se.eris.util.TestCompilerOptions;
+import se.eris.util.compiler.JavaSystemCompilerUtil;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -59,12 +61,12 @@ public class ImplicitClassNotNullInstrumenterTest {
      */
     @NotNull
     private static String maybeName(@NotNull final String parameterName) {
-        return compiler.parametersOptionSupported() ? String.format(" (parameter '%s')", parameterName) : "";
+        return JavaSystemCompilerUtil.supportParametersOption() ? String.format(" (parameter '%s')", parameterName) : "";
     }
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        compiler = TestCompiler.create(CLASSES_DIRECTORY);
+        compiler = TestCompiler.create(TestCompilerOptions.from(CLASSES_DIRECTORY, "1.8"));
         compiler.compile(TEST_FILE);
 
         final Configuration configuration = new Configuration(false,
