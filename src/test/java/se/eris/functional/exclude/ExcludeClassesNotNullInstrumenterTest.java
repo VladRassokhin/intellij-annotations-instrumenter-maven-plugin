@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.eris.notnull;
+package se.eris.functional.exclude;
 
 import com.intellij.NotNullInstrumenter;
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +22,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import se.eris.maven.NopLogWrapper;
+import se.eris.notnull.AnnotationConfiguration;
+import se.eris.notnull.Configuration;
+import se.eris.notnull.ExcludeConfiguration;
 import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
 import se.eris.util.TestCompiler;
