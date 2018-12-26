@@ -4,9 +4,9 @@ import org.jetbrains.annotations.Nullable;
 import se.eris.notnull.ImplicitNotNull;
 
 @ImplicitNotNull
-public class Implicit {
+public class TestImplicit {
 
-    public Implicit(String s) {
+    public TestImplicit(String s) {
     }
 
     public static String implicitReturn(@Nullable final String s) {
