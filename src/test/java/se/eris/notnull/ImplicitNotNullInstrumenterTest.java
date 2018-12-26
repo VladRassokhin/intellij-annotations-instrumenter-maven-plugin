@@ -26,8 +26,8 @@ import se.eris.notnull.instrumentation.ClassMatcher;
 import se.eris.util.ReflectionUtil;
 import se.eris.util.TestCompiler;
 import se.eris.util.TestCompilerOptions;
-import se.eris.util.compiler.JavaSystemCompilerUtil;
 
+import javax.tools.ToolProvider;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -60,7 +60,7 @@ public class ImplicitNotNullInstrumenterTest {
      */
     @NotNull
     private static String maybeName(@NotNull final String parameterName) {
-        return JavaSystemCompilerUtil.supportParametersOption() ? String.format(" (parameter '%s')", parameterName) : "";
+        return ToolProvider.getSystemJavaCompiler().isSupportedOption("-parameters") != -1 ? String.format(" (parameter '%s')", parameterName) : "";
     }
 
     @BeforeClass
