@@ -29,7 +29,7 @@ class AnnotationThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
 
     private final Set<String> notNullAnnotations;
 
-    AnnotationThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> notNullAnnotations, final boolean isAnonymous) {
+    AnnotationThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> notNullAnnotations, final Boolean isAnonymous) {
         super(AsmUtils.ASM_OPCODES_VERSION, methodVisitor, argumentTypes, returnType, access, methodName, className, false, isAnonymous);
         this.notNullAnnotations = notNullAnnotations;
     }
@@ -42,10 +42,8 @@ class AnnotationThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     @Override
     public AnnotationVisitor visitParameterAnnotation(final int parameter, final String annotation, final boolean visible) {
         final AnnotationVisitor av = mv.visitParameterAnnotation(parameter, annotation, visible);
-        if (isParameterReferenceType(parameter)) {
-            if (isNotNullAnnotation(annotation)) {
-                notNullParams.add(parameter);
-            }
+        if (isParameterReferenceType(parameter) && isNotNullAnnotation(annotation)) {
+            notNullParams.add(parameter);
         } else if (annotation.equals(LJAVA_LANG_SYNTHETIC_ANNO)) {
             // See asm r1278 for what we do this,
             // http://forge.objectweb.org/tracker/index.php?func=detail&aid=307392&group_id=23&atid=100023
@@ -80,10 +78,12 @@ class AnnotationThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
      * <p>
      * {@inheritDoc}
      */
+    @Override
     public void visitLocalVariable(final String name, final String description, final String signature, final Label start, final Label end, final int index) {
         mv.visitLocalVariable(name, description, signature, (isParameter(index) && startGeneratedCodeLabel != null) ? startGeneratedCodeLabel : start, end, index);
     }
 
+    @Override
     public void visitMaxs(final int maxStack, final int maxLocals) {
         try {
             super.visitMaxs(maxStack, maxLocals);
