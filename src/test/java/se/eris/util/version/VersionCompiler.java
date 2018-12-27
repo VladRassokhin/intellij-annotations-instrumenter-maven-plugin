@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class VersionCompiler {
 
-    private static final String[] VERSIONS = TestSupportedJavaVersions.SUPPORTED_VERSIONS;
+    private static final String[] SUPPORTED_VERSIONS = TestSupportedJavaVersions.SupportedVersions.getSupportedVersions();
 
     public static Map<String, TestCompiler> compile(final Path destinationBasedir, final File... javaFiles) {
         final Configuration configuration = new Configuration(false,
@@ -34,7 +34,7 @@ public class VersionCompiler {
     @NotNull
     public static Map<String, TestCompiler> compile(final Path destinationBasedir, final Configuration configuration, final File... javaFiles) {
         final Map<String, TestCompiler> compilers = new HashMap<>();
-        for (final String version : VERSIONS) {
+        for (final String version : SUPPORTED_VERSIONS) {
             final Path destination = destinationBasedir.resolve(version);
             final TestCompiler compiler = TestCompiler.create(TestCompilerOptions.from(destination, version));
             if (!compiler.compile(javaFiles)) {

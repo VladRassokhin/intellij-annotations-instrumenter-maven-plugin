@@ -7,10 +7,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-@ParameterizedTest(name = "Java version: {arguments}")
-@ValueSource(strings = { "1.7", "1.8", "1.9", "10", "11" })
+@ParameterizedTest(name = "Java target version: {arguments}")
+@ValueSource(strings = {"1.7", "1.8", "1.9", "10", "11"})
 public @interface TestSupportedJavaVersions {
 
-    String[] SUPPORTED_VERSIONS = {"1.7", "1.8", "1.9", "10", "11"};;
+    class SupportedVersions {
+        public static String[] getSupportedVersions() {
+            return TestSupportedJavaVersions.class.getAnnotationsByType(ValueSource.class)[0].strings();
+        }
+    }
 
 }
+
