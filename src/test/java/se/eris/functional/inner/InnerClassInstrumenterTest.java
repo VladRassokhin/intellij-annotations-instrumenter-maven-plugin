@@ -19,7 +19,7 @@ import org.junit.jupiter.api.BeforeAll;
 import se.eris.util.ReflectionUtil;
 import se.eris.util.TestClass;
 import se.eris.util.TestCompiler;
-import se.eris.util.TestJava8;
+import se.eris.util.TestSupportedJavaVersions;
 import se.eris.util.version.VersionCompiler;
 
 import java.io.File;
@@ -44,28 +44,28 @@ class InnerClassInstrumenterTest {
         compilers.putAll(VersionCompiler.compile(DESTINATION_BASEDIR, testClass.getJavaFile(SRC_DIR)));
     }
 
-    @TestJava8
+    @TestSupportedJavaVersions
     void innerClassConstructorShouldValidate(final String javaVersion) throws Exception {
         final Class<?> c = compilers.get(javaVersion).getCompiledClass(testClass);
         final Constructor<?> constructor = c.getConstructor(String.class, Integer.class, Integer.class);
 
-        ReflectionUtil.simulateConstructorCall(constructor, new Object[]{"A String", 17, 18});
-        ReflectionUtil.simulateConstructorCall(constructor, new Object[]{null, 17, 18});
+        ReflectionUtil.simulateConstructorCall(constructor, "A String", 17, 18);
+        ReflectionUtil.simulateConstructorCall(constructor, null, 17, 18);
 
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> ReflectionUtil.simulateConstructorCall(constructor, new Object[]{null, null, 18}));
-        assertEquals("NotNull annotated argument 1 (parameter 'notNull') of se/eris/inner/TestInner$InnerClass.<init> must not be null", exception.getMessage());
+        assertEquals(String.format("NotNull annotated argument 1%s of %s$InnerClass.<init> must not be null", VersionCompiler.maybeName(compilers.get(javaVersion), "notNull"), testClass.getAsmName()), exception.getMessage());
     }
 
-    @TestJava8
+    @TestSupportedJavaVersions
     void nestedClassConstructorShouldValidate(final String javaVersion) throws Exception {
         final Class<?> c = compilers.get(javaVersion).getCompiledClass(testClass);
         final Constructor<?> constructor = c.getConstructor(String.class, Integer.class, Integer.class);
 
-        ReflectionUtil.simulateConstructorCall(constructor, new Object[]{"A String", 17, 18});
-        ReflectionUtil.simulateConstructorCall(constructor, new Object[]{null, 17, 18});
+        ReflectionUtil.simulateConstructorCall(constructor, "A String", 17, 18);
+        ReflectionUtil.simulateConstructorCall(constructor, null, 17, 18);
 
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> ReflectionUtil.simulateConstructorCall(constructor, new Object[]{null, 17, null}));
-        assertEquals("NotNull annotated argument 1 (parameter 'notNull') of se/eris/inner/TestInner$NestedClass.<init> must not be null", exception.getMessage());
+        assertEquals(String.format("NotNull annotated argument 1%s of %s$NestedClass.<init> must not be null", VersionCompiler.maybeName(compilers.get(javaVersion), "notNull"), testClass.getAsmName()), exception.getMessage());
     }
 
 }
