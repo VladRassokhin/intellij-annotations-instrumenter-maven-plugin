@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import se.eris.asm.AsmUtils;
 import se.eris.lang.LangUtils;
@@ -42,7 +43,7 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
     private final Collection<ThrowOnNullMethodVisitor> methodVisitors = new ArrayList<>();
 
     private String className;
-    private boolean isAnonymous = false;
+    private Boolean isAnonymous;
     private boolean classAnnotatedImplicit = false;
     @NotNull
     private final Configuration configuration;
@@ -71,9 +72,13 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
     @Override
     public void visitInnerClass(final String name, final String outer, final String innerName, final int access) {
         super.visitInnerClass(name, outer, innerName, access);
-        if (name.equals(className)) {
+        if (name.equals(className) && !isStatic(access)) {
             isAnonymous = innerName == null;
         }
+    }
+
+    private boolean isStatic(final int access) {
+        return (access & Opcodes.ACC_STATIC) != 0;
     }
 
     @NotNull
