@@ -40,9 +40,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NestedAnnotatedInstrumenterTest {
 
@@ -61,7 +61,7 @@ class NestedAnnotatedInstrumenterTest {
     }
 
     @TestSupportedJavaVersions
-    public void syntheticMethod_dispatchesToSpecializedMethod(final String javaVersion) throws Exception {
+    void syntheticMethod_dispatchesToSpecializedMethod(final String javaVersion) throws Exception {
         final Class<?> superargClass = compilers.get(javaVersion).getCompiledClass(testClass.nested("Superarg").getName());
         final TestClass sub = testClass.nested("Sub");
         final Class<?> subClass = compilers.get(javaVersion).getCompiledClass(sub.getName());
@@ -69,12 +69,12 @@ class NestedAnnotatedInstrumenterTest {
 
         assertTrue(generalMethod.isSynthetic());
         assertTrue(generalMethod.isBridge());
-        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> ReflectionUtil.simulateMethodCall(subClass.newInstance(), generalMethod, new Object[]{null}));
+        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> ReflectionUtil.simulateMethodCall(subClass.getDeclaredConstructor().newInstance(), generalMethod, new Object[]{null}));
         assertEquals("NotNull annotated argument 0" + VersionCompiler.maybeName(compilers.get(javaVersion), "s") + " of " + sub.getAsmName() + ".overload must not be null", exception.getMessage());
     }
 
     @TestSupportedJavaVersions
-    public void onlySpecificMethod_isInstrumented(final String javaVersion) throws Exception {
+    void onlySpecificMethod_isInstrumented(final String javaVersion) throws Exception {
         // Check that only the specific method has a string annotation indicating instrumentation
         final TestClass sub = testClass.nested("Sub");
         final ClassReader classReader = sub.getClassReader(DESTINATION_BASEDIR.resolve(javaVersion).toFile());
@@ -86,7 +86,7 @@ class NestedAnnotatedInstrumenterTest {
     }
 
     @TestSupportedJavaVersions
-    public void nestedClassesSegmentIsPreserved(final String javaVersion) throws Exception {
+    void nestedClassesSegmentIsPreserved(final String javaVersion) throws Exception {
         // Check that only the specific method has a string annotation indicating instrumentation
         final TestClass preserved = testClass.nested("NestedClassesSegmentIsPreserved");
         final ClassReader classReader = preserved.getClassReader(DESTINATION_BASEDIR.resolve(javaVersion).toFile());

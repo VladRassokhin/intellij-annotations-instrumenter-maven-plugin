@@ -5,13 +5,13 @@ import org.apache.maven.model.Model;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import se.eris.util.ReflectionUtil;
 
-public class ClassesNotNullInstrumenterTest {
+class ClassesNotNullInstrumenterTest {
 
     @Test
-    public void execute_nullParameters_shouldWork() throws MojoExecutionException {
+    void execute_nullParameters_shouldWork() throws MojoExecutionException {
         final ClassesNotNullInstrumenter instrumenter = createInstrumenter();
 
         instrumenter.execute();

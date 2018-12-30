@@ -15,20 +15,24 @@
  */
 package se.eris.asm;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.objectweb.asm.Opcodes;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class AsmUtilsTest {
+class AsmUtilsTest {
 
     @Test
-    public void asmOpcodeToJavaVersion() {
-        assertThat(AsmUtils.asmOpcodeToJavaVersion(Opcodes.V1_1), is(1));
-        assertThat(AsmUtils.asmOpcodeToJavaVersion(Opcodes.V1_5), is(5));
-        assertThat(AsmUtils.asmOpcodeToJavaVersion(Opcodes.V1_6), is(6));
-        assertThat(AsmUtils.asmOpcodeToJavaVersion(Opcodes.V1_7), is(7));
+    void asmOpcodeToJavaVersion() {
+        assertEquals(1, AsmUtils.asmOpcodeToJavaVersion(Opcodes.V1_1));
+        assertEquals(5, AsmUtils.asmOpcodeToJavaVersion(Opcodes.V1_5));
+        assertEquals(6, AsmUtils.asmOpcodeToJavaVersion(Opcodes.V1_6));
+        assertEquals(7, AsmUtils.asmOpcodeToJavaVersion(Opcodes.V1_7));
+        assertEquals(8, AsmUtils.asmOpcodeToJavaVersion(Opcodes.V1_8));
+
+        assertEquals(9, AsmUtils.asmOpcodeToJavaVersion(Opcodes.V9));
+        assertEquals(10, AsmUtils.asmOpcodeToJavaVersion(Opcodes.V10));
+        assertEquals(11, AsmUtils.asmOpcodeToJavaVersion(Opcodes.V11));
     }
 
 }
