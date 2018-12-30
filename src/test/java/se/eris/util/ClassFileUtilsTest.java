@@ -15,14 +15,13 @@
  */
 package se.eris.util;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Set;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class ClassFileUtilsTest {
 
@@ -30,7 +29,7 @@ public class ClassFileUtilsTest {
     public void getClassFiles() {
         final Set<File> classFiles = ClassFileUtils.getClassFiles(new File("target/classes").toPath());
 
-        assertThat(classFiles, hasSize(greaterThan(0)));
+        assertFalse(classFiles.isEmpty());
     }
 
 }

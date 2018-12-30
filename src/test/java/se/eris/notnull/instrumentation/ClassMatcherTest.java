@@ -1,82 +1,83 @@
 package se.eris.notnull.instrumentation;
 
-import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import org.junit.jupiter.api.Test;
 
-public class ClassMatcherTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ClassMatcherTest {
 
     @Test
-    public void fromPlainMarcher() {
+    void fromPlainMarcher() {
         final ClassMatcher matcher = ClassMatcher.namePattern("se.eris.A");
-        assertThat(matcher.matches("se.A"), is(false));
-        assertThat(matcher.matches("se.eris.A"), is(true));
-        assertThat(matcher.matches("se.eris.B"), is(false));
-        assertThat(matcher.matches("se.eris.test.A"), is(false));
+        assertFalse(matcher.matches("se.A"));
+        assertTrue(matcher.matches("se.eris.A"));
+        assertFalse(matcher.matches("se.eris.B"));
+        assertFalse(matcher.matches("se.eris.test.A"));
     }
 
     @Test
-    public void fromSingleWildcard() {
+    void fromSingleWildcard() {
         final ClassMatcher matcher = ClassMatcher.namePattern("se.*");
-        assertThat(matcher.matches("se.A"), is(true));
-        assertThat(matcher.matches("se.eris.A"), is(false));
-        assertThat(matcher.matches("se.eris.Test"), is(false));
-        assertThat(matcher.matches("sea"), is(false));
+        assertTrue(matcher.matches("se.A"));
+        assertFalse(matcher.matches("se.eris.A"));
+        assertFalse(matcher.matches("se.eris.Test"));
+        assertFalse(matcher.matches("sea"));
     }
 
     @Test
-    public void fromDoubleWildcardAtEnd() {
+    void fromDoubleWildcardAtEnd() {
         final ClassMatcher matcher = ClassMatcher.namePattern("se.**");
-        assertThat(matcher.matches("se"), is(true));
-        assertThat(matcher.matches("se.eris"), is(true));
-        assertThat(matcher.matches("se.eris.Test"), is(true));
-        assertThat(matcher.matches("sea"), is(false));
-        assertThat(matcher.matches("sea.Test"), is(false));
+        assertTrue(matcher.matches("se"));
+        assertTrue(matcher.matches("se.eris"));
+        assertTrue(matcher.matches("se.eris.Test"));
+        assertFalse(matcher.matches("sea"));
+        assertFalse(matcher.matches("sea.Test"));
     }
 
     @Test
-    public void fromDoubleWildcard() {
+    void fromDoubleWildcard() {
         final ClassMatcher matcher = ClassMatcher.namePattern("se.**.Test");
-        assertThat(matcher.matches("se"), is(false));
-        assertThat(matcher.matches("se.eris"), is(false));
-        assertThat(matcher.matches("se.Test"), is(true));
-        assertThat(matcher.matches("se.eris.Test"), is(true));
-        assertThat(matcher.matches("se.eris.other.Test"), is(true));
-        assertThat(matcher.matches("se.eris.Test.more"), is(false));
-        assertThat(matcher.matches("sea.eris.Test"), is(false));
+        assertFalse(matcher.matches("se"));
+        assertFalse(matcher.matches("se.eris"));
+        assertTrue(matcher.matches("se.Test"));
+        assertTrue(matcher.matches("se.eris.Test"));
+        assertTrue(matcher.matches("se.eris.other.Test"));
+        assertFalse(matcher.matches("se.eris.Test.more"));
+        assertFalse(matcher.matches("sea.eris.Test"));
     }
 
     @Test
-    public void fromWildcardFirst() {
+    void fromWildcardFirst() {
         final ClassMatcher matcher = ClassMatcher.namePattern("*.Test");
-        assertThat(matcher.matches("se"), is(false));
-        assertThat(matcher.matches("se.Test"), is(true));
-        assertThat(matcher.matches("se.eris.Test"), is(false));
+        assertFalse(matcher.matches("se"));
+        assertTrue(matcher.matches("se.Test"));
+        assertFalse(matcher.matches("se.eris.Test"));
     }
 
     @Test
-    public void fromDoubleWildcardFirst() {
+    void fromDoubleWildcardFirst() {
         final ClassMatcher matcher = ClassMatcher.namePattern("**.Test");
-        assertThat(matcher.matches("se"), is(false));
-        assertThat(matcher.matches("se.Test"), is(true));
-        assertThat(matcher.matches("se.eris.Test"), is(true));
+        assertFalse(matcher.matches("se"));
+        assertTrue(matcher.matches("se.Test"));
+        assertTrue(matcher.matches("se.eris.Test"));
     }
 
     @Test
-    public void currencyDollar_shouldWork() {
+    void currencyDollar_shouldWork() {
         final ClassMatcher matcher = ClassMatcher.namePattern("**.Test$1");
-        assertThat(matcher.matches("se.Test"), is(false));
-        assertThat(matcher.matches("se.Test$1"), is(true));
-        assertThat(matcher.matches("se.Test$12"), is(false));
+        assertFalse(matcher.matches("se.Test"));
+        assertTrue(matcher.matches("se.Test$1"));
+        assertFalse(matcher.matches("se.Test$12"));
     }
 
     @Test
-    public void regexp_shouldWork() {
+    void regexp_shouldWork() {
         final ClassMatcher matcher = ClassMatcher.namePattern("**.Test($[0-9]+)?");
-        assertThat(matcher.matches("se.Test"), is(true));
-        assertThat(matcher.matches("se.Test$1"), is(true));
-        assertThat(matcher.matches("se.Test$12"), is(true));
+        assertTrue(matcher.matches("se.Test"));
+        assertTrue(matcher.matches("se.Test$1"));
+        assertTrue(matcher.matches("se.Test$12"));
     }
 
 }
