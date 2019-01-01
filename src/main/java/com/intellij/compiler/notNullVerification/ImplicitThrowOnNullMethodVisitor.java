@@ -22,6 +22,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import se.eris.asm.AsmUtils;
+import se.eris.asm.ClassInfo;
 
 import java.util.Set;
 
@@ -29,8 +30,8 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
 
     private final Set<String> nullableAnnotations;
 
-    ImplicitThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> nullableAnnotations, @Nullable final Boolean isAnonymousClass) {
-        super(AsmUtils.ASM_OPCODES_VERSION, methodVisitor, argumentTypes, returnType, access, methodName, className, true, isAnonymousClass);
+    ImplicitThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final ClassInfo classInfo, @NotNull final Set<String> nullableAnnotations, @Nullable final Boolean isAnonymousClass) {
+        super(AsmUtils.ASM_OPCODES_VERSION, methodVisitor, argumentTypes, returnType, access, methodName, classInfo, true, isAnonymousClass);
         this.nullableAnnotations = nullableAnnotations;
         addImplicitNotNulls();
     }

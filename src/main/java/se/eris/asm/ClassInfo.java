@@ -78,7 +78,11 @@ public class ClassInfo {
     }
 
     public boolean isInterface() {
-        return (access & Opcodes.ACC_INTERFACE) > 0;
+        return (access & Opcodes.ACC_INTERFACE) != 0;
+    }
+
+    public boolean isEnum() {
+        return (access & Opcodes.ACC_ENUM) != 0;
     }
 
     @Override
