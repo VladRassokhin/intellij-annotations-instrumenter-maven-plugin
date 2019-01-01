@@ -1,6 +1,5 @@
 package se.eris.nested;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import se.eris.notnull.ImplicitNotNull;
 
@@ -37,12 +36,12 @@ public class TestNestedImplicitAnnotation {
     public static class Subarg extends Superarg {}
 
     public static class Super<S extends Superarg> {
-        public void overload(@NotNull S s) {}
+        public void overload(S s) {}
     }
 
     public static class Sub extends Super<Subarg> {
         @Override
-        public void overload(@NotNull Subarg s) {}
+        public void overload(Subarg s) {}
     }
 
     public static class NestedClassesSegmentIsPreserved {

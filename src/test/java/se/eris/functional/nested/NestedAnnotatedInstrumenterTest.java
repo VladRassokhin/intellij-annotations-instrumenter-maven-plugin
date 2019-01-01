@@ -90,25 +90,25 @@ class NestedAnnotatedInstrumenterTest {
         // Check that only the specific method has a string annotation indicating instrumentation
         final TestClass preserved = testClass.nested("NestedClassesSegmentIsPreserved");
         final ClassReader classReader = preserved.getClassReader(DESTINATION_BASEDIR.resolve(javaVersion).toFile());
-        final List<InnerClass> innerClasses = getInnerClasses(classReader);
-        assertEquals(2, innerClasses.size());
+        final List<AsmInnerClass> asmInnerClasses = getAsmInnerClasses(classReader);
+        assertEquals(2, asmInnerClasses.size());
         //self-entry
-        assertEquals(preserved.getAsmName(), innerClasses.get(0).name);
+        assertEquals(preserved.getAsmName(), asmInnerClasses.get(0).name);
         //inner entry
-        final InnerClass expected = new InnerClass(preserved.nested("ASub").getAsmName(),
+        final AsmInnerClass expected = new AsmInnerClass(preserved.nested("ASub").getAsmName(),
                 preserved.getAsmName(), "ASub", Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
-        assertEquals(expected, innerClasses.get(1));
+        assertEquals(expected, asmInnerClasses.get(1));
     }
 
-    private List<InnerClass> getInnerClasses(final ClassReader cr) {
-        final List<InnerClass> innerClasses = new ArrayList<>();
+    private List<AsmInnerClass> getAsmInnerClasses(final ClassReader cr) {
+        final List<AsmInnerClass> asmInnerClasses = new ArrayList<>();
         cr.accept(new ClassVisitor(AsmUtils.ASM_OPCODES_VERSION) {
             @Override
             public void visitInnerClass(final String name, final String outerName, final String innerName, final int access) {
-                innerClasses.add(new InnerClass(name, outerName, innerName, access));
+                asmInnerClasses.add(new AsmInnerClass(name, outerName, innerName, access));
             }
         }, 0);
-        return innerClasses;
+        return asmInnerClasses;
     }
 
     @NotNull

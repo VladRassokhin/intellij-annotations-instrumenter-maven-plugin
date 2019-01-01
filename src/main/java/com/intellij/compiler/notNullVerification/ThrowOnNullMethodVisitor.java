@@ -22,6 +22,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import se.eris.asm.AsmUtils;
+import se.eris.asm.ClassInfo;
 import se.eris.lang.LangUtils;
 
 import java.util.ArrayList;
@@ -44,17 +45,17 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     private int syntheticCount;
     private final int methodAccess;
     final String methodName;
-    private final String className;
+    protected final ClassInfo classInfo;
     final List<Integer> notNullParams;
     Label startGeneratedCodeLabel;
 
-    ThrowOnNullMethodVisitor(final int api, @Nullable final MethodVisitor mv, @NotNull final Type[] argumentTypes, final Type returnType, final int methodAccess, final String methodName, final String className, final boolean isReturnNotNull, @Nullable final Boolean isAnonymousClass) {
+    ThrowOnNullMethodVisitor(final int api, @Nullable final MethodVisitor mv, @NotNull final Type[] argumentTypes, final Type returnType, final int methodAccess, final String methodName, final ClassInfo classInfo, final boolean isReturnNotNull, @Nullable final Boolean isAnonymousClass) {
         super(api, mv);
         this.argumentTypes = argumentTypes;
         this.returnType = returnType;
         this.methodAccess = methodAccess;
         this.methodName = methodName;
-        this.className = className;
+        this.classInfo = classInfo;
         this.isReturnNotNull = isReturnNotNull;
         this.isAnonymousClass = isAnonymousClass;
         syntheticCount = isAnonymousClass != null ? 1 : 0;
@@ -88,7 +89,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
                 mv.visitInsn(Opcodes.DUP);
                 final Label skipLabel = new Label();
                 mv.visitJumpInsn(Opcodes.IFNONNULL, skipLabel);
-                generateThrow(ISE_CLASS_NAME, "NotNull method " + className + "." + methodName + " must not return null", skipLabel);
+                generateThrow(ISE_CLASS_NAME, "NotNull method " + classInfo.getName() + "." + methodName + " must not return null", skipLabel);
             }
         }
         mv.visitInsn(opcode);
@@ -175,7 +176,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     @NotNull
     private String getThrowMessage(final int parameterNumber) {
         final String pname = parameterNames == null || parameterNames.size() <= (parameterNumber + syntheticCount) ? "" : String.format(" (parameter '%s')", parameterNames.get(parameterNumber + syntheticCount));
-        return String.format("%s argument %d%s of %s.%s must not be null", notNullCause(), parameterNumber, pname, className, methodName);
+        return String.format("%s argument %d%s of %s.%s must not be null", notNullCause(), parameterNumber, pname, classInfo.getName(), methodName);
     }
 
     /**
