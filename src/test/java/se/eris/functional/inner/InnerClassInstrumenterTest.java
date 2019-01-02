@@ -71,7 +71,7 @@ class InnerClassInstrumenterTest {
         ReflectionUtil.simulateMethodCall(innerClass, innerClassMethod, null, 12);
 
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> ReflectionUtil.simulateMethodCall(innerClass, innerClassMethod, null, null));
-        assertEquals(String.format("NotNull annotated argument 1%s of %s$InnerClass.innerMethod must not be null", VersionCompiler.maybeName(compilers.get(javaVersion), "innetNotNull"), testClass.getAsmName()), exception.getMessage());
+        assertEquals(String.format("NotNull annotated argument 1%s of %s$InnerClass.innerMethod must not be null", VersionCompiler.maybeName(compilers.get(javaVersion), "innerNotNull"), testClass.getAsmName()), exception.getMessage());
     }
 
     @TestSupportedJavaVersions

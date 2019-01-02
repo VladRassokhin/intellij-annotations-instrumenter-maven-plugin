@@ -17,7 +17,7 @@ public class TestInner {
         public InnerClass(@Nullable String nullable, @NotNull Integer notNull) {
         }
 
-        public String innerMethod(@Nullable String innerNullable, @NotNull Integer innetNotNull) {
+        public String innerMethod(@Nullable String innerNullable, @NotNull Integer innerNotNull) {
             return innerNullable;
         }
     }
