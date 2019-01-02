@@ -24,6 +24,7 @@ import se.eris.util.version.VersionCompiler;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,6 +55,23 @@ class InnerClassInstrumenterTest {
 
         final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> ReflectionUtil.simulateConstructorCall(constructor, new Object[]{null, null, 18}));
         assertEquals(String.format("NotNull annotated argument 1%s of %s$InnerClass.<init> must not be null", VersionCompiler.maybeName(compilers.get(javaVersion), "notNull"), testClass.getAsmName()), exception.getMessage());
+    }
+
+    @TestSupportedJavaVersions
+    void innerClassMethodShouldValidate(final String javaVersion) throws Exception {
+        final Class<?> c = compilers.get(javaVersion).getCompiledClass(testClass);
+        final Constructor<?> constructor = c.getConstructor(String.class, Integer.class, Integer.class);
+
+        final Object outer = ReflectionUtil.simulateConstructorCall(constructor, "A String", 17, 18);
+
+        final Method getInner = outer.getClass().getDeclaredMethod("getInner");
+        final Object innerClass = ReflectionUtil.simulateMethodCall(outer, getInner);
+
+        final Method innerClassMethod = innerClass.getClass().getDeclaredMethod("innerMethod", String.class, Integer.class);
+        ReflectionUtil.simulateMethodCall(innerClass, innerClassMethod, null, 12);
+
+        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> ReflectionUtil.simulateMethodCall(innerClass, innerClassMethod, null, null));
+        assertEquals(String.format("NotNull annotated argument 1%s of %s$InnerClass.innerMethod must not be null", VersionCompiler.maybeName(compilers.get(javaVersion), "innetNotNull"), testClass.getAsmName()), exception.getMessage());
     }
 
     @TestSupportedJavaVersions
