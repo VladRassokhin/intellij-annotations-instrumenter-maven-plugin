@@ -17,7 +17,8 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class LocalClassInstrumenterTest {
+class LocalClassTest {
+
 	private static final File SRC_DIR = new File("src/test/data");
 	private static final Path DESTINATION_BASEDIR = new File("target/test/data/classes").toPath();
 
@@ -74,4 +75,5 @@ public class LocalClassInstrumenterTest {
 		final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> ReflectionUtil.simulateMethodCall(innerInstance, localMethod, "A String", null));
 		assertEquals(String.format("NotNull annotated argument 1%s of %s.%s must not be null", VersionCompiler.maybeName(compilers.get(javaVersion), "notNull"), localClass.getAsmName(), METHOD_NAME), exception.getMessage());
 	}
+
 }
