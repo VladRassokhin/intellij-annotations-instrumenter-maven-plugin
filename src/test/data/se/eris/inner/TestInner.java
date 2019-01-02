@@ -9,8 +9,16 @@ public class TestInner {
         new NestedClass(string, nested);
     }
 
+    public InnerClass getInner() {
+        return new InnerClass(null, 17);
+    }
+
     public class InnerClass {
         public InnerClass(@Nullable String nullable, @NotNull Integer notNull) {
+        }
+
+        public String innerMethod(@Nullable String innerNullable, @NotNull Integer innetNotNull) {
+            return innerNullable;
         }
     }
 

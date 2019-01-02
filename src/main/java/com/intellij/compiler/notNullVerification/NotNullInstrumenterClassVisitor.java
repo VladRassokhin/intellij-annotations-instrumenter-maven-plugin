@@ -84,7 +84,7 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
 
     @NotNull
     public MethodVisitor visitMethod(final int access, @NotNull final String name, final String desc, final String signature, final String[] exceptions) {
-        final Type[] argumentTypes = Type.getArgumentTypes(desc);
+        final Type[] argumentTypes = Type.getArgumentTypes(desc); // todo functions?
         final Type returnType = Type.getReturnType(desc);
         final MethodVisitor methodVisitor = cv.visitMethod(access, name, desc, signature, exceptions);
         final ThrowOnNullMethodVisitor visitor;

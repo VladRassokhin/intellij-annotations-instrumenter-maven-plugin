@@ -35,31 +35,37 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     private static final String ISE_CLASS_NAME = "java/lang/IllegalStateException";
     private static final String CONSTRUCTOR_NAME = "<init>";
 
-    private ArrayList<String> parameterNames = null;
     final Type[] argumentTypes;
+    private final int methodAccess;
     private final Type returnType;
+    final String methodName;
+    private final ClassInfo classInfo;
     boolean isReturnNotNull;
     @Nullable
     private final Boolean isAnonymousClass;
-    private boolean instrumented = false;
-    private int syntheticCount;
-    private final int methodAccess;
-    final String methodName;
-    protected final ClassInfo classInfo;
-    final List<Integer> notNullParams;
-    Label startGeneratedCodeLabel;
 
-    ThrowOnNullMethodVisitor(final int api, @Nullable final MethodVisitor mv, @NotNull final Type[] argumentTypes, final Type returnType, final int methodAccess, final String methodName, final ClassInfo classInfo, final boolean isReturnNotNull, @Nullable final Boolean isAnonymousClass) {
+    int syntheticCount;
+    final List<Integer> notNullParams;
+    private boolean instrumented;
+    Label startGeneratedCodeLabel;
+    private List<String> parameterNames = null;
+
+    ThrowOnNullMethodVisitor(final int api, @Nullable final MethodVisitor mv, final Type[] argumentTypes, final Type returnType, final int methodAccess, final String methodName, final ClassInfo classInfo, final boolean isReturnNotNull, @Nullable final Boolean isAnonymousClass) {
         super(api, mv);
         this.argumentTypes = argumentTypes;
-        this.returnType = returnType;
         this.methodAccess = methodAccess;
+        this.returnType = returnType;
         this.methodName = methodName;
         this.classInfo = classInfo;
         this.isReturnNotNull = isReturnNotNull;
         this.isAnonymousClass = isAnonymousClass;
-        syntheticCount = isAnonymousClass != null ? 1 : 0;
+
+        if (isConstructor()) {
+            syntheticCount += isAnonymousClass != null ? 1 : 0;
+            syntheticCount += classInfo.isEnum() ? 2 : 0;
+        }
         notNullParams = new ArrayList<>();
+        instrumented = false;
     }
 
     private void setInstrumented() {
@@ -75,7 +81,9 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
             parameterNames = new ArrayList<>(argumentTypes.length);
         }
         parameterNames.add(name);
-        if (mv != null) mv.visitParameter(name, access);
+        if (mv != null) {
+            mv.visitParameter(name, access);
+        }
     }
 
     /**
@@ -170,7 +178,12 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     }
 
     boolean isParameterReferenceType(final int parameter) {
-        return AsmUtils.isReferenceType(argumentTypes[parameter]);
+        return AsmUtils.isReferenceType(getArgumentType(parameter));
+    }
+
+    private Type getArgumentType(final int parameter) {
+        final int argumentNumber = parameter + syntheticCount;
+        return argumentTypes[argumentNumber];
     }
 
     @NotNull

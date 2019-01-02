@@ -22,7 +22,7 @@ import se.eris.notnull.ExcludeConfiguration;
 import se.eris.util.ReflectionUtil;
 import se.eris.util.TestClass;
 import se.eris.util.TestCompiler;
-import se.eris.util.TestJava8;
+import se.eris.util.TestSupportedJavaVersions;
 import se.eris.util.version.VersionCompiler;
 
 import java.io.File;
@@ -48,12 +48,12 @@ class EnumImplicitTest {
         compilers.putAll(VersionCompiler.compile(DESTINATION_BASEDIR, configuration, testClass.getJavaFile(SRC_DIR)));
     }
 
-    @TestJava8
+    @TestSupportedJavaVersions
     void enumParametersShouldValidate(final String javaVersion) throws Exception {
         final Class<?> c = compilers.get(javaVersion).getCompiledClass(testClass);
         final Method valueOf = c.getMethod("valueOf", String.class);
 
-        final Object aFalse = ReflectionUtil.simulateMethodCall(valueOf, "FALSE");
+        ReflectionUtil.simulateMethodCall(valueOf, "FALSE"); // will initialize class (calling constructors)
     }
 
 }

@@ -37,12 +37,10 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     }
 
     private void addImplicitNotNulls() {
-        int counter = 0;
-        for (final Type argumentType : argumentTypes) {
-            if (AsmUtils.isReferenceType(argumentType)) {
-                notNullParams.add(counter);
+        for (int i = syntheticCount; i < argumentTypes.length; i++) {
+            if (AsmUtils.isReferenceType(argumentTypes[i])) {
+                notNullParams.add(i - syntheticCount);
             }
-            counter++;
         }
     }
 
