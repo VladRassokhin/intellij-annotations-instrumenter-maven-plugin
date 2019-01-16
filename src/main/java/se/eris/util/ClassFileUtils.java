@@ -29,6 +29,8 @@ import java.util.Set;
 
 public class ClassFileUtils {
 
+    public static final String CLASS_FILE_EXTENSION = ".class";
+
     @NotNull
     public static Set<File> getClassFiles(@NotNull final Path rootDir) {
         try {
@@ -39,18 +41,21 @@ public class ClassFileUtils {
             throw new RuntimeException("Could not collect class files in directory '" + rootDir + "'", e);
         }
     }
-
     private static class ClassFileCollector extends SimpleFileVisitor<Path> {
-        private static final String CLASS_FILE_EXTENSION = ".class";
 
         private final Set<File> classFiles = new HashSet<>();
 
         @Override
         public FileVisitResult visitFile(@NotNull final Path path, @NotNull final BasicFileAttributes attrs) {
-            if (attrs.isRegularFile() && path.toFile().getName().endsWith(CLASS_FILE_EXTENSION)) {
-                classFiles.add(path.toFile());
+            final File file = path.toFile();
+            if (isClassFile(attrs, file)) {
+                classFiles.add(file);
             }
             return FileVisitResult.CONTINUE;
+        }
+
+        private boolean isClassFile(@NotNull final BasicFileAttributes attrs, final File file) {
+            return attrs.isRegularFile() && file.getName().endsWith(CLASS_FILE_EXTENSION);
         }
 
         @Override

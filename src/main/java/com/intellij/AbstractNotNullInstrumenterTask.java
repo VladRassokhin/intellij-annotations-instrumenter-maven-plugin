@@ -74,7 +74,7 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
         final Configuration configuration = getConfiguration();
         logAnnotations(configuration);
         final List<URL> classpathUrls = getClasspathUrls(classpathElements);
-        final int instrumented = instrumenter.addNotNullAnnotations(classesDirectory, configuration, classpathUrls);
+        final int instrumented = instrumenter.instrument(classesDirectory, configuration, classpathUrls);
         logger.info("Instrumented " + instrumented + " files with NotNull assertions");
     }
 

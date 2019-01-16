@@ -43,7 +43,7 @@ public class VersionCompiler {
             compilers.put(version, compiler);
 
             final NotNullInstrumenter instrumenter = new NotNullInstrumenter(new NopLogWrapper());
-            final int numberOfInstrumentedFiles = instrumenter.addNotNullAnnotations(destination, configuration, Collections.emptyList());
+            final int numberOfInstrumentedFiles = instrumenter.instrument(destination, configuration, Collections.emptyList());
 
             assertTrue(numberOfInstrumentedFiles > 0);
         }
