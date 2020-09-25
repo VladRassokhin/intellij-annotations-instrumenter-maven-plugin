@@ -1,12 +1,12 @@
-package se.eris.notnull;
+package se.eris.functional.nested;
 
-class InnerClass {
-    public String name;
-    public String outerName;
-    public String innerName;
-    int access;
+class AsmInnerClass {
+    String name;
+    private final String outerName;
+    private final String innerName;
+    private final int access;
 
-    public InnerClass(final String name, final String outerName, final String innerName, final int access) {
+    AsmInnerClass(final String name, final String outerName, final String innerName, final int access) {
         this.name = name;
         this.outerName = outerName;
         this.innerName = innerName;
@@ -28,7 +28,7 @@ class InnerClass {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        final InnerClass that = (InnerClass) o;
+        final AsmInnerClass that = (AsmInnerClass) o;
 
         if (access != that.access) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;

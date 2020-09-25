@@ -15,16 +15,17 @@
  */
 package se.eris.notnull;
 
-import org.junit.Test;
-import se.eris.notnull.instrumentation.ClassMatcher;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ConfigurationTest {
+class ConfigurationTest {
 
     private static final String ORG_JETBRAINS_ANNOTATIONS_NOT_NULL = org.jetbrains.annotations.NotNull.class.getName();
     private static final String ORG_JETBRAINS_ANNOTATIONS_NULLABLE = org.jetbrains.annotations.Nullable.class.getName();
@@ -32,28 +33,39 @@ public class ConfigurationTest {
     private static final String SE_ERIS_NOT_NULL = se.eris.notnull.NotNull.class.getName();
     private static final String SE_ERIS_NULLABLE = se.eris.notnull.Nullable.class.getName();
 
+    private static final Set<String> EXPECTED_NOTNULL = new HashSet<String>() {{
+        add(ORG_JETBRAINS_ANNOTATIONS_NOT_NULL);
+        add(SE_ERIS_NOT_NULL);
+    }};
+
+    private static final Set<String> EXPECTED_NULLABLE = new HashSet<String>() {{
+        add(ORG_JETBRAINS_ANNOTATIONS_NULLABLE);
+        add(SE_ERIS_NULLABLE);
+    }};
+
+
     @Test
-    public void getAnnotations_defaultNotNull() {
+    void getAnnotations_defaultNotNull() {
         final Configuration configuration = getDefaultNotNullConfiguration(false);
-        assertThat(configuration.getNotNullAnnotations(), containsInAnyOrder(ORG_JETBRAINS_ANNOTATIONS_NOT_NULL, SE_ERIS_NOT_NULL));
-        assertThat(configuration.isImplicit(), is(false));
+        assertEquals(EXPECTED_NOTNULL, configuration.getNotNullAnnotations());
+        assertFalse(configuration.isImplicit());
     }
 
     @Test
-    public void getAnnotations_defaultNullable() {
+    void getAnnotations_defaultNullable() {
         final Configuration configuration = getDefaultNotNullConfiguration(true);
-        assertThat(configuration.getNullableAnnotations(), containsInAnyOrder(ORG_JETBRAINS_ANNOTATIONS_NULLABLE, SE_ERIS_NULLABLE));
-        assertThat(configuration.isImplicit(), is(true));
+        assertEquals(EXPECTED_NULLABLE, configuration.getNullableAnnotations());
+        assertTrue(configuration.isImplicit());
     }
 
     @Test
-    public void excludes() {
+    void excludes() {
         final Configuration configuration = getDefaultNotNullConfiguration(true);
         configuration.isImplicitInstrumentation("NoName.java");
     }
 
     private Configuration getDefaultNotNullConfiguration(final boolean implicit) {
-        return new Configuration(implicit, new AnnotationConfiguration(Collections.<String>emptySet(), Collections.<String>emptySet()), new ExcludeConfiguration(Collections.<ClassMatcher>emptySet()));
+        return new Configuration(implicit, new AnnotationConfiguration(Collections.emptySet(), Collections.emptySet()), new ExcludeConfiguration(Collections.emptySet()));
     }
 
 }

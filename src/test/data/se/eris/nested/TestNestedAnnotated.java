@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.eris.test;
+package se.eris.nested;
 
-import java.util.Arrays;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class TestNotNull {
+public class TestNestedAnnotated {
 
     public static void notNullParameter(@NotNull final String s) {
     }
@@ -39,16 +38,15 @@ public class TestNotNull {
         return s;
     }
 
-    @java.lang.Deprecated
     public static String annotatedReturn(@Nullable final String s) {
         return s;
     }
 
-    public static String createInner() {
-        return new Inner().s;
+    public static String createNested() {
+        return new Nested().s;
     }
 
-    private static final class Inner {
+    private static final class Nested {
         private String s = "synthetic";
     }
 
@@ -64,7 +62,7 @@ public class TestNotNull {
         public void overload(@NotNull Subarg s) {}
     }
     
-    public static class InnerClassesSegmentIsPreserved {
+    public static class NestedClassesSegmentIsPreserved {
         public static class ASub {}
     }
 }

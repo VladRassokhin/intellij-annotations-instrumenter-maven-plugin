@@ -22,6 +22,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import se.eris.asm.AsmUtils;
+import se.eris.asm.ClassInfo;
 
 import java.util.Set;
 
@@ -42,10 +43,8 @@ class AnnotationThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     @Override
     public AnnotationVisitor visitParameterAnnotation(final int parameter, final String annotation, final boolean visible) {
         final AnnotationVisitor av = mv.visitParameterAnnotation(parameter, annotation, visible);
-        if (isParameterReferenceType(parameter)) {
-            if (isNotNullAnnotation(annotation)) {
-                notNullParams.add(parameter);
-            }
+        if (isParameterReferenceType(parameter) && isNotNullAnnotation(annotation)) {
+            notNullParams.add(parameter);
         } else if (annotation.equals(LJAVA_LANG_SYNTHETIC_ANNO)) {
             // See asm r1278 for what we do this,
             // http://forge.objectweb.org/tracker/index.php?func=detail&aid=307392&group_id=23&atid=100023
@@ -80,10 +79,12 @@ class AnnotationThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
      * <p>
      * {@inheritDoc}
      */
+    @Override
     public void visitLocalVariable(final String name, final String description, final String signature, final Label start, final Label end, final int index) {
         mv.visitLocalVariable(name, description, signature, (isParameter(index) && startGeneratedCodeLabel != null) ? startGeneratedCodeLabel : start, end, index);
     }
 
+    @Override
     public void visitMaxs(final int maxStack, final int maxLocals) {
         try {
             super.visitMaxs(maxStack, maxLocals);

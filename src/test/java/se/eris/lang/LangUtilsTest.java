@@ -15,16 +15,16 @@
  */
 package se.eris.lang;
 
-import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import org.junit.jupiter.api.Test;
 
-public class LangUtilsTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class LangUtilsTest {
 
     @Test
-    public void convertToJavaClassName() {
-        assertThat(LangUtils.convertToJavaClassName("org.jetbrains.annotations.NotNull"), is("Lorg/jetbrains/annotations/NotNull;"));
+    void convertToJavaClassName() {
+        assertEquals("Lorg/jetbrains/annotations/NotNull;", LangUtils.convertToJavaClassName("org.jetbrains.annotations.NotNull"));
     }
 
 }

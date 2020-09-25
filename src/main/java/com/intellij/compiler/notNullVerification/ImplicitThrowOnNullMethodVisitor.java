@@ -22,6 +22,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import se.eris.asm.AsmUtils;
+import se.eris.asm.ClassInfo;
 
 import java.util.Set;
 
@@ -29,19 +30,17 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
 
     private final Set<String> nullableAnnotations;
 
-    ImplicitThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final String className, @NotNull final Set<String> nullableAnnotations, final boolean isAnonymousClass) {
-        super(AsmUtils.ASM_OPCODES_VERSION, methodVisitor, argumentTypes, returnType, access, methodName, className, true, isAnonymousClass);
+    ImplicitThrowOnNullMethodVisitor(@Nullable final MethodVisitor methodVisitor, @NotNull final Type[] argumentTypes, @NotNull final Type returnType, final int access, @NotNull final String methodName, @NotNull final ClassInfo classInfo, @NotNull final Set<String> nullableAnnotations, @Nullable final Boolean isAnonymousClass) {
+        super(AsmUtils.ASM_OPCODES_VERSION, methodVisitor, argumentTypes, returnType, access, methodName, classInfo, true, isAnonymousClass);
         this.nullableAnnotations = nullableAnnotations;
         addImplicitNotNulls();
     }
 
     private void addImplicitNotNulls() {
-        int counter = 0;
-        for (final Type argumentType : argumentTypes) {
-            if (AsmUtils.isReferenceType(argumentType)) {
-                notNullParams.add(counter);
+        for (int i = syntheticCount; i < argumentTypes.length; i++) {
+            if (AsmUtils.isReferenceType(argumentTypes[i])) {
+                notNullParams.add(i - syntheticCount);
             }
-            counter++;
         }
     }
 
@@ -53,10 +52,8 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
     @Override
     public AnnotationVisitor visitParameterAnnotation(final int parameter, final String annotation, final boolean visible) {
         final AnnotationVisitor av = mv.visitParameterAnnotation(parameter, annotation, visible);
-        if (isParameterReferenceType(parameter)) {
-            if (isNullableAnnotation(annotation)) {
-                setNullable(parameter);
-            }
+        if (isParameterReferenceType(parameter) && isNullableAnnotation(annotation)) {
+            setNullable(parameter);
         } else if (annotation.equals(LJAVA_LANG_SYNTHETIC_ANNO)) {
             // See asm r1278 for what we do this,
             // http://forge.objectweb.org/tracker/index.php?func=detail&aid=307392&group_id=23&atid=100023
@@ -66,8 +63,8 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
         return av;
     }
 
-    private boolean setNullable(final int parameter) {
-        return notNullParams.remove((Integer) parameter);
+    private void setNullable(final int parameter) {
+        notNullParams.remove((Integer) parameter);
     }
 
     /**
@@ -106,7 +103,6 @@ class ImplicitThrowOnNullMethodVisitor extends ThrowOnNullMethodVisitor {
         try {
             super.visitMaxs(maxStack, maxLocals);
         } catch (final ArrayIndexOutOfBoundsException e) {
-            //noinspection ThrowInsideCatchBlockWhichIgnoresCaughtException
             throw new ArrayIndexOutOfBoundsException("visitMaxs processing failed for method " + methodName + ": " + e.getMessage());
         }
     }

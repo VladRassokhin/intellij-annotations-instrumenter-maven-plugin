@@ -14,19 +14,22 @@ public class TestClass {
         this.fullClassName = fullClassName;
     }
 
-    public String getSimpleName() {
-        return fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
-    }
-
     public String getName() {
         return fullClassName;
     }
 
+    public String getSimpleName() {
+        return fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
+    }
+
+    /**
+     * @return full class name with slashes ('/') instead of dots ('.').
+     */
     public String getAsmName() {
         return fullClassName.replace(".", "/");
     }
 
-    public File getFile(final File path) {
+    public File getJavaFile(final File path) {
         return new File(path, fullClassName.replace(".", "/") + ".java");
     }
 
@@ -38,7 +41,7 @@ public class TestClass {
         return new ClassReader(new FileInputStream(getClassFile(path)));
     }
 
-    public TestClass inner(final String innerName) {
-        return new TestClass(fullClassName + "$" + innerName);
+    public TestClass nested(final String nestedName) {
+        return new TestClass(fullClassName + "$" + nestedName);
     }
 }

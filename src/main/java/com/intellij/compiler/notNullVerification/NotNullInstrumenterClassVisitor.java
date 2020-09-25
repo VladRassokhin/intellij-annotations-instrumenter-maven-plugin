@@ -19,8 +19,10 @@ import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import se.eris.asm.AsmUtils;
+import se.eris.asm.ClassInfo;
 import se.eris.lang.LangUtils;
 import se.eris.notnull.Configuration;
 import se.eris.notnull.ImplicitNotNull;
@@ -41,11 +43,11 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
     private final Set<String> nullable;
     private final Collection<ThrowOnNullMethodVisitor> methodVisitors = new ArrayList<>();
 
-    private String className;
-    private boolean isAnonymous = false;
+    private Boolean isAnonymous;
     private boolean classAnnotatedImplicit = false;
     @NotNull
     private final Configuration configuration;
+    private ClassInfo classInfo;
 
     public NotNullInstrumenterClassVisitor(@NotNull final ClassVisitor classVisitor, @NotNull final Configuration configuration) {
         super(AsmUtils.ASM_OPCODES_VERSION, classVisitor);
@@ -65,27 +67,31 @@ public class NotNullInstrumenterClassVisitor extends ClassVisitor {
 
     public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
-        className = name;
+        classInfo = new ClassInfo(version, access, name, signature, superName, interfaces);
     }
 
     @Override
     public void visitInnerClass(final String name, final String outer, final String innerName, final int access) {
         super.visitInnerClass(name, outer, innerName, access);
-        if (name.equals(className)) {
+        if (name.equals(classInfo.getName()) && !isStatic(access)) {
             isAnonymous = innerName == null;
         }
     }
 
+    private boolean isStatic(final int access) {
+        return (access & Opcodes.ACC_STATIC) != 0;
+    }
+
     @NotNull
     public MethodVisitor visitMethod(final int access, @NotNull final String name, final String desc, final String signature, final String[] exceptions) {
-        final Type[] argumentTypes = Type.getArgumentTypes(desc);
+        final Type[] argumentTypes = Type.getArgumentTypes(desc); // todo functions?
         final Type returnType = Type.getReturnType(desc);
         final MethodVisitor methodVisitor = cv.visitMethod(access, name, desc, signature, exceptions);
         final ThrowOnNullMethodVisitor visitor;
-        if (classAnnotatedImplicit || configuration.isImplicitInstrumentation(toClassName(className))) {
-            visitor = new ImplicitThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, nullable, isAnonymous);
+        if (classAnnotatedImplicit || configuration.isImplicitInstrumentation(toClassName(classInfo.getName()))) {
+            visitor = new ImplicitThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, classInfo, nullable, isAnonymous);
         } else {
-            visitor = new AnnotationThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, className, notnull, isAnonymous);
+            visitor = new AnnotationThrowOnNullMethodVisitor(methodVisitor, argumentTypes, returnType, access, name, classInfo, notnull, isAnonymous);
         }
         methodVisitors.add(visitor);
         return visitor;

@@ -8,35 +8,38 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TestCompiler {
 
-    public static TestCompiler create(final Path targetDir) throws MalformedURLException {
-        return new TestCompiler(targetDir);
-    }
-
     private final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-    private final boolean parametersOptionSupported = compiler.isSupportedOption("-parameters") != -1;
-    private final Iterable<String> options;
+    private final TestCompilerOptions options;
     private final URLClassLoader classLoader;
 
-    private TestCompiler(final Path targetDir) throws MalformedURLException {
-        createTargetDirectory(targetDir);
-        options = buildCompilerOptions(targetDir, parametersOptionSupported);
-        final URL[] classpath = {targetDir.toUri().toURL()};
-        classLoader = new URLClassLoader(classpath);
+    public static TestCompiler create(final TestCompilerOptions options) {
+        return new TestCompiler(options);
+    }
+
+    private TestCompiler(final TestCompilerOptions options) {
+        createDestinationDirectory(options);
+        this.options = options;
+        classLoader = new URLClassLoader(options.getClasspathURLs());
+    }
+
+    private void createDestinationDirectory(final TestCompilerOptions options) {
+        try {
+            Files.createDirectories(options.getDestination());
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public boolean compile(@NotNull final File... filesToCompile) {
         final Iterable<? extends JavaFileObject> javaFileObjects = getJavaFileObjects(compiler, filesToCompile);
-        final JavaCompiler.CompilationTask task = compiler.getTask(null, null, null, options, null, javaFileObjects);
+        final JavaCompiler.CompilationTask task = compiler.getTask(null, null, null, buildCompilerOptions(), null, javaFileObjects);
         return task.call();
     }
 
@@ -45,23 +48,16 @@ public class TestCompiler {
      * See http://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html#options
      */
     @NotNull
-    private static Iterable<String> buildCompilerOptions(final Path targetDir, final boolean parametersOptionSupported) {
-        final List<String> options = new ArrayList<>();
-        options.add("-d");
-        options.add(targetDir.toString());
-        if (parametersOptionSupported) {
-            options.add("-parameters");
+    private List<String> buildCompilerOptions() {
+        final List<String> compilerOptions = new ArrayList<>(options.getCompilerOptions());
+        if (compilerHasOptionSupport("-parameters") && options.targetHasParametersSupport()) {
+            compilerOptions.add("-parameters");
         }
-        return options;
+        return compilerOptions;
     }
 
-    @NotNull
-    private static Path createTargetDirectory(final Path targetDir) {
-        try {
-            return Files.createDirectories(targetDir);
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
+    private boolean compilerHasOptionSupport(final String option) {
+        return ToolProvider.getSystemJavaCompiler().isSupportedOption(option) != -1;
     }
 
     @NotNull
@@ -71,9 +67,9 @@ public class TestCompiler {
         return fileManager.getJavaFileObjects(filesToCompile);
     }
 
-    /** Whether the compiler supports `-parameters` option. */
-    public boolean parametersOptionSupported() {
-        return parametersOptionSupported;
+    @NotNull
+    public Class<?> getCompiledClass(@NotNull final TestClass testClass) throws ClassNotFoundException {
+        return getCompiledClass(testClass.getName());
     }
 
     @NotNull
@@ -86,4 +82,7 @@ public class TestCompiler {
         }
     }
 
+    public boolean hasParametersSupport() {
+        return options.targetHasParametersSupport();
+    }
 }

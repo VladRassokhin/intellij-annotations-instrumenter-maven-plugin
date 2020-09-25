@@ -15,7 +15,6 @@
  */
 package com.intellij.compiler.notNullVerification;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Label;
@@ -23,6 +22,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import se.eris.asm.AsmUtils;
+import se.eris.asm.ClassInfo;
 import se.eris.lang.LangUtils;
 
 import java.util.ArrayList;
@@ -35,44 +35,55 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     private static final String ISE_CLASS_NAME = "java/lang/IllegalStateException";
     private static final String CONSTRUCTOR_NAME = "<init>";
 
-    protected ArrayList<String> parameterNames = null;
     final Type[] argumentTypes;
+    private final int methodAccess;
     private final Type returnType;
-    boolean isReturnNotNull;
-    private final boolean isAnonymousClass;
-    private boolean instrumented = false;
-    private int syntheticCount;
-    final int access;
     final String methodName;
-    final String className;
-    final List<Integer> notNullParams;
-    Label startGeneratedCodeLabel;
+    private final ClassInfo classInfo;
+    boolean isReturnNotNull;
+    @Nullable
+    private final Boolean isAnonymousClass;
 
-    ThrowOnNullMethodVisitor(final int api, @Nullable final MethodVisitor mv, @NotNull final Type[] argumentTypes, final Type returnType, final int access, final String methodName, final String className, final boolean isReturnNotNull, final boolean isAnonymousClass) {
+    int syntheticCount;
+    final List<Integer> notNullParams;
+    private boolean instrumented;
+    Label startGeneratedCodeLabel;
+    private List<String> parameterNames = null;
+
+    ThrowOnNullMethodVisitor(final int api, @Nullable final MethodVisitor mv, final Type[] argumentTypes, final Type returnType, final int methodAccess, final String methodName, final ClassInfo classInfo, final boolean isReturnNotNull, @Nullable final Boolean isAnonymousClass) {
         super(api, mv);
         this.argumentTypes = argumentTypes;
+        this.methodAccess = methodAccess;
         this.returnType = returnType;
-        this.access = access;
         this.methodName = methodName;
-        this.className = className;
+        this.classInfo = classInfo;
         this.isReturnNotNull = isReturnNotNull;
         this.isAnonymousClass = isAnonymousClass;
-        syntheticCount = 0;
+
+        if (isConstructor()) {
+            syntheticCount += isAnonymousClass != null ? 1 : 0;
+            syntheticCount += classInfo.isEnum() ? 2 : 0;
+        }
         notNullParams = new ArrayList<>();
+        instrumented = false;
     }
 
     private void setInstrumented() {
         instrumented = true;
     }
 
-    /** This will be invoked only when visiting bytecode produced by java 8+ compiler with '-parameters' option. */
+    /**
+     * This will be invoked only when visiting bytecode produced by java 8+ compiler with '-parameters' option.
+     */
     @Override
     public void visitParameter(final String name, final int access) {
         if (parameterNames == null) {
             parameterNames = new ArrayList<>(argumentTypes.length);
         }
         parameterNames.add(name);
-        if (mv != null) mv.visitParameter(name, access);
+        if (mv != null) {
+            mv.visitParameter(name, access);
+        }
     }
 
     /**
@@ -86,7 +97,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
                 mv.visitInsn(Opcodes.DUP);
                 final Label skipLabel = new Label();
                 mv.visitJumpInsn(Opcodes.IFNONNULL, skipLabel);
-                generateThrow(ISE_CLASS_NAME, "NotNull method " + className + "." + methodName + " must not return null", skipLabel);
+                generateThrow(ISE_CLASS_NAME, "NotNull method " + classInfo.getName() + "." + methodName + " must not return null", skipLabel);
             }
         }
         mv.visitInsn(opcode);
@@ -97,7 +108,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     }
 
     private boolean isStatic() {
-        return (access & Opcodes.ACC_STATIC) != 0;
+        return (methodAccess & Opcodes.ACC_STATIC) != 0;
     }
 
     boolean isParameter(final int index) {
@@ -115,8 +126,8 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
                 mv.visitLabel(startGeneratedCodeLabel);
             }
             for (final Integer notNullParam : notNullParams) {
-                int var = ((access & Opcodes.ACC_STATIC) == 0) ? 1 : 0;
-                for (int i = 0; i < notNullParam; ++i) {
+                int var = ((methodAccess & Opcodes.ACC_STATIC) == 0) ? 1 : 0;
+                for (int i = 0; i < notNullParam + syntheticCount; ++i) {
                     var += argumentTypes[i].getSize();
                 }
                 mv.visitVarInsn(Opcodes.ALOAD, var);
@@ -130,7 +141,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
         mv.visitCode();
     }
 
-    protected boolean shouldInclude() {
+    private boolean shouldInclude() {
         return !shouldSkip();
     }
 
@@ -139,16 +150,15 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     }
 
     private boolean isAnonymousClassConstructor() {
-        return isAnonymousClass && isConstructor();
+        return isAnonymousClass != null && isAnonymousClass && isConstructor();
     }
 
     private boolean isConstructor() {
         return "<init>".equals(this.methodName);
     }
 
-    @Contract(pure = true)
     private boolean isSynthetic() {
-        return (this.access & Opcodes.ACC_SYNTHETIC) == Opcodes.ACC_SYNTHETIC;
+        return (this.methodAccess & Opcodes.ACC_SYNTHETIC) != 0;
     }
 
     private void generateThrow(@NotNull final String exceptionClass, @NotNull final String description, @NotNull final Label end) {
@@ -168,30 +178,28 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     }
 
     boolean isParameterReferenceType(final int parameter) {
-        return AsmUtils.isReferenceType(argumentTypes[parameter]);
+        return AsmUtils.isReferenceType(getArgumentType(parameter));
+    }
+
+    private Type getArgumentType(final int parameter) {
+        final int argumentNumber = parameter + syntheticCount;
+        return argumentTypes[argumentNumber];
     }
 
     @NotNull
     private String getThrowMessage(final int parameterNumber) {
-        final int pnum = getSourceCodeParameterNumber(parameterNumber);
-        final String pname = parameterNames == null || parameterNames.size() <= pnum
-            ? "" : String.format(" (parameter '%s')", parameterNames.get(pnum));
-        return String.format(
-            "%s argument %d%s of %s.%s must not be null",
-                notNullCause(), pnum, pname, className, methodName
-        );
+        final String pname = parameterNames == null || parameterNames.size() <= (parameterNumber + syntheticCount) ? "" : String.format(" (parameter '%s')", parameterNames.get(parameterNumber + syntheticCount));
+        return String.format("%s argument %d%s of %s.%s must not be null", notNullCause(), parameterNumber, pname, classInfo.getName(), methodName);
     }
 
-    /** Returns the reason for the parameter to be instrumented as non-null one. */
+    /**
+     * Returns the reason for the parameter to be instrumented as non-null one.
+     */
     @NotNull
     protected abstract String notNullCause();
 
-    int increaseSyntheticCount() {
-        return syntheticCount++;
-    }
-
-    private int getSourceCodeParameterNumber(final int parameterNumber) {
-        return parameterNumber - syntheticCount;
+    void increaseSyntheticCount() {
+        syntheticCount++;
     }
 
 }
