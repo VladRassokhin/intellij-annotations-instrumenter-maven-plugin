@@ -194,6 +194,8 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
 
     /**
      * Returns the reason for the parameter to be instrumented as non-null one.
+     * 
+     * @return the reason that the parameter was instrumented as non-null.
      */
     @NotNull
     protected abstract String notNullCause();
