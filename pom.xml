@@ -6,7 +6,7 @@
 
     <groupId>se.eris</groupId>
     <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0-fix-some-intellij-inspection-issues-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 
     <description>NotNull annotations instrumenter maven plugin</description>
