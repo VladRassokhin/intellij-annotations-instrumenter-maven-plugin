@@ -96,7 +96,7 @@ public class ClassInfo {
         if (access != classInfo.access) return false;
         if (!name.equals(classInfo.name)) return false;
         if (!Objects.equals(signature, classInfo.signature)) return false;
-        if (superName != null ? !superName.equals(classInfo.superName) : classInfo.superName != null) return false;
+        if (!Objects.equals(superName, classInfo.superName)) return false;
         // Probably incorrect - comparing Object[] arrays with Arrays.equals
         return Arrays.equals(interfaces, classInfo.interfaces);
 
