@@ -14,34 +14,35 @@ significant changes have been made:
 ## Usage
 
 Just update your pom.xml with following: 
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.jetbrains</groupId>
+        <artifactId>annotations</artifactId>
+        <version>15.0</version>
+    </dependency>
+    ...
+</dependencies>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>15.0</version>
-        </dependency>
+<build>
+    <plugins>
+        <plugin>
+            <groupId>se.eris</groupId>
+            <artifactId>notnull-instrumenter-maven-plugin</artifactId>
+            <version>0.6.8</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>instrument</goal>
+                        <goal>tests-instrument</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
         ...
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>se.eris</groupId>
-                <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.6.8</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>instrument</goal>
-                            <goal>tests-instrument</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            ...
-        </plugins>
-    </build>
+    </plugins>
+</build>
+```
 
 And start adding @NotNull/@Nullable annotations to your code.
 
@@ -50,31 +51,32 @@ And start adding @NotNull/@Nullable annotations to your code.
 
 By default only the annotation org.jetbrains.annotations.NotNull is supported if you
 want to one or more other annotations add them to configuration, for example:
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>se.eris</groupId>
-                <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.6.8</version>
-                <executions>
-                    <execution>
-                        <id>instrument</id>
-                        <goals>
-                            <goal>instrument</goal>
-                            <goal>tests-instrument</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <notNull>
-                        <param>org.jetbrains.annotations.NotNull</param>
-                        <param>javax.validation.constraints.NotNull</param>
-                    </notNull>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>se.eris</groupId>
+            <artifactId>notnull-instrumenter-maven-plugin</artifactId>
+            <version>0.6.8</version>
+            <executions>
+                <execution>
+                    <id>instrument</id>
+                    <goals>
+                        <goal>instrument</goal>
+                        <goal>tests-instrument</goal>
+                    </goals>
+                </execution>
+            </executions>
+            <configuration>
+                <notNull>
+                    <param>org.jetbrains.annotations.NotNull</param>
+                    <param>javax.validation.constraints.NotNull</param>
+                </notNull>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+```
 
 Will instrument both jetbrains and javax annotations.
 
@@ -85,52 +87,55 @@ no longer be included by default thus it must be added again if used (as in the 
 ## Implicit NotNull instrumentation
 
 If you don't like to have @NotNull on 99.99% of your parameters and methods turn on the implicit instrumentation:
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>se.eris</groupId>
-                <artifactId>notnull-instrumenter-maven-plugin</artifactId>
-                <version>0.6.8</version>
-                <executions>
-                    <execution>
-                        <id>instrument</id>
-                        <goals>
-                            <goal>instrument</goal>
-                            <goal>tests-instrument</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <implicit>true</implicit>
-                    <nullable>
-                        <param>org.jetbrains.annotations.Nullable</param>
-                    </nullable>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>se.eris</groupId>
+            <artifactId>notnull-instrumenter-maven-plugin</artifactId>
+            <version>0.6.8</version>
+            <executions>
+                <execution>
+                    <id>instrument</id>
+                    <goals>
+                        <goal>instrument</goal>
+                        <goal>tests-instrument</goal>
+                    </goals>
+                </execution>
+            </executions>
+            <configuration>
+                <implicit>true</implicit>
+                <nullable>
+                    <param>org.jetbrains.annotations.Nullable</param>
+                </nullable>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+```
 
 Will instrument all parameters and return values with NotNull unless annotated with @Nullable (org.jetbrains.annotations.Nullable). Ie:
-
-    public String implicit(String a, String b) {
-        if (a.equals(b)) {
-            return null;
-        }
-        return a + b;
+```java
+public String implicit(String a, String b) {
+    if (a.equals(b)) {
+        return null;
     }
+    return a + b;
+}
+```
 
 will throw an IllegalArgumentException if either the a or b parameter is null, and will throw an 
 IllegalStateException if a equals b (since it is not allowed to return null). To allow nulls you would 
 have to annotate the parameters/return value like this:
-
-    @Nullable
-    public String implicit(@Nullable String a, @Nullable String b) {
-        if (a.equals(b)) {
-            return null;
-        }
-        return a + b;
+```java
+@Nullable
+public String implicit(@Nullable String a, @Nullable String b) {
+    if (a.equals(b)) {
+        return null;
     }
+    return a + b;
+}
+```
 
 which would throw a NullPointerException if a is null, return null if a equals b, and otherwise append the 
 Strings (or a + null if b is null).
@@ -159,14 +164,15 @@ There are three patterns
 * __.\*\*__  matching any number of package levels
 
 Example:
-
-    <configuration>
-        <implicit>true</implicit>
-        <excludes>
-            <classes>**.wsdl.**</classes>
-            <classes>com.*.*Spec</classes>
-        </excludes>
-    </configuration>
+```xml
+<configuration>
+    <implicit>true</implicit>
+    <excludes>
+        <classes>**.wsdl.**</classes>
+        <classes>com.*.*Spec</classes>
+    </excludes>
+</configuration>
+```
 
 Would exclude all files which have wsdl in any package part and classes with names ending 
 in Spec under com.&lt;package&gt; for example com.a.UnitSpec but not com.a.b.UnitSpec or 
