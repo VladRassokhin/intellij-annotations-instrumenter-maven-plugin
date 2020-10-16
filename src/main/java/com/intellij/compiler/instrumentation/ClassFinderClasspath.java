@@ -246,7 +246,7 @@ class ClassFinderClasspath {
         }
     }
 
-    private class JarLoader extends Loader {
+    private static class JarLoader extends Loader {
         private final URL myURL;
         private ZipFile myZipFile;
 
