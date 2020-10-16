@@ -1,7 +1,7 @@
 package se.eris.functional.nested;
 
 class AsmInnerClass {
-    String name;
+    final String name;
     private final String outerName;
     private final String innerName;
     private final int access;
