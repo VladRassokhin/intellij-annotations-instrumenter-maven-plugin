@@ -45,7 +45,7 @@ public class ReflectionUtil {
         }
     }
 
-    public static Object simulateConstructorCall(@NotNull final Constructor constructor, @NotNull final Object... params) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+    public static Object simulateConstructorCall(@NotNull final Constructor<?> constructor, @NotNull final Object... params) throws IllegalAccessException, InvocationTargetException, InstantiationException {
         try {
             return constructor.newInstance(params);
         } catch (final InstantiationException | InvocationTargetException e) {
