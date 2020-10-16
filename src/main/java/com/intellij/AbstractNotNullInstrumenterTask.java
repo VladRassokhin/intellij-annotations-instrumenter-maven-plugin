@@ -115,7 +115,7 @@ abstract class AbstractNotNullInstrumenterTask extends AbstractMojo {
     }
 
     private Set<String> nullToEmpty(final Set<String> set) {
-        return (set != null) ? set : Collections.<String>emptySet();
+        return (set != null) ? set : Collections.emptySet();
     }
 
     private void logAnnotations(@NotNull final Configuration configuration) {
