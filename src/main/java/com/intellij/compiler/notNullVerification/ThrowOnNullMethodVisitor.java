@@ -91,14 +91,13 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
      * <p>
      * {@inheritDoc}
      */
+    @Override
     public void visitInsn(final int opcode) {
-        if (shouldInclude() && opcode == Opcodes.ARETURN) {
-            if (isReturnNotNull) {
-                mv.visitInsn(Opcodes.DUP);
-                final Label skipLabel = new Label();
-                mv.visitJumpInsn(Opcodes.IFNONNULL, skipLabel);
-                generateThrow(ISE_CLASS_NAME, "NotNull method " + classInfo.getName() + "." + methodName + " must not return null", skipLabel);
-            }
+        if (shouldInclude() && opcode == Opcodes.ARETURN && isReturnNotNull && !isReturnVoidReferenceType()) {
+            mv.visitInsn(Opcodes.DUP);
+            final Label skipLabel = new Label();
+            mv.visitJumpInsn(Opcodes.IFNONNULL, skipLabel);
+            generateThrow(ISE_CLASS_NAME, "NotNull method " + classInfo.getName() + "." + methodName + " must not return null", skipLabel);
         }
         mv.visitInsn(opcode);
     }
@@ -175,6 +174,10 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
 
     boolean isReturnReferenceType() {
         return AsmUtils.isReferenceType(this.returnType);
+    }
+
+    boolean isReturnVoidReferenceType() {
+        return returnType.getClassName().equals(Void.class.getName());
     }
 
     boolean isParameterReferenceType(final int parameter) {
