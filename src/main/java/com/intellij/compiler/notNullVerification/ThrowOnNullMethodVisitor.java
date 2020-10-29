@@ -50,8 +50,8 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     Label startGeneratedCodeLabel;
     private List<String> parameterNames = null;
 
-    ThrowOnNullMethodVisitor(final int api, @Nullable final MethodVisitor mv, final Type[] argumentTypes, final Type returnType, final int methodAccess, final String methodName, final ClassInfo classInfo, final boolean isReturnNotNull, @Nullable final Boolean isAnonymousClass) {
-        super(api, mv);
+    ThrowOnNullMethodVisitor(@Nullable final MethodVisitor mv, final Type[] argumentTypes, final Type returnType, final int methodAccess, final String methodName, final ClassInfo classInfo, final boolean isReturnNotNull, @Nullable final Boolean isAnonymousClass) {
+        super(AsmUtils.ASM_OPCODES_VERSION, mv);
         this.argumentTypes = argumentTypes;
         this.methodAccess = methodAccess;
         this.returnType = returnType;
@@ -138,6 +138,15 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
             }
         }
         mv.visitCode();
+    }
+
+    @Override
+    public void visitMaxs(final int maxStack, final int maxLocals) {
+        try {
+            super.visitMaxs(maxStack, maxLocals);
+        } catch (final ArrayIndexOutOfBoundsException e) {
+            throw new ArrayIndexOutOfBoundsException("visitMaxs processing failed for method " + methodName + ": " + e.getMessage());
+        }
     }
 
     private boolean shouldInclude() {
