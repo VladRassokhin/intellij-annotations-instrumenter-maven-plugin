@@ -153,7 +153,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     }
 
     private boolean isConstructor() {
-        return "<init>".equals(this.methodName);
+        return CONSTRUCTOR_NAME.equals(this.methodName);
     }
 
     private boolean isSynthetic() {
