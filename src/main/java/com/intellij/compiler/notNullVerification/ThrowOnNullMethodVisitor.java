@@ -145,7 +145,7 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
     }
 
     private boolean shouldSkip() {
-        return isSynthetic() || isAnonymousClassConstructor();
+        return isSynthetic() || isAnonymousClassConstructor() || isEqualsMethod();
     }
 
     private boolean isAnonymousClassConstructor() {
@@ -158,6 +158,13 @@ public abstract class ThrowOnNullMethodVisitor extends MethodVisitor {
 
     private boolean isSynthetic() {
         return (this.methodAccess & Opcodes.ACC_SYNTHETIC) != 0;
+    }
+
+    private boolean isEqualsMethod() {
+        return "equals".equals(this.methodName) &&
+                this.returnType.equals(Type.BOOLEAN_TYPE) &&
+                this.argumentTypes.length == 1 &&
+                this.argumentTypes[0].getSort() == Type.OBJECT;
     }
 
     private void generateThrow(@NotNull final String exceptionClass, @NotNull final String description, @NotNull final Label end) {

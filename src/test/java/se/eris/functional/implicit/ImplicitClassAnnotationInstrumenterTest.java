@@ -90,5 +90,4 @@ class ImplicitClassAnnotationInstrumenterTest {
         final Method anonymousClassNotNull = c.getMethod("anonymousClassNotNull");
         ReflectionUtil.simulateMethodCall(anonymousClassNotNull);
     }
-
 }
