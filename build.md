@@ -8,3 +8,6 @@
     mvn clean deploy -P release
 
 [se.eris@oss.sonatype.org](https://oss.sonatype.org/#nexus-search;quick~se.eris)
+
+
+**Support new JAva version**

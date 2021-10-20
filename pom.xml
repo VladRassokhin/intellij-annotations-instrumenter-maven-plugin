@@ -24,10 +24,10 @@
         <source>8</source>
 
         <maven-core.version>3.6.3</maven-core.version>
-        <maven-plugin-annotations.version>3.6.0</maven-plugin-annotations.version>
+        <maven-plugin-annotations.version>3.6.1</maven-plugin-annotations.version>
         <intellij-annotations.version>20.1.0</intellij-annotations.version>
-        <asm.version>9.0</asm.version>
-        <junit-jupiter.version>5.7.0</junit-jupiter.version>
+        <asm.version>9.2</asm.version>
+        <junit-jupiter.version>5.8.1</junit-jupiter.version>
     </properties>
 
     <licenses>
@@ -47,13 +47,16 @@
             <organizationUrl>http://www.eris.se</organizationUrl>
         </developer>
         <developer>
+            <name>Alexander Torstling</name>
+        </developer>
+        <developer>
+            <name>Olof Larsson</name>
+        </developer>
+        <developer>
             <name>Vlad Rassokhin</name>
         </developer>
         <developer>
             <name>Eugene Zhuravlev</name>
-        </developer>
-        <developer>
-            <name>Alexander Torstling</name>
         </developer>
         <developer>
             <name>ven</name>

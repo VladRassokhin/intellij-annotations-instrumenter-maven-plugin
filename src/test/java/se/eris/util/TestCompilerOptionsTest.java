@@ -25,12 +25,14 @@ class TestCompilerOptionsTest {
         assertTrue(TestCompilerOptions.from(PATH, "13").targetHasParametersSupport());
         assertTrue(TestCompilerOptions.from(PATH, "14").targetHasParametersSupport());
         assertTrue(TestCompilerOptions.from(PATH, "15").targetHasParametersSupport());
+        assertTrue(TestCompilerOptions.from(PATH, "16").targetHasParametersSupport());
+        assertTrue(TestCompilerOptions.from(PATH, "17").targetHasParametersSupport());
     }
 
     @Test
     void javaVersion_unsupported() {
         assertThrows(IllegalArgumentException.class, () -> TestCompilerOptions.from(PATH, "1.1").targetHasParametersSupport());
-        assertThrows(IllegalArgumentException.class, () -> TestCompilerOptions.from(PATH, "16").targetHasParametersSupport());
+        assertThrows(IllegalArgumentException.class, () -> TestCompilerOptions.from(PATH, "18").targetHasParametersSupport());
     }
 
 }
