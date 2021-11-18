@@ -43,7 +43,7 @@ class EqualsExplicitTest {
     @BeforeAll
     static void beforeClass() {
         final Configuration configuration = new Configuration(false, new AnnotationConfiguration(notNull(), nullable()), new ExcludeConfiguration(Collections.emptySet()));
-        compilers.putAll(VersionCompiler.compile(DESTINATION_BASEDIR, configuration, testClass.getJavaFile(SRC_DIR)));
+        compilers.putAll(VersionCompiler.withSupportedVersions().compile(DESTINATION_BASEDIR, configuration, testClass.getJavaFile(SRC_DIR)));
     }
 
     @NotNull
