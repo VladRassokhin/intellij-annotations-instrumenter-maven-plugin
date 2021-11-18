@@ -53,7 +53,7 @@ class RecordTest {
     }
 
     @TestJava16AndLater
-    void callingContructor(final String javaVersion) throws Exception {
+    void callingConstructor(final String javaVersion) throws Exception {
         final Class<?> c = compilers.get(javaVersion).getCompiledClass(testClass);
         final Constructor<?> constructor = c.getDeclaredConstructor(String.class, String.class);
 
